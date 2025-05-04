@@ -1,0 +1,1 @@
+zhipuai>=2.0.0 # 智谱 AI 官方 SDK，用于与模型交互和Function Calling
