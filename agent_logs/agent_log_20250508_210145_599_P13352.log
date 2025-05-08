@@ -1,0 +1,739 @@
+2025-05-08 21:01:45,599 - __main__ - INFO [3650490771.<module>:116] - Successfully configured file logging. Log messages will also be saved to: d:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\agent_logs\agent_log_20250508_210145_599_P13352.log
+2025-05-08 21:01:45,609 - __main__ - INFO [3650490771.<module>:2043] - Jupyter/IPython (ZMQ) 环境检测到。建议用户使用 await run_agent_in_jupyter()。
+2025-05-08 21:01:45,634 - __main__ - INFO [3650490771.main:1879] - [Main] 开始 Agent 初始化 (V7.2)...
+2025-05-08 21:01:45,635 - __main__ - INFO [3650490771.main:1911] - [Main] 已从环境变量 ZHIPUAI_API_KEY 获取 API Key。
+2025-05-08 21:01:45,636 - __main__ - INFO [3650490771.__init__:1000] - 
+============================== Agent V7.2 初始化开始 (Async, Decorator Tools, File Logging, Enhanced) ==============================
+2025-05-08 21:01:45,639 - __main__ - INFO [3650490771.__init__:1001] - [Agent Init] 正在启动电路设计助理 V7.2...
+2025-05-08 21:01:45,640 - __main__ - INFO [3650490771.__init__:362] - [MemoryManager] 初始化记忆模块...
+2025-05-08 21:01:45,641 - __main__ - INFO [3650490771.__init__:172] - [Circuit] 初始化电路实体。
+2025-05-08 21:01:45,641 - __main__ - INFO [3650490771.__init__:182] - [Circuit] 电路实体初始化完成。
+2025-05-08 21:01:45,642 - __main__ - INFO [3650490771.__init__:374] - [MemoryManager] 记忆模块初始化完成。短期上限: 25 条, 长期上限: 50 条。
+2025-05-08 21:01:45,643 - __main__ - INFO [3650490771.__init__:473] - [LLMInterface] 初始化 LLM 接口，目标模型: glm-4-flash-250414
+2025-05-08 21:01:45,788 - __main__ - INFO [3650490771.__init__:477] - [LLMInterface] 智谱 AI 客户端初始化成功。
+2025-05-08 21:01:45,789 - __main__ - INFO [3650490771.__init__:484] - [LLMInterface] LLM 接口初始化完成 (Model: glm-4-flash-250414, Temp: 0.1, MaxTokens: 4095)。
+2025-05-08 21:01:45,790 - __main__ - INFO [3650490771.__init__:556] - [OutputParser] 初始化输出解析器 (用于自定义 JSON 和文本解析)。
+2025-05-08 21:01:45,791 - __main__ - INFO [3650490771.__init__:805] - [ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止)。
+2025-05-08 21:01:45,791 - __main__ - INFO [3650490771.__init__:816] - [ToolExecutor] 工具执行配置: 每个工具最多重试 2 次，重试间隔 0.5 秒。
+2025-05-08 21:01:45,792 - __main__ - INFO [3650490771.__init__:1023] - [Agent Init] 规划 LLM 调用失败时将重试 1 次。
+2025-05-08 21:01:45,793 - __main__ - INFO [3650490771.__init__:1024] - [Agent Init] 工具执行失败后，最多允许重规划 2 次。
+2025-05-08 21:01:45,793 - __main__ - INFO [3650490771.__init__:1029] - [Agent Init] 正在动态发现并注册已标记的工具...
+2025-05-08 21:01:45,794 - __main__ - INFO [3650490771.__init__:1036] - [Agent Init] ✓ 已注册工具: 'add_component_tool'
+2025-05-08 21:01:45,794 - __main__ - INFO [3650490771.__init__:1036] - [Agent Init] ✓ 已注册工具: 'clear_circuit_tool'
+2025-05-08 21:01:45,795 - __main__ - INFO [3650490771.__init__:1036] - [Agent Init] ✓ 已注册工具: 'connect_components_tool'
+2025-05-08 21:01:45,795 - __main__ - INFO [3650490771.__init__:1036] - [Agent Init] ✓ 已注册工具: 'describe_circuit_tool'
+2025-05-08 21:01:45,796 - __main__ - INFO [3650490771.__init__:1045] - [Agent Init] 共发现并注册了 4 个工具。
+2025-05-08 21:01:45,797 - __main__ - DEBUG [3650490771.__init__:1049] - [Agent Init] 工具注册表详情:
+{
+  "add_component_tool": {
+    "description": "添加一个新的电路元件 (如电阻, 电容, 电池, LED, 开关, 芯片, 地线等)。如果用户未指定 ID，我会自动生成。元件值是可选的。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "component_type": {
+          "type": "string",
+          "description": "元件的类型 (例如: '电阻', 'LED', '9V 电池')."
+        },
+        "component_id": {
+          "type": "string",
+          "description": "可选的用户指定 ID。如果省略会自动生成。请勿臆造不存在的 ID。"
+        },
+        "value": {
+          "type": "string",
+          "description": "可选的元件值 (例如: '1k', '10uF', '9V'). 如果未指定则省略。"
+        }
+      },
+      "required": [
+        "component_type"
+      ]
+    }
+  },
+  "clear_circuit_tool": {
+    "description": "彻底清空当前的电路设计，移除所有已添加的元件和它们之间的连接，并重置所有 ID 计数器。",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "connect_components_tool": {
+    "description": "使用两个已存在元件的 ID 将它们连接起来。执行前我会检查元件是否存在。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "comp1_id": {
+          "type": "string",
+          "description": "第一个元件的 ID (通常大写)。"
+        },
+        "comp2_id": {
+          "type": "string",
+          "description": "第二个元件的 ID (通常大写)。"
+        }
+      },
+      "required": [
+        "comp1_id",
+        "comp2_id"
+      ]
+    }
+  },
+  "describe_circuit_tool": {
+    "description": "获取当前电路的详细描述，包括所有已添加的元件及其值（如果有）和所有连接。",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  }
+}
+2025-05-08 21:01:45,797 - __main__ - INFO [3650490771.__init__:1054] - 
+============================== Agent V7.2 初始化成功 ==============================
+
+2025-05-08 21:02:12,508 - __main__ - INFO [3650490771.process_user_request:1279] - 
+========================= V7.2 开始处理用户请求 =========================
+2025-05-08 21:02:12,509 - __main__ - INFO [3650490771.process_user_request:1280] - [Orchestrator] 收到用户指令: "设计一个带五个元件的RC电路 参数你自己决定"
+2025-05-08 21:02:12,510 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: user). 当前数量: 0
+2025-05-08 21:02:12,511 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 1
+2025-05-08 21:02:12,511 - __main__ - INFO [3650490771.process_user_request:1290] - [Orchestrator] 用户指令已记录并添加到短期记忆。
+2025-05-08 21:02:12,511 - __main__ - INFO [3650490771.process_user_request:1304] - 
+--- [规划/重规划阶段] 尝试第 1/3 次规划 ---
+2025-05-08 21:02:12,512 - __main__ - DEBUG [3650490771.get_memory_context_for_prompt:443] - [MemoryManager] 正在格式化记忆上下文用于 Prompt...
+2025-05-08 21:02:12,513 - __main__ - DEBUG [3650490771.get_state_description:245] - [Circuit] 正在生成电路状态描述...
+2025-05-08 21:02:12,513 - __main__ - DEBUG [3650490771.get_memory_context_for_prompt:457] - [MemoryManager] 记忆上下文 (电路+长期) 格式化完成。
+2025-05-08 21:02:12,514 - __main__ - INFO [3650490771.process_user_request:1335] - [Orchestrator - Planning Attempt 1] 调用规划 LLM (LLM Call Attempt 1/2)...
+2025-05-08 21:02:12,514 - __main__ - INFO [3650490771.call_llm:505] - [LLMInterface] 准备异步调用 LLM (glm-4-flash-250414，自定义 JSON/无内置工具模式)...
+2025-05-08 21:02:12,515 - __main__ - DEBUG [3650490771.call_llm:506] - [LLMInterface] 发送的消息条数: 2
+2025-05-08 21:02:12,515 - __main__ - DEBUG [3650490771.call_llm:511] - [LLMInterface] 最新消息列表 (预览): 
+[
+  {
+    "role": "system",
+    "content_preview": "你是一位顶尖的、极其严谨的电路设计编程助理。你的行为必须专业、精确，并严格遵循指令。\n你的核心任务是：深入分析用户的最新指令、完整的对话历史（包括你之前的思考、规划以及所有工具执行结果），以及当前的电..."
+  },
+  {
+    "role": "user",
+    "content_preview": "设计一个带五个元件的RC电路 参数你自己决定"
+  }
+]
+2025-05-08 21:02:12,517 - httpcore.connection - DEBUG [_trace.trace:47] - connect_tcp.started host='127.0.0.1' port=20746 local_address=None timeout=8.0 socket_options=None
+2025-05-08 21:02:12,520 - httpcore.connection - DEBUG [_trace.trace:47] - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x000001BCA90993C0>
+2025-05-08 21:02:12,521 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'CONNECT']>
+2025-05-08 21:02:12,522 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-08 21:02:12,523 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'CONNECT']>
+2025-05-08 21:02:12,524 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-08 21:02:12,525 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-05-08 21:02:12,526 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-05-08 21:02:12,527 - httpcore.proxy - DEBUG [_trace.trace:47] - start_tls.started ssl_context=<ssl.SSLContext object at 0x000001BCA997E840> server_hostname='open.bigmodel.cn' timeout=8.0
+2025-05-08 21:02:13,316 - httpcore.proxy - DEBUG [_trace.trace:47] - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x000001BCA9001E40>
+2025-05-08 21:02:13,317 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'POST']>
+2025-05-08 21:02:13,319 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-08 21:02:13,319 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'POST']>
+2025-05-08 21:02:13,320 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-08 21:02:13,321 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'POST']>
+2025-05-08 21:02:32,895 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 08 May 2025 13:03:28 GMT'), (b'Content-Type', b'application/json; charset=UTF-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Set-Cookie', b'acw_tc=1a0c63d117467093894101889e008089a79cd1abd82d09e58a0dc88cbc5cc4;path=/;HttpOnly;Max-Age=1800'), (b'Vary', b'Accept-Encoding'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'X-LOG-ID', b'202505082103095d675c0b67004da8'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'Content-Encoding', b'gzip')])
+2025-05-08 21:02:32,898 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.started request=<Request [b'POST']>
+2025-05-08 21:02:32,899 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.complete
+2025-05-08 21:02:32,901 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.started
+2025-05-08 21:02:32,901 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.complete
+2025-05-08 21:02:32,904 - __main__ - INFO [3650490771.call_llm:526] - [LLMInterface] LLM 异步调用成功。耗时: 20.391 秒。
+2025-05-08 21:02:32,905 - __main__ - INFO [3650490771.call_llm:530] - [LLMInterface] Token 统计: Prompt=1325, Completion=802, Total=2127
+2025-05-08 21:02:32,905 - __main__ - INFO [3650490771.call_llm:533] - [LLMInterface] 完成原因: stop
+2025-05-08 21:02:32,906 - __main__ - INFO [3650490771.process_user_request:1344] - [Orchestrator - Planning Attempt 1] LLM 调用完成 (LLM Call Attempt 1).
+2025-05-08 21:02:32,907 - __main__ - INFO [3650490771.process_user_request:1352] - [Orchestrator - Planning Attempt 1] 解析 LLM 的规划响应...
+2025-05-08 21:02:32,907 - __main__ - DEBUG [3650490771.parse_planning_response:571] - [OutputParser] 开始解析规划响应 (自定义 JSON 模式)...
+2025-05-08 21:02:32,908 - __main__ - DEBUG [3650490771.parse_planning_response:598] - [OutputParser] 成功提取 <think> 内容。
+2025-05-08 21:02:32,908 - __main__ - DEBUG [3650490771.parse_planning_response:606] - [OutputParser] 提取出的待解析 JSON 字符串 (前 500 字符): >>>
+```json
+{
+  "is_tool_calls": true,
+  "tool_list": [
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "9V 电池"
+      },
+      "index": 1
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "1kΩ 电阻"
+      },
+      "index": 2
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "10uF 电容"
+      },
+      "index": 3
+    },
+    {
+      "toolname": "add_component_tool",
+      ...
+<<<
+2025-05-08 21:02:32,909 - __main__ - DEBUG [3650490771.parse_planning_response:698] - [OutputParser] 精准提取的 JSON 字符串: >>>
+{
+  "is_tool_calls": true,
+  "tool_list": [
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "9V 电池"
+      },
+      "index": 1
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "1kΩ 电阻"
+      },
+      "index": 2
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "10uF 电容"
+      },
+      "index": 3
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "常开开关"
+      },
+      "index": 4
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "GND"
+      },
+      "index": 5
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "BATTERY",
+        "comp2_id": "RESistor"
+      },
+      "index": 6
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "RESistor",
+        "comp2_id": "CAPacitor"
+      },
+      "index": 7
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "CAPacitor",
+        "comp2_id": "SWITCH"
+      },
+      "index": 8
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "SWITCH",
+        "comp2_id": "GND"
+      },
+      "index": 9
+    }
+  ],
+  "direct_reply": null
+}
+<<<
+2025-05-08 21:02:32,909 - __main__ - DEBUG [3650490771.parse_planning_response:701] - [OutputParser] JSON 字符串解析成功。
+2025-05-08 21:02:32,910 - __main__ - INFO [3650490771.parse_planning_response:742] - [OutputParser] 自定义 JSON 计划解析和验证成功！
+2025-05-08 21:02:32,911 - __main__ - INFO [3650490771.process_user_request:1362] - [Orchestrator - Planning Attempt 1] 成功解析并验证自定义 JSON 计划！
+2025-05-08 21:02:32,912 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: assistant). 当前数量: 1
+2025-05-08 21:02:32,913 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 2
+2025-05-08 21:02:32,914 - __main__ - DEBUG [3650490771.process_user_request:1368] - [Orchestrator - Planning Attempt 1] LLM 的原始规划响应已添加至短期记忆。
+2025-05-08 21:02:32,915 - __main__ - INFO [3650490771.process_user_request:1413] - [Orchestrator - Planning Attempt 1] 成功获取并验证自定义 JSON 计划。
+2025-05-08 21:02:32,915 - __main__ - DEBUG [3650490771.process_user_request:1416] - [Orchestrator - Planning Attempt 1] 解析出的计划详情: {
+  "is_tool_calls": true,
+  "tool_list": [
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "9V 电池"
+      },
+      "index": 1
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "1kΩ 电阻"
+      },
+      "index": 2
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "10uF 电容"
+      },
+      "index": 3
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "常开开关"
+      },
+      "index": 4
+    },
+    {
+      "toolname": "add_component_tool",
+      "params": {
+        "component_type": "GND"
+      },
+      "index": 5
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "BATTERY",
+        "comp2_id": "RESistor"
+      },
+      "index": 6
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "RESistor",
+        "comp2_id": "CAPacitor"
+      },
+      "index": 7
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "CAPacitor",
+        "comp2_id": "SWITCH"
+      },
+      "index": 8
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "SWITCH",
+        "comp2_id": "GND"
+      },
+      "index": 9
+    }
+  ],
+  "direct_reply": null
+}
+2025-05-08 21:02:32,916 - __main__ - INFO [3650490771.process_user_request:1425] - [Orchestrator - Planning Attempt 1] 决策：根据 JSON 计划执行工具。
+2025-05-08 21:02:32,917 - __main__ - INFO [3650490771.process_user_request:1479] - [Orchestrator - Planning Attempt 1] 成功将自定义工具列表转换为 9 个模拟 ToolCall 对象，准备执行。
+2025-05-08 21:02:32,918 - __main__ - INFO [3650490771.process_user_request:1482] - 
+--- [行动阶段 - 尝试 1] 执行工具 ---
+2025-05-08 21:02:32,919 - __main__ - INFO [3650490771.execute_tool_calls:832] - [ToolExecutor] 准备异步执行最多 9 个工具调用 (按顺序，支持重试，失败中止)...
+2025-05-08 21:02:32,920 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 1/9: Name='add_component_tool', MockID='call_1_add-compon_88cf'
+2025-05-08 21:02:32,921 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"component_type": "9V 电池"}'
+2025-05-08 21:02:32,922 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'component_type': '9V 电池'}
+2025-05-08 21:02:32,923 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'add_component_tool' (ID: call_1_add-compon_88cf, Attempt 1)
+2025-05-08 21:02:32,924 - __main__ - INFO [3650490771.add_component_tool:1085] - [Action: AddComponent] 执行添加元件操作。
+2025-05-08 21:02:32,924 - __main__ - DEBUG [3650490771.add_component_tool:1086] - [Action: AddComponent] 收到参数: {'component_type': '9V 电池'}
+2025-05-08 21:02:32,925 - __main__ - INFO [3650490771.add_component_tool:1091] - [Action: AddComponent] 参数解析: Type='9V 电池', Requested ID='None', Value='None'
+2025-05-08 21:02:32,925 - __main__ - DEBUG [3650490771.generate_component_id:279] - [Circuit] 正在为类型 '9V 电池' 生成唯一 ID...
+2025-05-08 21:02:32,926 - __main__ - DEBUG [3650490771.generate_component_id:316] - [Circuit] 生成唯一 ID: 'B1' (尝试 1)
+2025-05-08 21:02:32,926 - __main__ - DEBUG [3650490771.add_component_tool:1124] - [Action: AddComponent] 已自动为类型 '9V 电池' 生成 ID: 'B1'.
+2025-05-08 21:02:32,927 - __main__ - DEBUG [3650490771.__init__:152] - 成功创建元件对象: 元件: 9V 电池 (ID: B1)
+2025-05-08 21:02:32,927 - __main__ - DEBUG [3650490771.add_component:189] - [Circuit] 元件 'B1' 已添加到电路。
+2025-05-08 21:02:32,929 - __main__ - INFO [3650490771.add_component_tool:1140] - [Action: AddComponent] 成功添加元件 'B1' (9V 电池) 到电路。
+2025-05-08 21:02:32,929 - __main__ - DEBUG [3650490771.add_to_long_term:425] - [MemoryManager] 添加知识到长期记忆: '添加了元件: 元件: 9V 电池 (ID: B1)'. 当前数量: 0
+2025-05-08 21:02:32,930 - __main__ - DEBUG [3650490771.add_to_long_term:430] - [MemoryManager] 添加后长期记忆数量: 1
+2025-05-08 21:02:32,931 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'add_component_tool' (ID: call_1_add-compon_88cf) 执行完毕 (Attempt 1)。状态: success
+2025-05-08 21:02:32,932 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_1_add-compon_88cf' 的最终执行结果 (状态: success).
+2025-05-08 21:02:32,932 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 2/9: Name='add_component_tool', MockID='call_2_add-compon_3ad0'
+2025-05-08 21:02:32,933 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"component_type": "1kΩ 电阻"}'
+2025-05-08 21:02:32,935 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'component_type': '1kΩ 电阻'}
+2025-05-08 21:02:32,936 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'add_component_tool' (ID: call_2_add-compon_3ad0, Attempt 1)
+2025-05-08 21:02:32,938 - __main__ - INFO [3650490771.add_component_tool:1085] - [Action: AddComponent] 执行添加元件操作。
+2025-05-08 21:02:32,939 - __main__ - DEBUG [3650490771.add_component_tool:1086] - [Action: AddComponent] 收到参数: {'component_type': '1kΩ 电阻'}
+2025-05-08 21:02:32,940 - __main__ - INFO [3650490771.add_component_tool:1091] - [Action: AddComponent] 参数解析: Type='1kΩ 电阻', Requested ID='None', Value='None'
+2025-05-08 21:02:32,941 - __main__ - DEBUG [3650490771.generate_component_id:279] - [Circuit] 正在为类型 '1kΩ 电阻' 生成唯一 ID...
+2025-05-08 21:02:32,941 - __main__ - DEBUG [3650490771.generate_component_id:316] - [Circuit] 生成唯一 ID: 'R1' (尝试 1)
+2025-05-08 21:02:32,942 - __main__ - DEBUG [3650490771.add_component_tool:1124] - [Action: AddComponent] 已自动为类型 '1kΩ 电阻' 生成 ID: 'R1'.
+2025-05-08 21:02:32,942 - __main__ - DEBUG [3650490771.__init__:152] - 成功创建元件对象: 元件: 1kΩ 电阻 (ID: R1)
+2025-05-08 21:02:32,943 - __main__ - DEBUG [3650490771.add_component:189] - [Circuit] 元件 'R1' 已添加到电路。
+2025-05-08 21:02:32,943 - __main__ - INFO [3650490771.add_component_tool:1140] - [Action: AddComponent] 成功添加元件 'R1' (1kΩ 电阻) 到电路。
+2025-05-08 21:02:32,944 - __main__ - DEBUG [3650490771.add_to_long_term:425] - [MemoryManager] 添加知识到长期记忆: '添加了元件: 元件: 1kΩ 电阻 (ID: R1)'. 当前数量: 1
+2025-05-08 21:02:32,945 - __main__ - DEBUG [3650490771.add_to_long_term:430] - [MemoryManager] 添加后长期记忆数量: 2
+2025-05-08 21:02:32,946 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'add_component_tool' (ID: call_2_add-compon_3ad0) 执行完毕 (Attempt 1)。状态: success
+2025-05-08 21:02:32,946 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_2_add-compon_3ad0' 的最终执行结果 (状态: success).
+2025-05-08 21:02:32,947 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 3/9: Name='add_component_tool', MockID='call_3_add-compon_9bcc'
+2025-05-08 21:02:32,948 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"component_type": "10uF 电容"}'
+2025-05-08 21:02:32,951 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'component_type': '10uF 电容'}
+2025-05-08 21:02:32,953 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'add_component_tool' (ID: call_3_add-compon_9bcc, Attempt 1)
+2025-05-08 21:02:32,955 - __main__ - INFO [3650490771.add_component_tool:1085] - [Action: AddComponent] 执行添加元件操作。
+2025-05-08 21:02:32,956 - __main__ - DEBUG [3650490771.add_component_tool:1086] - [Action: AddComponent] 收到参数: {'component_type': '10uF 电容'}
+2025-05-08 21:02:32,957 - __main__ - INFO [3650490771.add_component_tool:1091] - [Action: AddComponent] 参数解析: Type='10uF 电容', Requested ID='None', Value='None'
+2025-05-08 21:02:32,957 - __main__ - DEBUG [3650490771.generate_component_id:279] - [Circuit] 正在为类型 '10uF 电容' 生成唯一 ID...
+2025-05-08 21:02:32,958 - __main__ - DEBUG [3650490771.generate_component_id:316] - [Circuit] 生成唯一 ID: 'C1' (尝试 1)
+2025-05-08 21:02:32,959 - __main__ - DEBUG [3650490771.add_component_tool:1124] - [Action: AddComponent] 已自动为类型 '10uF 电容' 生成 ID: 'C1'.
+2025-05-08 21:02:32,960 - __main__ - DEBUG [3650490771.__init__:152] - 成功创建元件对象: 元件: 10uF 电容 (ID: C1)
+2025-05-08 21:02:32,961 - __main__ - DEBUG [3650490771.add_component:189] - [Circuit] 元件 'C1' 已添加到电路。
+2025-05-08 21:02:32,962 - __main__ - INFO [3650490771.add_component_tool:1140] - [Action: AddComponent] 成功添加元件 'C1' (10uF 电容) 到电路。
+2025-05-08 21:02:32,963 - __main__ - DEBUG [3650490771.add_to_long_term:425] - [MemoryManager] 添加知识到长期记忆: '添加了元件: 元件: 10uF 电容 (ID: C1)'. 当前数量: 2
+2025-05-08 21:02:32,963 - __main__ - DEBUG [3650490771.add_to_long_term:430] - [MemoryManager] 添加后长期记忆数量: 3
+2025-05-08 21:02:32,965 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'add_component_tool' (ID: call_3_add-compon_9bcc) 执行完毕 (Attempt 1)。状态: success
+2025-05-08 21:02:32,966 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_3_add-compon_9bcc' 的最终执行结果 (状态: success).
+2025-05-08 21:02:32,967 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 4/9: Name='add_component_tool', MockID='call_4_add-compon_f71'
+2025-05-08 21:02:32,968 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"component_type": "常开开关"}'
+2025-05-08 21:02:32,969 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'component_type': '常开开关'}
+2025-05-08 21:02:32,970 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'add_component_tool' (ID: call_4_add-compon_f71, Attempt 1)
+2025-05-08 21:02:32,972 - __main__ - INFO [3650490771.add_component_tool:1085] - [Action: AddComponent] 执行添加元件操作。
+2025-05-08 21:02:32,973 - __main__ - DEBUG [3650490771.add_component_tool:1086] - [Action: AddComponent] 收到参数: {'component_type': '常开开关'}
+2025-05-08 21:02:32,974 - __main__ - INFO [3650490771.add_component_tool:1091] - [Action: AddComponent] 参数解析: Type='常开开关', Requested ID='None', Value='None'
+2025-05-08 21:02:32,975 - __main__ - DEBUG [3650490771.generate_component_id:279] - [Circuit] 正在为类型 '常开开关' 生成唯一 ID...
+2025-05-08 21:02:32,977 - __main__ - DEBUG [3650490771.generate_component_id:316] - [Circuit] 生成唯一 ID: 'S1' (尝试 1)
+2025-05-08 21:02:32,978 - __main__ - DEBUG [3650490771.add_component_tool:1124] - [Action: AddComponent] 已自动为类型 '常开开关' 生成 ID: 'S1'.
+2025-05-08 21:02:32,980 - __main__ - DEBUG [3650490771.__init__:152] - 成功创建元件对象: 元件: 常开开关 (ID: S1)
+2025-05-08 21:02:32,981 - __main__ - DEBUG [3650490771.add_component:189] - [Circuit] 元件 'S1' 已添加到电路。
+2025-05-08 21:02:32,982 - __main__ - INFO [3650490771.add_component_tool:1140] - [Action: AddComponent] 成功添加元件 'S1' (常开开关) 到电路。
+2025-05-08 21:02:32,982 - __main__ - DEBUG [3650490771.add_to_long_term:425] - [MemoryManager] 添加知识到长期记忆: '添加了元件: 元件: 常开开关 (ID: S1)'. 当前数量: 3
+2025-05-08 21:02:32,983 - __main__ - DEBUG [3650490771.add_to_long_term:430] - [MemoryManager] 添加后长期记忆数量: 4
+2025-05-08 21:02:32,984 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'add_component_tool' (ID: call_4_add-compon_f71) 执行完毕 (Attempt 1)。状态: success
+2025-05-08 21:02:32,985 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_4_add-compon_f71' 的最终执行结果 (状态: success).
+2025-05-08 21:02:32,987 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 5/9: Name='add_component_tool', MockID='call_5_add-compon_5835'
+2025-05-08 21:02:32,987 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"component_type": "GND"}'
+2025-05-08 21:02:32,994 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'component_type': 'GND'}
+2025-05-08 21:02:32,996 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'add_component_tool' (ID: call_5_add-compon_5835, Attempt 1)
+2025-05-08 21:02:32,997 - __main__ - INFO [3650490771.add_component_tool:1085] - [Action: AddComponent] 执行添加元件操作。
+2025-05-08 21:02:33,009 - __main__ - DEBUG [3650490771.add_component_tool:1086] - [Action: AddComponent] 收到参数: {'component_type': 'GND'}
+2025-05-08 21:02:33,015 - __main__ - INFO [3650490771.add_component_tool:1091] - [Action: AddComponent] 参数解析: Type='GND', Requested ID='None', Value='None'
+2025-05-08 21:02:33,020 - __main__ - DEBUG [3650490771.generate_component_id:279] - [Circuit] 正在为类型 'GND' 生成唯一 ID...
+2025-05-08 21:02:33,022 - __main__ - WARNING [3650490771.generate_component_id:306] - [Circuit] 未找到类型 'GND' 的特定前缀，将使用通用前缀 'O'。
+2025-05-08 21:02:33,025 - __main__ - DEBUG [3650490771.generate_component_id:316] - [Circuit] 生成唯一 ID: 'O1' (尝试 1)
+2025-05-08 21:02:33,025 - __main__ - DEBUG [3650490771.add_component_tool:1124] - [Action: AddComponent] 已自动为类型 'GND' 生成 ID: 'O1'.
+2025-05-08 21:02:33,026 - __main__ - DEBUG [3650490771.__init__:152] - 成功创建元件对象: 元件: GND (ID: O1)
+2025-05-08 21:02:33,027 - __main__ - DEBUG [3650490771.add_component:189] - [Circuit] 元件 'O1' 已添加到电路。
+2025-05-08 21:02:33,029 - __main__ - INFO [3650490771.add_component_tool:1140] - [Action: AddComponent] 成功添加元件 'O1' (GND) 到电路。
+2025-05-08 21:02:33,030 - __main__ - DEBUG [3650490771.add_to_long_term:425] - [MemoryManager] 添加知识到长期记忆: '添加了元件: 元件: GND (ID: O1)'. 当前数量: 4
+2025-05-08 21:02:33,031 - __main__ - DEBUG [3650490771.add_to_long_term:430] - [MemoryManager] 添加后长期记忆数量: 5
+2025-05-08 21:02:33,032 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'add_component_tool' (ID: call_5_add-compon_5835) 执行完毕 (Attempt 1)。状态: success
+2025-05-08 21:02:33,032 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_5_add-compon_5835' 的最终执行结果 (状态: success).
+2025-05-08 21:02:33,034 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 6/9: Name='connect_components_tool', MockID='call_6_connect-co_7932'
+2025-05-08 21:02:33,035 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"comp1_id": "BATTERY", "comp2_id": "RESistor"}'
+2025-05-08 21:02:33,037 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'comp1_id': 'BATTERY', 'comp2_id': 'RESistor'}
+2025-05-08 21:02:33,038 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'connect_components_tool' (ID: call_6_connect-co_7932, Attempt 1)
+2025-05-08 21:02:33,040 - __main__ - INFO [3650490771.connect_components_tool:1182] - [Action: ConnectComponents] 执行连接元件操作。
+2025-05-08 21:02:33,042 - __main__ - DEBUG [3650490771.connect_components_tool:1183] - [Action: ConnectComponents] 收到参数: {'comp1_id': 'BATTERY', 'comp2_id': 'RESistor'}
+2025-05-08 21:02:33,044 - __main__ - INFO [3650490771.connect_components_tool:1186] - [Action: ConnectComponents] 参数解析: Comp1='BATTERY', Comp2='RESistor'
+2025-05-08 21:02:33,045 - __main__ - ERROR [3650490771.connect_components_tool:1215] - [Action: ConnectComponents] 连接验证错误: 连接元件时验证失败: 元件 'BATTERY' 在电路中不存在。
+2025-05-08 21:02:33,051 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'connect_components_tool' (ID: call_6_connect-co_7932) 执行完毕 (Attempt 1)。状态: failure
+2025-05-08 21:02:33,052 - __main__ - WARNING [3650490771.execute_tool_calls:934] - [ToolExecutor] Action 'connect_components_tool' (ID: call_6_connect-co_7932) 执行失败 (Attempt 1)。将重试。
+2025-05-08 21:02:33,053 - __main__ - WARNING [3650490771.execute_tool_calls:903] - [ToolExecutor] 工具 'connect_components_tool' (ID: call_6_connect-co_7932) 执行失败，正在进行第 1/2 次重试...
+2025-05-08 21:02:33,559 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'connect_components_tool' (ID: call_6_connect-co_7932, Attempt 2)
+2025-05-08 21:02:33,560 - __main__ - INFO [3650490771.connect_components_tool:1182] - [Action: ConnectComponents] 执行连接元件操作。
+2025-05-08 21:02:33,561 - __main__ - DEBUG [3650490771.connect_components_tool:1183] - [Action: ConnectComponents] 收到参数: {'comp1_id': 'BATTERY', 'comp2_id': 'RESistor'}
+2025-05-08 21:02:33,561 - __main__ - INFO [3650490771.connect_components_tool:1186] - [Action: ConnectComponents] 参数解析: Comp1='BATTERY', Comp2='RESistor'
+2025-05-08 21:02:33,562 - __main__ - ERROR [3650490771.connect_components_tool:1215] - [Action: ConnectComponents] 连接验证错误: 连接元件时验证失败: 元件 'BATTERY' 在电路中不存在。
+2025-05-08 21:02:33,563 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'connect_components_tool' (ID: call_6_connect-co_7932) 执行完毕 (Attempt 2)。状态: failure
+2025-05-08 21:02:33,563 - __main__ - WARNING [3650490771.execute_tool_calls:934] - [ToolExecutor] Action 'connect_components_tool' (ID: call_6_connect-co_7932) 执行失败 (Attempt 2)。将重试。
+2025-05-08 21:02:33,564 - __main__ - WARNING [3650490771.execute_tool_calls:903] - [ToolExecutor] 工具 'connect_components_tool' (ID: call_6_connect-co_7932) 执行失败，正在进行第 2/2 次重试...
+2025-05-08 21:02:34,078 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'connect_components_tool' (ID: call_6_connect-co_7932, Attempt 3)
+2025-05-08 21:02:34,079 - __main__ - INFO [3650490771.connect_components_tool:1182] - [Action: ConnectComponents] 执行连接元件操作。
+2025-05-08 21:02:34,080 - __main__ - DEBUG [3650490771.connect_components_tool:1183] - [Action: ConnectComponents] 收到参数: {'comp1_id': 'BATTERY', 'comp2_id': 'RESistor'}
+2025-05-08 21:02:34,080 - __main__ - INFO [3650490771.connect_components_tool:1186] - [Action: ConnectComponents] 参数解析: Comp1='BATTERY', Comp2='RESistor'
+2025-05-08 21:02:34,081 - __main__ - ERROR [3650490771.connect_components_tool:1215] - [Action: ConnectComponents] 连接验证错误: 连接元件时验证失败: 元件 'BATTERY' 在电路中不存在。
+2025-05-08 21:02:34,082 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'connect_components_tool' (ID: call_6_connect-co_7932) 执行完毕 (Attempt 3)。状态: failure
+2025-05-08 21:02:34,082 - __main__ - ERROR [3650490771.execute_tool_calls:936] - [ToolExecutor] Action 'connect_components_tool' (ID: call_6_connect-co_7932) 在所有 3 次尝试后仍失败。
+2025-05-08 21:02:34,083 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_6_connect-co_7932' 的最终执行结果 (状态: failure).
+2025-05-08 21:02:34,084 - __main__ - WARNING [3650490771.execute_tool_calls:972] - [ToolExecutor] 工具 'connect_components_tool' (Mock ID: call_6_connect-co_7932) 在所有重试后仍然失败。中止本次计划中后续工具的执行。
+2025-05-08 21:02:34,086 - __main__ - INFO [3650490771.execute_tool_calls:987] - [ToolExecutor] 所有 6/9 个计划中的工具调用已处理 (可能因失败提前中止)。
+2025-05-08 21:02:34,086 - __main__ - INFO [3650490771.process_user_request:1490] - [Orchestrator - Action Phase] ToolExecutor 完成了 6/9 个工具执行尝试。
+2025-05-08 21:02:34,087 - __main__ - WARNING [3650490771.process_user_request:1492] - [Orchestrator - Action Phase] 由于中途有工具最终失败，计划中的后续 3 个工具未执行。
+2025-05-08 21:02:34,088 - __main__ - INFO [3650490771.process_user_request:1505] - 
+--- [观察阶段 - 尝试 1] 处理工具结果并更新记忆 ---
+2025-05-08 21:02:34,089 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 2
+2025-05-08 21:02:34,089 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 3
+2025-05-08 21:02:34,091 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 3
+2025-05-08 21:02:34,091 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 4
+2025-05-08 21:02:34,092 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 4
+2025-05-08 21:02:34,093 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 5
+2025-05-08 21:02:34,094 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 5
+2025-05-08 21:02:34,095 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 6
+2025-05-08 21:02:34,095 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 6
+2025-05-08 21:02:34,096 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 7
+2025-05-08 21:02:34,097 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 7
+2025-05-08 21:02:34,098 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 8
+2025-05-08 21:02:34,099 - __main__ - INFO [3650490771.process_user_request:1530] - [Orchestrator - Observe] 6/6 个工具执行结果已添加至短期记忆。
+2025-05-08 21:02:34,100 - __main__ - WARNING [3650490771.process_user_request:1538] - [Orchestrator - Observe] 检测到有工具执行失败。检查是否需要重规划。
+2025-05-08 21:02:34,101 - __main__ - INFO [3650490771.process_user_request:1540] - [Orchestrator - Observe] 将进行第 1/2 次重规划。
+2025-05-08 21:02:34,103 - __main__ - INFO [3650490771.process_user_request:1304] - 
+--- [规划/重规划阶段] 尝试第 2/3 次规划 ---
+2025-05-08 21:02:34,105 - __main__ - DEBUG [3650490771.get_memory_context_for_prompt:443] - [MemoryManager] 正在格式化记忆上下文用于 Prompt...
+2025-05-08 21:02:34,106 - __main__ - DEBUG [3650490771.get_state_description:245] - [Circuit] 正在生成电路状态描述...
+2025-05-08 21:02:34,107 - __main__ - DEBUG [3650490771.get_state_description:270] - [Circuit] 电路状态描述生成完毕。
+2025-05-08 21:02:34,109 - __main__ - DEBUG [3650490771.get_memory_context_for_prompt:452] - [MemoryManager] 已提取最近 5 条长期记忆 (基础模式)。
+2025-05-08 21:02:34,110 - __main__ - DEBUG [3650490771.get_memory_context_for_prompt:457] - [MemoryManager] 记忆上下文 (电路+长期) 格式化完成。
+2025-05-08 21:02:34,111 - __main__ - INFO [3650490771.process_user_request:1335] - [Orchestrator - Planning Attempt 2] 调用规划 LLM (LLM Call Attempt 1/2)...
+2025-05-08 21:02:34,112 - __main__ - INFO [3650490771.call_llm:505] - [LLMInterface] 准备异步调用 LLM (glm-4-flash-250414，自定义 JSON/无内置工具模式)...
+2025-05-08 21:02:34,113 - __main__ - DEBUG [3650490771.call_llm:506] - [LLMInterface] 发送的消息条数: 9
+2025-05-08 21:02:34,114 - __main__ - DEBUG [3650490771.call_llm:511] - [LLMInterface] 最新消息列表 (预览): 
+[
+  {
+    "role": "tool",
+    "content_preview": "{\"status\": \"success\", \"message\": \"操作成功: 已添加元件 元件: 常开开关 (ID: S1)。 (系统自动分配 ID 'S1')\", \"data\": {\"id\": \"..."
+  },
+  {
+    "role": "tool",
+    "content_preview": "{\"status\": \"success\", \"message\": \"操作成功: 已添加元件 元件: GND (ID: O1)。 (系统自动分配 ID 'O1')\", \"data\": {\"id\": \"O..."
+  },
+  {
+    "role": "tool",
+    "content_preview": "{\"status\": \"failure\", \"message\": \"错误: 连接元件时验证失败: 元件 'BATTERY' 在电路中不存在。\", \"error\": {\"type\": \"Componen..."
+  }
+]
+2025-05-08 21:02:34,116 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'POST']>
+2025-05-08 21:02:34,118 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-08 21:02:34,119 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'POST']>
+2025-05-08 21:02:34,121 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-08 21:02:34,122 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'POST']>
+2025-05-08 21:02:40,073 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 08 May 2025 13:03:35 GMT'), (b'Content-Type', b'application/json; charset=UTF-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'X-LOG-ID', b'202505082103307ede1cff405443e5'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'Content-Encoding', b'gzip')])
+2025-05-08 21:02:40,076 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.started request=<Request [b'POST']>
+2025-05-08 21:02:40,077 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.complete
+2025-05-08 21:02:40,078 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.started
+2025-05-08 21:02:40,079 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.complete
+2025-05-08 21:02:40,081 - __main__ - INFO [3650490771.call_llm:526] - [LLMInterface] LLM 异步调用成功。耗时: 5.968 秒。
+2025-05-08 21:02:40,082 - __main__ - INFO [3650490771.call_llm:530] - [LLMInterface] Token 统计: Prompt=2895, Completion=430, Total=3325
+2025-05-08 21:02:40,082 - __main__ - INFO [3650490771.call_llm:533] - [LLMInterface] 完成原因: stop
+2025-05-08 21:02:40,083 - __main__ - INFO [3650490771.process_user_request:1344] - [Orchestrator - Planning Attempt 2] LLM 调用完成 (LLM Call Attempt 1).
+2025-05-08 21:02:40,083 - __main__ - INFO [3650490771.process_user_request:1352] - [Orchestrator - Planning Attempt 2] 解析 LLM 的规划响应...
+2025-05-08 21:02:40,083 - __main__ - DEBUG [3650490771.parse_planning_response:571] - [OutputParser] 开始解析规划响应 (自定义 JSON 模式)...
+2025-05-08 21:02:40,084 - __main__ - DEBUG [3650490771.parse_planning_response:598] - [OutputParser] 成功提取 <think> 内容。
+2025-05-08 21:02:40,085 - __main__ - DEBUG [3650490771.parse_planning_response:606] - [OutputParser] 提取出的待解析 JSON 字符串 (前 500 字符): >>>
+```json
+{
+  "is_tool_calls": true,
+  "tool_list": [
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "B1",
+        "comp2_id": "R1"
+      },
+      "index": 1
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "R1",
+        "comp2_id": "C1"
+      },
+      "index": 2
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "C1",
+        "comp2_id": "S1"
+      },
+      "index"...
+<<<
+2025-05-08 21:02:40,085 - __main__ - DEBUG [3650490771.parse_planning_response:698] - [OutputParser] 精准提取的 JSON 字符串: >>>
+{
+  "is_tool_calls": true,
+  "tool_list": [
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "B1",
+        "comp2_id": "R1"
+      },
+      "index": 1
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "R1",
+        "comp2_id": "C1"
+      },
+      "index": 2
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "C1",
+        "comp2_id": "S1"
+      },
+      "index": 3
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "S1",
+        "comp2_id": "O1"
+      },
+      "index": 4
+    }
+  ],
+  "direct_reply": null
+}
+<<<
+2025-05-08 21:02:40,086 - __main__ - DEBUG [3650490771.parse_planning_response:701] - [OutputParser] JSON 字符串解析成功。
+2025-05-08 21:02:40,087 - __main__ - INFO [3650490771.parse_planning_response:742] - [OutputParser] 自定义 JSON 计划解析和验证成功！
+2025-05-08 21:02:40,087 - __main__ - INFO [3650490771.process_user_request:1362] - [Orchestrator - Planning Attempt 2] 成功解析并验证自定义 JSON 计划！
+2025-05-08 21:02:40,088 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: assistant). 当前数量: 8
+2025-05-08 21:02:40,089 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 9
+2025-05-08 21:02:40,089 - __main__ - DEBUG [3650490771.process_user_request:1368] - [Orchestrator - Planning Attempt 2] LLM 的原始规划响应已添加至短期记忆。
+2025-05-08 21:02:40,090 - __main__ - INFO [3650490771.process_user_request:1413] - [Orchestrator - Planning Attempt 2] 成功获取并验证自定义 JSON 计划。
+2025-05-08 21:02:40,091 - __main__ - DEBUG [3650490771.process_user_request:1416] - [Orchestrator - Planning Attempt 2] 解析出的计划详情: {
+  "is_tool_calls": true,
+  "tool_list": [
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "B1",
+        "comp2_id": "R1"
+      },
+      "index": 1
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "R1",
+        "comp2_id": "C1"
+      },
+      "index": 2
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "C1",
+        "comp2_id": "S1"
+      },
+      "index": 3
+    },
+    {
+      "toolname": "connect_components_tool",
+      "params": {
+        "comp1_id": "S1",
+        "comp2_id": "O1"
+      },
+      "index": 4
+    }
+  ],
+  "direct_reply": null
+}
+2025-05-08 21:02:40,091 - __main__ - INFO [3650490771.process_user_request:1425] - [Orchestrator - Planning Attempt 2] 决策：根据 JSON 计划执行工具。
+2025-05-08 21:02:40,092 - __main__ - INFO [3650490771.process_user_request:1479] - [Orchestrator - Planning Attempt 2] 成功将自定义工具列表转换为 4 个模拟 ToolCall 对象，准备执行。
+2025-05-08 21:02:40,093 - __main__ - INFO [3650490771.process_user_request:1482] - 
+--- [行动阶段 - 尝试 2] 执行工具 ---
+2025-05-08 21:02:40,094 - __main__ - INFO [3650490771.execute_tool_calls:832] - [ToolExecutor] 准备异步执行最多 4 个工具调用 (按顺序，支持重试，失败中止)...
+2025-05-08 21:02:40,095 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 1/4: Name='connect_components_tool', MockID='call_1_connect-co_c9ce'
+2025-05-08 21:02:40,095 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"comp1_id": "B1", "comp2_id": "R1"}'
+2025-05-08 21:02:40,096 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'comp1_id': 'B1', 'comp2_id': 'R1'}
+2025-05-08 21:02:40,097 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'connect_components_tool' (ID: call_1_connect-co_c9ce, Attempt 1)
+2025-05-08 21:02:40,098 - __main__ - INFO [3650490771.connect_components_tool:1182] - [Action: ConnectComponents] 执行连接元件操作。
+2025-05-08 21:02:40,098 - __main__ - DEBUG [3650490771.connect_components_tool:1183] - [Action: ConnectComponents] 收到参数: {'comp1_id': 'B1', 'comp2_id': 'R1'}
+2025-05-08 21:02:40,099 - __main__ - INFO [3650490771.connect_components_tool:1186] - [Action: ConnectComponents] 参数解析: Comp1='B1', Comp2='R1'
+2025-05-08 21:02:40,100 - __main__ - DEBUG [3650490771.connect_components:226] - [Circuit] 添加了连接: B1 <--> R1.
+2025-05-08 21:02:40,100 - __main__ - INFO [3650490771.connect_components_tool:1202] - [Action: ConnectComponents] 成功添加新连接: B1 <--> R1
+2025-05-08 21:02:40,101 - __main__ - DEBUG [3650490771.add_to_long_term:425] - [MemoryManager] 添加知识到长期记忆: '连接了元件: B1 <--> R1'. 当前数量: 5
+2025-05-08 21:02:40,103 - __main__ - DEBUG [3650490771.add_to_long_term:430] - [MemoryManager] 添加后长期记忆数量: 6
+2025-05-08 21:02:40,104 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'connect_components_tool' (ID: call_1_connect-co_c9ce) 执行完毕 (Attempt 1)。状态: success
+2025-05-08 21:02:40,105 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_1_connect-co_c9ce' 的最终执行结果 (状态: success).
+2025-05-08 21:02:40,106 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 2/4: Name='connect_components_tool', MockID='call_2_connect-co_5f92'
+2025-05-08 21:02:40,107 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"comp1_id": "R1", "comp2_id": "C1"}'
+2025-05-08 21:02:40,109 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'comp1_id': 'R1', 'comp2_id': 'C1'}
+2025-05-08 21:02:40,109 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'connect_components_tool' (ID: call_2_connect-co_5f92, Attempt 1)
+2025-05-08 21:02:40,110 - __main__ - INFO [3650490771.connect_components_tool:1182] - [Action: ConnectComponents] 执行连接元件操作。
+2025-05-08 21:02:40,111 - __main__ - DEBUG [3650490771.connect_components_tool:1183] - [Action: ConnectComponents] 收到参数: {'comp1_id': 'R1', 'comp2_id': 'C1'}
+2025-05-08 21:02:40,111 - __main__ - INFO [3650490771.connect_components_tool:1186] - [Action: ConnectComponents] 参数解析: Comp1='R1', Comp2='C1'
+2025-05-08 21:02:40,112 - __main__ - DEBUG [3650490771.connect_components:226] - [Circuit] 添加了连接: R1 <--> C1.
+2025-05-08 21:02:40,113 - __main__ - INFO [3650490771.connect_components_tool:1202] - [Action: ConnectComponents] 成功添加新连接: R1 <--> C1
+2025-05-08 21:02:40,113 - __main__ - DEBUG [3650490771.add_to_long_term:425] - [MemoryManager] 添加知识到长期记忆: '连接了元件: R1 <--> C1'. 当前数量: 6
+2025-05-08 21:02:40,114 - __main__ - DEBUG [3650490771.add_to_long_term:430] - [MemoryManager] 添加后长期记忆数量: 7
+2025-05-08 21:02:40,115 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'connect_components_tool' (ID: call_2_connect-co_5f92) 执行完毕 (Attempt 1)。状态: success
+2025-05-08 21:02:40,116 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_2_connect-co_5f92' 的最终执行结果 (状态: success).
+2025-05-08 21:02:40,117 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 3/4: Name='connect_components_tool', MockID='call_3_connect-co_e66e'
+2025-05-08 21:02:40,119 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"comp1_id": "C1", "comp2_id": "S1"}'
+2025-05-08 21:02:40,120 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'comp1_id': 'C1', 'comp2_id': 'S1'}
+2025-05-08 21:02:40,122 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'connect_components_tool' (ID: call_3_connect-co_e66e, Attempt 1)
+2025-05-08 21:02:40,123 - __main__ - INFO [3650490771.connect_components_tool:1182] - [Action: ConnectComponents] 执行连接元件操作。
+2025-05-08 21:02:40,124 - __main__ - DEBUG [3650490771.connect_components_tool:1183] - [Action: ConnectComponents] 收到参数: {'comp1_id': 'C1', 'comp2_id': 'S1'}
+2025-05-08 21:02:40,125 - __main__ - INFO [3650490771.connect_components_tool:1186] - [Action: ConnectComponents] 参数解析: Comp1='C1', Comp2='S1'
+2025-05-08 21:02:40,125 - __main__ - DEBUG [3650490771.connect_components:226] - [Circuit] 添加了连接: C1 <--> S1.
+2025-05-08 21:02:40,126 - __main__ - INFO [3650490771.connect_components_tool:1202] - [Action: ConnectComponents] 成功添加新连接: C1 <--> S1
+2025-05-08 21:02:40,127 - __main__ - DEBUG [3650490771.add_to_long_term:425] - [MemoryManager] 添加知识到长期记忆: '连接了元件: C1 <--> S1'. 当前数量: 7
+2025-05-08 21:02:40,128 - __main__ - DEBUG [3650490771.add_to_long_term:430] - [MemoryManager] 添加后长期记忆数量: 8
+2025-05-08 21:02:40,129 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'connect_components_tool' (ID: call_3_connect-co_e66e) 执行完毕 (Attempt 1)。状态: success
+2025-05-08 21:02:40,129 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_3_connect-co_e66e' 的最终执行结果 (状态: success).
+2025-05-08 21:02:40,130 - __main__ - INFO [3650490771.execute_tool_calls:868] - [ToolExecutor] 处理工具调用 4/4: Name='connect_components_tool', MockID='call_4_connect-co_399a'
+2025-05-08 21:02:40,131 - __main__ - DEBUG [3650490771.execute_tool_calls:869] - [ToolExecutor] 原始参数 JSON 字符串: '{"comp1_id": "S1", "comp2_id": "O1"}'
+2025-05-08 21:02:40,133 - __main__ - DEBUG [3650490771.execute_tool_calls:879] - [ToolExecutor] 参数解析成功: {'comp1_id': 'S1', 'comp2_id': 'O1'}
+2025-05-08 21:02:40,134 - __main__ - DEBUG [3650490771.execute_tool_calls:908] - [ToolExecutor] >>> 正在调用 Action 方法: 'connect_components_tool' (ID: call_4_connect-co_399a, Attempt 1)
+2025-05-08 21:02:40,135 - __main__ - INFO [3650490771.connect_components_tool:1182] - [Action: ConnectComponents] 执行连接元件操作。
+2025-05-08 21:02:40,136 - __main__ - DEBUG [3650490771.connect_components_tool:1183] - [Action: ConnectComponents] 收到参数: {'comp1_id': 'S1', 'comp2_id': 'O1'}
+2025-05-08 21:02:40,137 - __main__ - INFO [3650490771.connect_components_tool:1186] - [Action: ConnectComponents] 参数解析: Comp1='S1', Comp2='O1'
+2025-05-08 21:02:40,137 - __main__ - DEBUG [3650490771.connect_components:226] - [Circuit] 添加了连接: S1 <--> O1.
+2025-05-08 21:02:40,138 - __main__ - INFO [3650490771.connect_components_tool:1202] - [Action: ConnectComponents] 成功添加新连接: S1 <--> O1
+2025-05-08 21:02:40,140 - __main__ - DEBUG [3650490771.add_to_long_term:425] - [MemoryManager] 添加知识到长期记忆: '连接了元件: S1 <--> O1'. 当前数量: 8
+2025-05-08 21:02:40,141 - __main__ - DEBUG [3650490771.add_to_long_term:430] - [MemoryManager] 添加后长期记忆数量: 9
+2025-05-08 21:02:40,143 - __main__ - INFO [3650490771.execute_tool_calls:924] - [ToolExecutor] Action 'connect_components_tool' (ID: call_4_connect-co_399a) 执行完毕 (Attempt 1)。状态: success
+2025-05-08 21:02:40,145 - __main__ - DEBUG [3650490771.execute_tool_calls:964] - [ToolExecutor] 已记录工具 'call_4_connect-co_399a' 的最终执行结果 (状态: success).
+2025-05-08 21:02:40,146 - __main__ - INFO [3650490771.execute_tool_calls:987] - [ToolExecutor] 所有 4/4 个计划中的工具调用已处理 (可能因失败提前中止)。
+2025-05-08 21:02:40,147 - __main__ - INFO [3650490771.process_user_request:1490] - [Orchestrator - Action Phase] ToolExecutor 完成了 4/4 个工具执行尝试。
+2025-05-08 21:02:40,148 - __main__ - INFO [3650490771.process_user_request:1505] - 
+--- [观察阶段 - 尝试 2] 处理工具结果并更新记忆 ---
+2025-05-08 21:02:40,149 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 9
+2025-05-08 21:02:40,149 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 10
+2025-05-08 21:02:40,150 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 10
+2025-05-08 21:02:40,151 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 11
+2025-05-08 21:02:40,152 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 11
+2025-05-08 21:02:40,153 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 12
+2025-05-08 21:02:40,154 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 12
+2025-05-08 21:02:40,155 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 13
+2025-05-08 21:02:40,156 - __main__ - INFO [3650490771.process_user_request:1530] - [Orchestrator - Observe] 4/4 个工具执行结果已添加至短期记忆。
+2025-05-08 21:02:40,157 - __main__ - INFO [3650490771.process_user_request:1547] - [Orchestrator - Observe] 所有已执行工具操作均成功 (或无工具执行)。流程成功。
+2025-05-08 21:02:40,158 - __main__ - INFO [3650490771.process_user_request:1667] - [Orchestrator] 流程成功完成。准备生成最终报告。
+2025-05-08 21:02:40,159 - __main__ - INFO [3650490771.process_user_request:1670] - 
+--- [响应生成 - 成功报告] 请求 LLM 总结成功结果 ---
+2025-05-08 21:02:40,161 - __main__ - DEBUG [3650490771.get_memory_context_for_prompt:443] - [MemoryManager] 正在格式化记忆上下文用于 Prompt...
+2025-05-08 21:02:40,162 - __main__ - DEBUG [3650490771.get_state_description:245] - [Circuit] 正在生成电路状态描述...
+2025-05-08 21:02:40,164 - __main__ - DEBUG [3650490771.get_state_description:270] - [Circuit] 电路状态描述生成完毕。
+2025-05-08 21:02:40,164 - __main__ - DEBUG [3650490771.get_memory_context_for_prompt:452] - [MemoryManager] 已提取最近 5 条长期记忆 (基础模式)。
+2025-05-08 21:02:40,165 - __main__ - DEBUG [3650490771.get_memory_context_for_prompt:457] - [MemoryManager] 记忆上下文 (电路+长期) 格式化完成。
+2025-05-08 21:02:40,166 - __main__ - INFO [3650490771.call_llm:505] - [LLMInterface] 准备异步调用 LLM (glm-4-flash-250414，自定义 JSON/无内置工具模式)...
+2025-05-08 21:02:40,168 - __main__ - DEBUG [3650490771.call_llm:506] - [LLMInterface] 发送的消息条数: 14
+2025-05-08 21:02:40,169 - __main__ - DEBUG [3650490771.call_llm:511] - [LLMInterface] 最新消息列表 (预览): 
+[
+  {
+    "role": "tool",
+    "content_preview": "{\"status\": \"success\", \"message\": \"操作成功: 已将元件 'R1' 与 'C1' 连接起来。\", \"data\": {\"connection\": [\"C1\", \"R1\"]..."
+  },
+  {
+    "role": "tool",
+    "content_preview": "{\"status\": \"success\", \"message\": \"操作成功: 已将元件 'C1' 与 'S1' 连接起来。\", \"data\": {\"connection\": [\"C1\", \"S1\"]..."
+  },
+  {
+    "role": "tool",
+    "content_preview": "{\"status\": \"success\", \"message\": \"操作成功: 已将元件 'S1' 与 'O1' 连接起来。\", \"data\": {\"connection\": [\"O1\", \"S1\"]..."
+  }
+]
+2025-05-08 21:02:40,172 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'POST']>
+2025-05-08 21:02:40,173 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-08 21:02:40,174 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'POST']>
+2025-05-08 21:02:40,176 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-08 21:02:40,178 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'POST']>
+2025-05-08 21:02:41,521 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Thu, 08 May 2025 13:03:37 GMT'), (b'Content-Type', b'application/json; charset=UTF-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'X-LOG-ID', b'202505082103362b2694933bdc4cce'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'Content-Encoding', b'gzip')])
+2025-05-08 21:02:41,522 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.started request=<Request [b'POST']>
+2025-05-08 21:02:41,523 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.complete
+2025-05-08 21:02:41,524 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.started
+2025-05-08 21:02:41,525 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.complete
+2025-05-08 21:02:41,527 - __main__ - INFO [3650490771.call_llm:526] - [LLMInterface] LLM 异步调用成功。耗时: 1.360 秒。
+2025-05-08 21:02:41,527 - __main__ - INFO [3650490771.call_llm:530] - [LLMInterface] Token 统计: Prompt=3289, Completion=53, Total=3342
+2025-05-08 21:02:41,528 - __main__ - INFO [3650490771.call_llm:533] - [LLMInterface] 完成原因: stop
+2025-05-08 21:02:41,528 - __main__ - INFO [3650490771.process_user_request:1681] - [Orchestrator] 第二次 LLM 调用完成 (生成成功报告)。
+2025-05-08 21:02:41,529 - __main__ - DEBUG [3650490771._parse_llm_text_content:766] - [OutputParser._parse_llm_text_content] 正在解析最终文本内容...
+2025-05-08 21:02:41,530 - __main__ - WARNING [3650490771._parse_llm_text_content:784] - [OutputParser._parse_llm_text_content] 未找到 <think>...</think> 标签。将整个内容视为正式回复，思考过程标记为提取失败。
+2025-05-08 21:02:41,530 - __main__ - DEBUG [3650490771._parse_llm_text_content:791] - [OutputParser._parse_llm_text_content] 解析结果 - 思考长度: 33, 回复长度: 157
+2025-05-08 21:02:41,531 - __main__ - DEBUG [3650490771.add_to_short_term:382] - [MemoryManager] 添加消息到短期记忆 (Role: assistant). 当前数量: 13
+2025-05-08 21:02:41,531 - __main__ - DEBUG [3650490771.add_to_short_term:421] - [MemoryManager] 添加后短期记忆数量: 14
+2025-05-08 21:02:41,532 - __main__ - INFO [3650490771.process_user_request:1698] - [Orchestrator] 已通过 LLM 生成操作成功的总结报告。
+2025-05-08 21:02:41,532 - __main__ - INFO [3650490771.process_user_request:1717] - 
+========================= V7.2 请求处理完毕 (总耗时: 29.016 秒) =========================
+
