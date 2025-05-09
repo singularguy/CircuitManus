@@ -1,4 +1,0 @@
-2025-05-08 23:29:38,597 - CircuitManusCore - INFO [CircuitManusCore.<module>:84] - Successfully configured file logging. Log messages will also be saved to: D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\agent_logs\agent_log_20250508_232938_596_P11952.log
-2025-05-08 23:29:38,602 - __main__ - INFO [server.<module>:41] - 静态文件目录 '/static' 挂载成功。
-2025-05-08 23:29:38,602 - __main__ - INFO [server.<module>:57] - 成功获取 ZHIPUAI_API_KEY 环境变量。
-2025-05-08 23:29:38,683 - __main__ - INFO [server.<module>:158] - 直接运行 server.py，启动 Uvicorn 开发服务器...
