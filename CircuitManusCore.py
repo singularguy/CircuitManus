@@ -586,7 +586,7 @@ class CircuitAgent:
     def __init__(self, api_key: str, model_name: str = "glm-4-flash-250414",
                  max_short_term_items: int = 25, max_long_term_items: int = 50,
                  planning_llm_retries: int = 5, max_tool_retries: int = 10,
-                 tool_retry_delay_seconds: float = 1.0, max_replanning_attempts: int = 2,
+                 tool_retry_delay_seconds: float = 1.0, max_replanning_attempts: int = 5,
                  verbose: bool = True):
         logger.info(f"\n{'='*30} CircuitAgent V7.2.3 初始化开始 (WebSocket 集成) {'='*30}")
         self.api_key = api_key
