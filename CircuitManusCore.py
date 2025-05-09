@@ -47,7 +47,7 @@ except RuntimeError:
     asyncio.set_event_loop(loop)
 
 # --- 日志系统配置 ---
-LOG_DIR = "agent_logs"
+LOG_DIR = "WebUIAgentLogs"
 try:
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
@@ -472,7 +472,7 @@ class OutputParser:
 
 # --- 模块化组件：ToolExecutor ---
 class ToolExecutor:
-    def __init__(self, agent_instance: 'CircuitAgent', max_tool_retries: int = 2, tool_retry_delay_seconds: float = 1.0):
+    def __init__(self, agent_instance: 'CircuitAgent', max_tool_retries: int = 5, tool_retry_delay_seconds: float = 1.0):
         logger.info("[ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止)。")
         if not isinstance(agent_instance, CircuitAgent): raise TypeError("ToolExecutor 需要一个 CircuitAgent 实例。")
         self.agent_instance = agent_instance
@@ -585,7 +585,7 @@ class ToolExecutor:
 class CircuitAgent:
     def __init__(self, api_key: str, model_name: str = "glm-4-flash-250414",
                  max_short_term_items: int = 25, max_long_term_items: int = 50,
-                 planning_llm_retries: int = 1, max_tool_retries: int = 2,
+                 planning_llm_retries: int = 5, max_tool_retries: int = 10,
                  tool_retry_delay_seconds: float = 1.0, max_replanning_attempts: int = 2,
                  verbose: bool = True):
         logger.info(f"\n{'='*30} CircuitAgent V7.2.3 初始化开始 (WebSocket 集成) {'='*30}")
@@ -1001,7 +1001,7 @@ class CircuitAgent:
         except Exception as e_process_request_top: # Catch-all for the entire process
             logger.critical(f"[Orchestrator] 处理用户请求 '{user_request[:100]}...' 时发生顶层未捕获异常: {e_process_request_top}", exc_info=True)
             error_message_for_user = f"抱歉，处理您的请求时发生了严重的内部错误 ({type(e_process_request_top).__name__})。请稍后再试或联系管理员。"
-            thinking_for_error = f"请求处理流程中发生顶层错误: {e_process_request_top}. Traceback: {traceback.format_exc()[:1000]}..." # Longer traceback for critical errors
+            thinking_for_error = f"请求处理流程中发生顶层错误: {e_process_request_top}. Traceback: {traceback.format_exc()[:-1]}..." # Longer traceback for critical errors
             await status_callback({"type": "status", "stage": "error", "status": "completed", "message": f"请求处理失败: {str(e_process_request_top)}", "details": {"error_type": type(e_process_request_top).__name__, "thinking": thinking_for_error}})
             await status_callback({"type": "final_response", "content": error_message_for_user})
         finally:

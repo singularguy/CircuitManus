@@ -18,7 +18,7 @@
 #     输出 JSON 而导致的规划失败。
 #
 # 重申 V7.2 的核心改进：
-# 1.  文件日志记录: 每次 Agent 运行时，所有日志输出都会被保存到 `agent_logs` 目录。
+# 1.  文件日志记录: 每次 Agent 运行时，所有日志输出都会被保存到 `WebUIAgentLogs` 目录。
 #
 # 重申 V7.1 的核心改进：
 # 1.  电路实体类 (`Circuit`): 封装电路状态。
@@ -63,7 +63,7 @@ except RuntimeError:
     asyncio.set_event_loop(loop)
 
 # --- 日志系统配置 ---
-LOG_DIR = "agent_logs"
+LOG_DIR = "WebUIAgentLogs"
 try:
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
