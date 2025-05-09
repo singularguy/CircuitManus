@@ -1,1 +1,6 @@
 zhipuai>=2.0.0 # 智谱 AI 官方 SDK，用于与模型交互和Function Calling
+fastapi
+uvicorn[standard] # [standard] 包含常用依赖如 websockets, http-tools
+zhipuai
+jinja2
+aiofiles

@@ -1,0 +1,6 @@
+2025-05-08 23:32:21,904 - CircuitManusCore - INFO [CircuitManusCore.<module>:84] - Successfully configured file logging. Log messages will also be saved to: D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\agent_logs\agent_log_20250508_233221_904_P29988.log
+2025-05-08 23:32:21,910 - __mp_main__ - INFO [server.<module>:42] - 静态文件目录 '/static' 挂载成功。
+2025-05-08 23:32:21,911 - __mp_main__ - INFO [server.<module>:58] - 成功获取 ZHIPUAI_API_KEY 环境变量。
+2025-05-08 23:32:21,991 - asyncio - DEBUG [selector_events.__init__:54] - Using selector: SelectSelector
+2025-05-08 23:32:22,042 - server - INFO [server.<module>:42] - 静态文件目录 '/static' 挂载成功。
+2025-05-08 23:32:22,044 - server - INFO [server.<module>:58] - 成功获取 ZHIPUAI_API_KEY 环境变量。

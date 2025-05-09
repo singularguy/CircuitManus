@@ -1,0 +1,92 @@
+2025-05-08 23:01:26,802 - __main__ - INFO [2265229530.<module>:84] - Successfully configured file logging. Log messages will also be saved to: d:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\agent_logs\agent_log_20250508_230126_800_P26188.log
+2025-05-08 23:01:26,822 - __main__ - INFO [2265229530.<module>:1599] - Jupyter/IPython (ZMQ) 环境检测到。建议用户使用 await run_agent_in_jupyter()。
+2025-05-08 23:01:26,862 - __main__ - INFO [2265229530.run_agent_in_jupyter:1576] - [Jupyter Setup] 控制台日志级别设置为: DEBUG
+2025-05-08 23:01:26,865 - __main__ - WARNING [2265229530.main:1469] - [Main] 忽略了无法识别的命令行参数: ['--f=c:\\Users\\26354\\AppData\\Roaming\\jupyter\\runtime\\kernel-v3aad93ec7be2050fb478a808ed353b743b407721e.json']
+2025-05-08 23:01:26,874 - __main__ - INFO [2265229530.main:1478] - [Main] 开始 Agent 初始化 (V7.2.2)...
+2025-05-08 23:01:26,878 - __main__ - INFO [2265229530.main:1479] - [Main] Verbose mode set to: True
+2025-05-08 23:01:26,880 - __main__ - INFO [2265229530.main:1492] - [Main] 已从环境变量 ZHIPUAI_API_KEY 获取 API Key。
+2025-05-08 23:01:26,882 - __main__ - INFO [2265229530.__init__:821] - 
+============================== Agent V7.2.2 初始化开始 (Async, Decorator Tools, File Logging, Enhanced Q&A, Verbose Switch) ==============================
+2025-05-08 23:01:26,885 - __main__ - INFO [2265229530.__init__:822] - [Agent Init] 正在启动电路设计助理 V7.2.2...
+2025-05-08 23:01:26,887 - __main__ - INFO [2265229530.__init__:831] - [Agent Init] 控制台日志级别设置为: DEBUG (Verbose=True)
+2025-05-08 23:01:26,889 - __main__ - INFO [2265229530.__init__:294] - [MemoryManager] 初始化记忆模块...
+2025-05-08 23:01:26,891 - __main__ - INFO [2265229530.__init__:134] - [Circuit] 初始化电路实体。
+2025-05-08 23:01:26,894 - __main__ - INFO [2265229530.__init__:141] - [Circuit] 电路实体初始化完成。
+2025-05-08 23:01:26,898 - __main__ - INFO [2265229530.__init__:303] - [MemoryManager] 记忆模块初始化完成。短期上限: 25 条, 长期上限: 50 条。
+2025-05-08 23:01:26,901 - __main__ - INFO [2265229530.__init__:363] - [LLMInterface] 初始化 LLM 接口，目标模型: glm-4-flash-250414
+2025-05-08 23:01:27,001 - __main__ - INFO [2265229530.__init__:372] - [LLMInterface] 智谱 AI 客户端初始化成功。
+2025-05-08 23:01:27,003 - __main__ - INFO [2265229530.__init__:379] - [LLMInterface] LLM 接口初始化完成 (Model: glm-4-flash-250414, Temp: 0.1, MaxTokens: 4095)。
+2025-05-08 23:01:27,004 - __main__ - INFO [2265229530.__init__:479] - [OutputParser] 初始化输出解析器 (用于自定义 JSON 和文本解析)。
+2025-05-08 23:01:27,006 - __main__ - INFO [2265229530.__init__:664] - [ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止)。
+2025-05-08 23:01:27,007 - __main__ - INFO [2265229530.__init__:675] - [ToolExecutor] 工具执行配置: 每个工具最多重试 2 次，重试间隔 0.5 秒。Verbose Mode: True
+2025-05-08 23:01:27,009 - __main__ - INFO [2265229530.__init__:852] - [Agent Init] 规划 LLM 调用失败时将重试 1 次。
+2025-05-08 23:01:27,010 - __main__ - INFO [2265229530.__init__:853] - [Agent Init] 工具执行失败后，最多允许重规划 2 次。
+2025-05-08 23:01:27,011 - __main__ - INFO [2265229530.__init__:856] - [Agent Init] 正在动态发现并注册已标记的工具...
+2025-05-08 23:01:27,013 - __main__ - INFO [2265229530.__init__:862] - [Agent Init] ✓ 已注册工具: 'add_component_tool'
+2025-05-08 23:01:27,015 - __main__ - INFO [2265229530.__init__:862] - [Agent Init] ✓ 已注册工具: 'clear_circuit_tool'
+2025-05-08 23:01:27,016 - __main__ - INFO [2265229530.__init__:862] - [Agent Init] ✓ 已注册工具: 'connect_components_tool'
+2025-05-08 23:01:27,017 - __main__ - INFO [2265229530.__init__:862] - [Agent Init] ✓ 已注册工具: 'describe_circuit_tool'
+2025-05-08 23:01:27,019 - __main__ - INFO [2265229530.__init__:868] - [Agent Init] 共发现并注册了 4 个工具。
+2025-05-08 23:01:27,020 - __main__ - DEBUG [2265229530.__init__:871] - [Agent Init] 工具注册表详情:
+{
+  "add_component_tool": {
+    "description": "添加一个新的电路元件 (如电阻, 电容, 电池, LED, 开关, 芯片, 地线等)。如果用户未指定 ID，会自动生成。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "component_type": {
+          "type": "string",
+          "description": "元件的类型 (例如: '电阻', 'LED')."
+        },
+        "component_id": {
+          "type": "string",
+          "description": "可选的用户指定 ID。"
+        },
+        "value": {
+          "type": "string",
+          "description": "可选的元件值 (例如: '1k', '10uF')."
+        }
+      },
+      "required": [
+        "component_type"
+      ]
+    }
+  },
+  "clear_circuit_tool": {
+    "description": "彻底清空当前的电路设计。",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "connect_components_tool": {
+    "description": "使用两个已存在元件的 ID 将它们连接起来。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "comp1_id": {
+          "type": "string",
+          "description": "第一个元件的 ID。"
+        },
+        "comp2_id": {
+          "type": "string",
+          "description": "第二个元件的 ID。"
+        }
+      },
+      "required": [
+        "comp1_id",
+        "comp2_id"
+      ]
+    }
+  },
+  "describe_circuit_tool": {
+    "description": "获取当前电路的详细描述。",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  }
+}
+2025-05-08 23:01:27,022 - __main__ - INFO [2265229530.__init__:874] - 
+============================== Agent V7.2.2 初始化成功 ==============================
+

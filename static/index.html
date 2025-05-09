@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDT Agent Pro - 智能交互终端</title>
+    <!-- 引入字体图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!-- 更新到较新版本 -->
+    <!-- 引入动画库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- 链接到你的 CSS 文件 -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- 页面加载动画 -->
+    <div class="loader-container" id="loader">
+        <div class="loader-logo">
+            <i class="fas fa-microchip fa-beat"></i>
+            <span>IDT Agent</span>
+        </div>
+        <div class="loader-progress-bar">
+            <div class="loader-progress"></div>
+        </div>
+        <p class="loading-text">系统模块加载中...</p>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="main-container" id="main-container">
+        <!-- 顶部导航栏 -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-brain fa-fade"></i></div> <!-- 更换图标并增加动效 -->
+                <h1>IDT Agent <span class="version-pro">Pro v8.0.0</span></h1>
+            </div>
+            <div class="header-buttons">
+                <button id="theme-toggle" class="header-btn" title="切换主题">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="clear-chat" class="header-btn" title="清空当前对话">
+                    <i class="fas fa-eraser"></i> <!-- 更换图标 -->
+                </button>
+                <button id="manage-sessions-toggle" class="header-btn" title="管理会话">
+                    <i class="fas fa-list-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 聊天界面 -->
+        <div class="chat-container">
+            <!-- 左侧功能选项栏 -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-main-actions">
+                    <button class="sidebar-button active" data-mode="chat" title="对话模式">
+                        <i class="fas fa-comments"></i>
+                        <span>对话</span>
+                    </button>
+                    <button class="sidebar-button" data-mode="code" title="编程助手">
+                        <i class="fas fa-laptop-code"></i>
+                        <span>编程</span>
+                    </button>
+                    <button class="sidebar-button" data-mode="circuit" title="电路设计">
+                        <i class="fas fa-microchip"></i> <!-- 和logo图标一致 -->
+                        <span>电路</span>
+                    </button>
+                    <button class="sidebar-button" data-mode="settings" title="打开设置">
+                        <i class="fas fa-sliders-h"></i> <!-- 更换图标 -->
+                        <span>设置</span>
+                    </button>
+                </div>
+
+                <!-- 会话管理区域 (可折叠) -->
+                <div class="session-manager" id="session-manager">
+                    <div class="session-manager-header" id="session-manager-toggle">
+                        <span><i class="fas fa-history"></i> 会话历史</span>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="session-list-container" id="session-list-container">
+                        <ul class="session-list" id="session-list">
+                            <!-- 会话列表项将在这里动态添加 -->
+                        </ul>
+                        <button id="create-new-session" class="new-session-btn" title="创建新会话">
+                            <i class="fas fa-plus-circle"></i> 新建对话
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 聊天区域 -->
+            <div class="chat-area">
+                <div class="chat-header" id="chat-header">
+                    <h2 id="current-session-name">默认会话</h2>
+                    <button id="edit-session-name-btn" class="icon-btn" title="编辑会话名称"><i class="fas fa-pencil-alt"></i></button>
+                </div>
+                <div class="chat-box" id="chat-box">
+                    <!-- 欢迎消息 (JS动态生成或保留) -->
+                    <div class="message system-message animate__animated animate__fadeInUp">
+                        <div class="message-content">
+                            <div class="welcome-header">
+                                <i class="fas fa-robot robot-icon animate__animated animate__pulse animate__infinite"></i>
+                                <h2>IDT 智能助手 Pro</h2>
+                            </div>
+                            <p>我是您的电路设计与编程高级助理 V8.0.0！随时为您效劳！</p>
+                            <div class="capabilities">
+                                <div class="capability"><i class="fas fa-bolt"></i><span>快速响应</span></div>
+                                <div class="capability"><i class="fas fa-brain"></i><span>深度分析</span></div>
+                                <div class="capability"><i class="fas fa-code-branch"></i><span>多任务处理</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文件上传预览区 -->
+                <div class="file-preview" id="file-preview">
+                    <div class="file-preview-header">
+                        <h3><i class="fas fa-paperclip"></i> 待上传文件</h3>
+                        <button id="close-preview" class="icon-btn" title="关闭预览"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="file-preview-content" id="file-preview-content"></div>
+                </div>
+
+                <!-- 输入区域 -->
+                <div class="input-area">
+                    <button id="attach-button" class="input-action-btn" title="添加附件">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <div class="input-wrapper">
+                        <textarea id="user-input" placeholder="请输入您的问题或指令... (Shift+Enter 换行)"></textarea>
+                        <div class="input-actions-overlay">
+                            <button id="mic-button" class="overlay-btn" title="语音输入 (开发中)">
+                                <i class="fas fa-microphone-alt"></i>
+                            </button>
+                             <span id="char-counter" class="char-counter">0/2000</span>
+                        </div>
+                    </div>
+                    <button id="send-button" class="send-button" title="发送消息">
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="send-icon">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                        </svg>
+                        <i class="fas fa-spinner fa-spin send-loading-icon" style="display: none;"></i>
+                    </button>
+                    <input type="file" id="file-input" multiple style="display: none">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示窗口容器 -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- 设置模态框 -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content animate__animated"> <!-- JS控制动画类 -->
+            <div class="modal-header">
+                <h2><i class="fas fa-cog fa-spin-pulse" style="--fa-animation-duration: 3s;"></i> 个性化设置</h2>
+                <button id="close-settings" class="icon-btn" title="关闭设置"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <h3><i class="fas fa-paint-brush"></i> 外观</h3>
+                    <div class="setting-item">
+                        <label for="theme-select">应用主题</label>
+                        <select id="theme-select">
+                            <option value="light">晨曦之光 (浅色)</option>
+                            <option value="dark">静谧之夜 (深色)</option>
+                            <option value="auto">智能感知 (跟随系统)</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="font-size">界面字号</label>
+                        <input type="range" id="font-size" min="12" max="20" value="16">
+                        <span id="font-size-value">16px</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="animation-level">动画效果</label>
+                        <select id="animation-level">
+                            <option value="full">完整效果</option>
+                            <option value="basic">基本效果</option>
+                            <option value="none">无动画</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h3><i class="fas fa-comment-alt"></i> 会话体验</h3>
+                    <div class="setting-item">
+                        <label for="auto-scroll">自动滚动至底部</label>
+                        <label class="switch"><input type="checkbox" id="auto-scroll" checked><span class="slider round"></span></label>
+                    </div>
+                    <div class="setting-item">
+                        <label for="sound-enabled">消息提示音 (待实现)</label>
+                        <label class="switch"><input type="checkbox" id="sound-enabled"><span class="slider round"></span></label>
+                    </div>
+                     <div class="setting-item">
+                        <label for="show-think-bubbles">显示助手思考过程</label>
+                        <label class="switch"><input type="checkbox" id="show-think-bubbles" checked><span class="slider round"></span></label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="reset-settings" class="secondary-btn">恢复默认</button>
+                <button id="save-settings" class="primary-btn"><i class="fas fa-save"></i> 保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 链接到你的 JavaScript 文件 -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
