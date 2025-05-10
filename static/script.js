@@ -1,6 +1,3 @@
-// 启用 JavaScript 严格模式，有助于捕捉常见错误，提高代码质量
-"use strict";
-
 // 当整个 HTML 文档加载完成并解析完毕后执行回调函数
 document.addEventListener('DOMContentLoaded', () => {
     // ======== DOM 元素获取 (集中管理，方便维护) ========
@@ -75,7 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ======== 应用状态与配置 ========
-    const APP_PREFIX = 'IDTAgentPro_v8.2.1_GlassUI_';
+    // VERSION UPDATE: APP_PREFIX changed to reflect V8.3.2 CamelCase Reasoning
+    const APP_PREFIX = 'IDTAgentPro_v8.3.2_CamelCaseReasoning_';
     let state = {
         sessions: {},
         currentSessionId: null,
@@ -95,13 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
         isProcessLogCollapsed: true,
         maxInputChars: 4000,
         currentClientRequestId: null,
-        // state.lastResponseThinking is NO LONGER the primary source for chat bubble thinking.
-        // We will directly use the thinking from the final_v8_1_json_if_success.
-        // lastResponseThinking will still be populated by handleThinkingLog for potential use in the process log if needed,
-        // but the chat bubble will rely on the 'thought_process' field from the final JSON.
-        lastResponseThinking: null,
+        lastResponseThinking: null, // This will store thinking log content for process log if needed
         autoSubmitQuickActions: true,
-        pendingToolCalls: {}
+        pendingToolCalls: {} // Keyed by toolCallId (camelCase)
     };
 
     // ======== WebSocket 相关 ========
@@ -119,7 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Attempting to connect WebSocket (Attempt ${wsReconnectAttempts + 1}): ${websocketUrl}`);
         if (dom.loader && wsReconnectAttempts === 0) {
             const loadingText = dom.loader.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = "Establishing secure link...";
+            // VERSION UPDATE: Loading text reflects V8.3.2
+            if (loadingText) loadingText.textContent = "Establishing secure link (V8.3.2 CamelCase Reasoning)...";
         }
 
         websocket = new WebSocket(websocketUrl);
@@ -127,10 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
         websocket.onopen = (event) => {
             console.log("WebSocket connection established", event);
             wsReconnectAttempts = 0;
-            showToast("Communication link active.", "success", 3000);
+            // VERSION UPDATE: Toast message reflects V8.3.2
+            showToast("Communication link active (V8.3.2 CamelCase Reasoning).", "success", 3000);
             sendWebSocketMessage({
                 type: 'init',
-                session_id: state.currentSessionId
+                session_id: state.currentSessionId // Backend will expect session_id
             });
         };
 
@@ -178,8 +174,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function sendWebSocketMessage(message) {
         if (websocket && websocket.readyState === WebSocket.OPEN) {
+            // Assuming backend expects snake_case keys for incoming messages like 'session_id', 'request_id'
+            // If backend also expects camelCase for *incoming* messages, this would need adjustment.
+            // For now, we assume the structure sent to backend remains with snake_case keys as per original.
             const messageStr = JSON.stringify(message);
-            console.log("WS TX:", message);
+            console.log("WS TX:", message); // Log the exact object being sent
             websocket.send(messageStr);
         } else {
             console.error("WebSocket connection not open. Cannot send message:", message);
@@ -195,14 +194,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleWebSocketMessage(message) {
+        // Assuming backend will send session_id, agent_available with snake_case keys for 'init_success'
+        // and 'type', 'message', 'details' also with snake_case.
+        // The primary change is for the 'final_response' and 'plan_details' type messages
+        // where the nested JSON payload (e.g., final_v8_3_2_camelcase_json_if_success) uses camelCase.
+
         switch (message.type) {
             case 'init_success':
+                // Assuming message.session_id and message.agent_available are sent as snake_case by backend
                 state.currentSessionId = message.session_id;
                 localStorage.setItem(APP_PREFIX + 'lastSessionId', state.currentSessionId);
 
+                // VERSION UPDATE: Agent status message reflects V8.3.2
                 const agentStatusMessage = message.agent_available === false
-                    ? 'Agent core module not loaded. Functionality limited.'
-                    : 'Communication link established. Agent ready!';
+                    ? 'Agent core module not loaded. Functionality limited. (V8.3.2)'
+                    : 'Communication link established. Agent (V8.3.2 CamelCase Reasoning) ready!';
                 const agentStatusType = message.agent_available === false ? 'warning' : 'success';
                 showToast(agentStatusMessage, agentStatusType, message.agent_available ? 4000 : 7000);
 
@@ -230,40 +236,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dom.loader) dom.loader.classList.add('hidden');
                 if (dom.mainContainer) dom.mainContainer.classList.add('loaded');
                 if (message.agent_available === false) {
-                    appendMessage("Apologies, the Agent's core module failed to load. I am unable to process your requests at this time.", 'error-system', false, null, false, [], "System Error");
+                     // VERSION UPDATE
+                    appendMessage("Apologies, the Agent's core module failed to load. I am unable to process your requests at this time. (V8.3.2)", 'error-system', false, null, false, [], "System Error");
                 }
                 setLoadingState(false);
                 break;
 
-            case 'error':
+            case 'error': // General server-side errors
                 console.error("Server-reported error:", message);
                 showToast(`Server error: ${message.message}`, 'error', 6000);
-                if (message.details) {
+                if (message.details) { // Assuming message.details is still snake_case or simple structure
                     appendMessage(`Server error (${message.message}): ${message.details}`, 'error-system', false, null, false, [], "Server Error");
                 }
                 setLoadingState(false);
                 break;
 
-            case 'general_status':
+            case 'general_status': // Assuming keys like stage, status, message, details remain snake_case from backend
                 handleGeneralStatus(message);
                 break;
-            case 'llm_communication_status':
+            case 'llm_communication_status': // Assuming keys like llm_phase, status, message, details remain snake_case
                 handleLlmCommStatus(message);
                 break;
-            case 'thinking_log':
+            case 'thinking_log': // Assuming keys like stage, content, llm_interaction_id remain snake_case
                 handleThinkingLog(message);
                 break;
-            case 'plan_details':
+            case 'plan_details': // This message's 'plan' array will contain objects with camelCase keys
                 handlePlanDetails(message);
                 break;
-            case 'tool_status_update':
+            case 'tool_status_update': // Assuming tool_call_id, tool_name, status, message, details remain snake_case
+                                     // for the top-level keys of this message type. The *content* of 'details' might
+                                     // need camelCase if it mirrors parts of the LLM's JSON output.
                 handleToolStatusUpdate(message);
                 break;
-            case 'interim_response':
+            case 'interim_response': // Assuming content, llm_interaction_id remain snake_case
                 handleInterimResponse(message);
                 break;
             case 'final_response':
-                handleFinalResponse(message); // This function will now handle showing thought_process from the final JSON
+                // KEY CHANGE: This function will now look for a key like `final_v8_3_2_camelcase_json_if_success`
+                // (or whatever the backend confirms) which contains the camelCased JSON.
+                // The top-level keys `content` and `llm_interaction_id` in the 'final_response' message itself
+                // are assumed to remain snake_case as sent by the Python WebSocket handler.
+                handleFinalResponse(message);
                 break;
 
             default:
@@ -272,8 +285,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleGeneralStatus(msg) {
+        // Assuming msg.stage, msg.status, msg.message, msg.details are snake_case from backend
         const { stage, status, message: msgText, details } = msg;
         let logIconClass = 'fas fa-info-circle log-info';
+        // Keep snake_case for CSS class consistency if these are directly used
         let logItemClasses = `type-general_status stage-${stage} status-${status}`;
 
         if (status === 'started' || status === 'llm_retry_needed' || status === 'llm_error_retrying') logIconClass = 'fas fa-spinner fa-spin log-info';
@@ -283,11 +298,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         else if (status === 'ignored') logIconClass = 'fas fa-eye-slash log-muted';
 
-        appendLogItem(msgText, logIconClass, logItemClasses, details);
+        appendLogItem(msgText, logIconClass, logItemClasses, details); // details here are top-level, might be snake_case
         if (state.isProcessLogVisible) showProcessLog(false);
     }
 
     function handleLlmCommStatus(msg) {
+        // Assuming msg.llm_phase, msg.status, msg.message, msg.details are snake_case
         const { llm_phase, status, message: msgText, details } = msg;
         let logIconClass = 'fas fa-brain log-info';
         let logItemClasses = `type-llm_communication_status phase-${llm_phase} status-${status}`;
@@ -296,19 +312,16 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (status === 'completed') logIconClass = 'fas fa-check log-success';
         else if (status === 'error') logIconClass = 'fas fa-exclamation-triangle log-error';
 
-        appendLogItem(msgText, logIconClass, logItemClasses, details);
+        appendLogItem(msgText, logIconClass, logItemClasses, details); // details here top-level, might be snake_case
         if (state.isProcessLogVisible) showProcessLog(false);
     }
 
     function handleThinkingLog(msg) {
-        const { stage, content, llm_interaction_id } = msg; // Added llm_interaction_id
-        // Store the thinking log, regardless of stage, if it's needed elsewhere (e.g. process log)
-        // This particular `state.lastResponseThinking` is now mostly for the process log.
-        // The chat bubble will get its thinking directly from the `final_v8_1_json_if_success.thought_process`.
-        if (content) { // Only update if content is non-empty
-            state.lastResponseThinking = content; // Store it for process log if needed
+        // Assuming msg.stage, msg.content, msg.llm_interaction_id are snake_case
+        const { stage, content, llm_interaction_id } = msg; // Renaming for clarity if backend sends llmInteractionId
+        if (content) {
+            state.lastResponseThinking = content;
         }
-
 
         if (state.showLogBubblesThink) {
             const thinkLabel = `Agent Thinking (${stage.replace(/_/g, ' ')})`;
@@ -320,27 +333,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handlePlanDetails(msg) {
-        const { plan } = msg;
-        state.pendingToolCalls = {};
-        plan.forEach(toolCall => {
-            state.pendingToolCalls[toolCall.tool_call_id] = {
-                name: toolCall.tool_name,
-                args_summary: summarizeArguments(toolCall.tool_arguments),
-                ui_hints: toolCall.ui_hints || {},
-                order: toolCall.order
+        // CORE CHANGE: The `plan` array items are now expected to have camelCase keys
+        // e.g., toolCallId, toolName, toolArguments, uiHints, order.
+        const { plan } = msg; // `plan` is an array of objects
+        state.pendingToolCalls = {}; // Reset pending calls
+        plan.forEach(toolCall => { // toolCall is an object from the plan array
+            // Access using camelCase keys
+            const toolCallId = toolCall.toolCallId;
+            const toolName = toolCall.toolName;
+            const toolArguments = toolCall.toolArguments; // This is an object
+            const uiHints = toolCall.uiHints || {};     // This is an object
+            const order = toolCall.order;
+
+            state.pendingToolCalls[toolCallId] = { // Store with camelCase toolCallId as key
+                name: toolName,
+                args_summary: summarizeArguments(toolArguments), // summarizeArguments can handle any object
+                ui_hints: uiHints,
+                order: order
             };
-            const displayName = toolCall.ui_hints?.display_name_for_tool || toolCall.tool_name;
+            const displayName = uiHints.displayNameForTool || toolName;
             appendLogItem(
-                `Plan item #${toolCall.order}: ${displayName} (ID: ${toolCall.tool_call_id}) - Status: Pending`,
+                `Plan item #${order}: ${displayName} (ID: ${toolCallId}) - Status: Pending`,
                 'fas fa-list-check log-info',
-                `type-plan_details tool-${toolCall.tool_name} status-pending`,
-                { arguments: toolCall.tool_arguments, tool_call_id: toolCall.tool_call_id }
+                `type-plan_details tool-${toolName} status-pending`,
+                { arguments: toolArguments, tool_call_id: toolCallId } // For log details, use camelCase if it mirrors LLM
             );
         });
         if (state.isProcessLogVisible) showProcessLog(true);
     }
 
     function handleToolStatusUpdate(msg) {
+        // Assuming top-level keys here (tool_call_id, tool_name, status, message, details) are snake_case
+        // If backend changes these to camelCase, update here.
         const { tool_call_id, tool_name, status, message: msgText, details } = msg;
         let logIconClass = 'fas fa-cog log-info';
         let itemStatusClass = `status-${status}`;
@@ -358,8 +382,11 @@ document.addEventListener('DOMContentLoaded', () => {
             itemStatusClass = 'status-aborted';
         }
 
-        const pendingToolInfo = state.pendingToolCalls[tool_call_id];
-        const displayName = pendingToolInfo?.ui_hints?.display_name_for_tool || tool_name;
+        // IMPORTANT: `state.pendingToolCalls` is keyed by `toolCallId` (camelCase) from `handlePlanDetails`.
+        // So, if `tool_call_id` from this message is snake_case, we need to be careful.
+        // Assuming backend sends `tool_call_id` matching the `toolCallId` in the plan.
+        const pendingToolInfo = state.pendingToolCalls[tool_call_id]; // Use as is, assuming consistency
+        const displayName = pendingToolInfo?.ui_hints?.displayNameForTool || tool_name;
         let fullLogMessage = `Tool: ${displayName} (ID: ${tool_call_id}) - ${status.replace(/_/g, ' ').toUpperCase()}: ${msgText}`;
 
         let existingLogItem = dom.processLogContent.querySelector(`.log-item[data-tool-call-id="${tool_call_id}"]`);
@@ -372,13 +399,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (messageEl) messageEl.textContent = fullLogMessage;
 
             let detailsEl = existingLogItem.querySelector('.log-item-details');
+            // The 'details' object from this message might also need camelCase parsing if it mirrors LLM JSON structure.
             if (details && Object.keys(details).length > 0) {
                 if (!detailsEl) {
                     detailsEl = document.createElement('div');
                     detailsEl.className = 'log-item-details';
                     existingLogItem.querySelector('.log-item-text-wrapper').appendChild(detailsEl);
                 }
-                const formattedDetailsHtml = formatLogDetails(details, 'tool_status_update', null, status);
+                const formattedDetailsHtml = formatLogDetails(details, 'tool_status_update', null, status); // formatLogDetails needs to handle camelCase if 'details' uses it
                 detailsEl.innerHTML = formattedDetailsHtml || '';
             } else if (detailsEl) {
                 detailsEl.innerHTML = '';
@@ -389,96 +417,93 @@ document.addEventListener('DOMContentLoaded', () => {
             existingLogItem.style.setProperty('--animate-duration', '0.5s');
 
         } else {
-            const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass}`, details);
+            const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass}`, details); // details to formatLogDetails
             if (logItemDiv) logItemDiv.dataset.toolCallId = tool_call_id;
         }
 
         if (state.isProcessLogVisible) showProcessLog(false);
 
         if (status === 'succeeded' || status === 'failed' || status === 'aborted_due_to_previous_failure') {
-            if (state.pendingToolCalls[tool_call_id]) {
+            if (state.pendingToolCalls[tool_call_id]) { // Assuming tool_call_id matches key
                 delete state.pendingToolCalls[tool_call_id];
             }
         }
     }
 
     function handleInterimResponse(msg) {
+        // Assuming msg.content, msg.llm_interaction_id are snake_case
         const { content, llm_interaction_id } = msg;
         appendLogItem(
             `Agent Intention: "${content.substring(0, 150)}${content.length > 150 ? '...' : ''}"`,
             'fas fa-bullhorn log-info',
             'type-agent_intention',
+            // Details here are simple, can remain snake_case for internal logging
             { llm_interaction_id: llm_interaction_id, full_content: content }
         );
         if (state.isProcessLogVisible) showProcessLog(false);
     }
 
-    // ==========================================================================================
-    // KEY CHANGE: handleFinalResponse now extracts thought_process from final_v8_1_json_if_success
-    // ==========================================================================================
     function handleFinalResponse(msg) {
         hideTypingIndicator();
         setLoadingState(false);
         state.currentClientRequestId = null;
-        state.pendingToolCalls = {};
+        state.pendingToolCalls = {}; // Clear pending calls on final response
 
-        const { content, llm_interaction_id, final_v8_1_json_if_success } = msg;
+        // Top-level keys from WebSocket message (assumed snake_case from Python backend)
+        const { content, llm_interaction_id } = msg; // content is the fallback/raw text. llm_interaction_id from the WS message.
+        
+        // CORE CHANGE: The actual structured JSON is now in a specific (camelCased) field.
+        // Let's assume backend sends it as `final_v8_3_2_camelcase_json_if_success`.
+        // If this key is different, it needs to be adjusted here.
+        const finalCamelCaseJson = msg.final_v8_3_2_camelcase_json_if_success; // Access the camelCased JSON object
 
         let thinkingForBubble = null;
-        let actualContentForBubble = content; // Default to the 'content' field from WebSocket message
+        let actualContentForBubble = content; // Fallback to raw content if JSON parsing fails
 
-        if (final_v8_1_json_if_success && final_v8_1_json_if_success.status === 'success') {
-            // Prioritize thought_process and content from the structured JSON
-            if (final_v8_1_json_if_success.thought_process) {
-                thinkingForBubble = final_v8_1_json_if_success.thought_process;
+        if (finalCamelCaseJson && finalCamelCaseJson.status === 'success') {
+            // All keys inside finalCamelCaseJson are camelCase as per V8.3.2 spec.
+            if (finalCamelCaseJson.thoughtProcess) { // This is from <think> block, placed by OutputParser
+                thinkingForBubble = finalCamelCaseJson.thoughtProcess;
             }
-            if (final_v8_1_json_if_success.decision &&
-                final_v8_1_json_if_success.decision.RESPONSE_TO_USER &&
-                final_v8_1_json_if_success.decision.RESPONSE_TO_USER.content) {
-                actualContentForBubble = final_v8_1_json_if_success.decision.RESPONSE_TO_USER.content;
+            if (finalCamelCaseJson.decision &&
+                finalCamelCaseJson.decision.responseToUser &&
+                finalCamelCaseJson.decision.responseToUser.content) { // Accessing camelCase keys
+                actualContentForBubble = finalCamelCaseJson.decision.responseToUser.content;
 
-                // Append suggestions if any
-                const suggestions = final_v8_1_json_if_success.decision.RESPONSE_TO_USER.suggestions_for_next_steps;
+                const suggestions = finalCamelCaseJson.decision.responseToUser.suggestionsForNextSteps; // camelCase key
                 if (suggestions && Array.isArray(suggestions) && suggestions.length > 0) {
                     let suggestionsText = "\n\n<div class=\"final-response-suggestions\"><strong>Next steps you might consider:</strong><ul>";
-                    suggestions.forEach(sugg => {
-                        if (sugg.text_for_user) {
-                             // Make suggestions clickable, similar to quick actions
-                            suggestionsText += `<li><a href="#" class="quick-action-btn" data-message="${sugg.text_for_user.replace(/"/g, '&quot;')}">${sugg.text_for_user}</a></li>`;
+                    suggestions.forEach(sugg => { // sugg object also uses camelCase keys
+                        if (sugg.textForUser) { // camelCase key
+                            // data-message should be safe for HTML attribute if it's plain text
+                            suggestionsText += `<li><a href="#" class="quick-action-btn" data-message="${sugg.textForUser.replace(/"/g, '&quot;')}">${sugg.textForUser}</a></li>`;
                         }
                     });
                     suggestionsText += "</ul></div>";
-                    actualContentForBubble += suggestionsText; // Append HTML for suggestions
-                     // Pass true for isHTML because we added HTML for suggestions
+                    actualContentForBubble += suggestionsText;
                     appendMessage(actualContentForBubble, 'agent', true, thinkingForBubble, false, [], null);
-
                 } else {
-                     // No suggestions, append as plain text (or Markdown if content implies it)
                     appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], null);
                 }
-
-            } else {
-                 // Fallback if RESPONSE_TO_USER.content is missing, but should not happen with V8.1.1
-                appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], "ContentMissingInJSON");
+            } else { // Content missing in the camelCase JSON structure
+                appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], "ContentMissingInV8_3_2_JSON");
             }
         } else {
-            // Handle cases where final_v8_1_json_if_success is not available or indicates failure
-            // The 'content' from the WebSocket message is the fallback from the server.
-            // Thinking might still be available from state.lastResponseThinking if a prior 'thinking_log' came for this.
+            // Fallback if finalCamelCaseJson is not available, indicates failure, or parsing failed.
             thinkingForBubble = state.lastResponseThinking; // Use cached thinking if any
-            appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], "ErrorResponseOrNoJSON");
+            appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], "ErrorResponseOrNo_V8_3_2_JSON");
         }
 
-
         addMessageToCurrentSession({
-            content: actualContentForBubble, // Store the content that was actually displayed
+            content: actualContentForBubble,
             sender: 'agent',
             timestamp: Date.now(),
-            isHTML: (final_v8_1_json_if_success?.decision?.RESPONSE_TO_USER?.suggestions_for_next_steps?.length > 0), // True if suggestions were added
-            rawResponseV8_1: final_v8_1_json_if_success,
-            thinking: thinkingForBubble, // Store the thinking that was displayed
+            isHTML: (finalCamelCaseJson?.decision?.responseToUser?.suggestionsForNextSteps?.length > 0), // check camelCase path
+            // Store the new camelCase JSON structure
+            rawResponseV8_3_2_CamelCase: finalCamelCaseJson,
+            thinking: thinkingForBubble,
         });
-        state.lastResponseThinking = null; // Clear cached thinking after use in chat bubble or if unused
+        state.lastResponseThinking = null; // Clear after use
 
         if (state.sessions[state.currentSessionId]) {
             state.sessions[state.currentSessionId].lastActivity = Date.now();
@@ -486,7 +511,9 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSessions();
         renderSessionList();
 
-        appendLogItem(`Agent final response delivered (LLM_ID: ${llm_interaction_id || 'N/A'})`, 'fas fa-flag-checkered log-success', 'type-final_response', final_v8_1_json_if_success ? { summary: actualContentForBubble.substring(0,100)+"..." } : { error_details: "Response generation indicated failure or missing JSON." });
+        // Log details can be the summary or the raw camelCased JSON (or parts of it)
+        const llmIdForLog = finalCamelCaseJson?.llmInteractionId || llm_interaction_id || 'N/A'; // Prefer ID from JSON
+        appendLogItem(`Agent final response delivered (LLM_ID: ${llmIdForLog})`, 'fas fa-flag-checkered log-success', 'type-final_response', finalCamelCaseJson ? { summary: actualContentForBubble.substring(0,100)+"...", raw_response: finalCamelCaseJson } : { error_details: "Response generation indicated failure or missing V8.3.2 JSON." });
         if (state.isProcessLogVisible) showProcessLog(true);
     }
 
@@ -504,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function summarizeArguments(argsObj) {
+    function summarizeArguments(argsObj) { // This function is generic, handles any object
         if (!argsObj || typeof argsObj !== 'object' || Object.keys(argsObj).length === 0) {
             return "(No args)";
         }
@@ -520,24 +547,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function parseItemClasses(itemClassesStr) {
+    function parseItemClasses(itemClassesStr) { // Generic helper
         const classes = itemClassesStr ? itemClassesStr.split(' ') : [];
         const parsed = { type: null, stage: null, status: null };
         classes.forEach(cls => {
             if (cls.startsWith('type-')) parsed.type = cls.substring(5);
             else if (cls.startsWith('stage-')) parsed.stage = cls.substring(6);
             else if (cls.startsWith('status-')) parsed.status = cls.substring(7);
-            else if (cls.startsWith('phase-')) parsed.stage = cls.substring(6);
+            else if (cls.startsWith('phase-')) parsed.stage = cls.substring(6); // Alias for stage
         });
         return parsed;
     }
 
     function formatLogDetails(details, type, stage, status) {
+        // This function now needs to be robust to keys being either snake_case (from older parts or direct Python)
+        // OR camelCase (from new LLM JSON structures or plan_details/tool_status_update if backend standardizes).
+        // For simplicity, we'll assume `details` passed here from `handlePlanDetails` or `handleToolStatusUpdate`
+        // might contain camelCased keys if they originate from the LLM's JSON.
+        // The formatting logic itself tries to make keys more readable.
         let html = '';
         const addDetailKeyValue = (key, value, indentLevel = 0) => {
             const sanitizedValue = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
             const paddingLeftStyle = `padding-left: ${indentLevel * 10}px;`;
-            const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+            // Convert both snake_case and camelCase to "Title Case With Spaces"
+            const formattedKey = key
+                .replace(/([A-Z])/g, " $1") // Add space before uppercase letters (for camelCase)
+                .replace(/_/g, ' ')        // Replace underscores (for snake_case)
+                .trim()
+                .replace(/\b\w/g, char => char.toUpperCase());
             return `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>${formattedKey}:</strong> <span>${sanitizedValue}</span></div>`;
         };
 
@@ -546,25 +583,37 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const key in obj) {
                 if (Object.prototype.hasOwnProperty.call(obj, key)) {
                     const value = obj[key];
-                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+                    const displayKey = key // Use original key for specific checks, then format for display
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/_/g, ' ')
+                        .trim()
+                        .replace(/\b\w/g, char => char.toUpperCase());
                     const paddingLeftStyle = `padding-left: ${indentLevel * 10}px;`;
 
-                    if (currentType === 'plan_details' && key === 'tool_call_id') continue;
+                    // Special handling based on original key (camelCase or snake_case)
+                    if ((type === 'plan_details' && key === 'toolCallId') || (type === 'tool_status_update' && key === 'tool_call_id')) continue; // Already in main log message
 
-                    if (key === 'ui_hints' && typeof value === 'object' && value !== null) {
-                        const dn = String(value.display_name_for_tool || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                        const ed = String(value.estimated_duration_category || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    if (key === 'uiHints' && typeof value === 'object' && value !== null) { // uiHints is camelCase
+                        const dn = String(value.displayNameForTool || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;"); // displayNameForTool is camelCase
+                        const ed = String(value.estimatedDurationCategory || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;"); // estimatedDurationCategory is camelCase
                         partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>UI Hints:</strong> <span>Display: ${dn}, Duration: ${ed}</span></div>`;
-                    } else if (key === 'result_data_preview' && typeof value === 'string') {
+                    } else if (key === 'result_data_preview' && typeof value === 'string') { // Assuming snake_case from _send_tool_status_update
                         let previewContent = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>Result Preview:</strong> <pre class="log-detail-preview-code"><code>${previewContent}</code></pre></div>`;
-                    } else if (currentType === 'plan_details' && key === 'arguments' && typeof value === 'object' && value !== null) {
+                    } else if ((type === 'plan_details' || type === 'tool_status_update') && key === 'arguments' && typeof value === 'object' && value !== null) { // 'arguments' in log, 'toolArguments' in LLM JSON
+                        let argItems = [];
+                        for (const argKey in value) { // argKey is from tool schema (e.g., component_type)
+                            const formattedArgKey = argKey.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+                            argItems.push(`<em>${formattedArgKey}</em>: ${String(value[argKey]).replace(/</g, "&lt;").replace(/>/g, "&gt;")}`);
+                        }
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>Arguments:</strong> <span>${argItems.join('; ')}</span></div>`;
+                    } else if (key === 'toolArguments' && typeof value === 'object' && value !== null) { // Explicitly for toolArguments from LLM JSON
                         let argItems = [];
                         for (const argKey in value) {
                             const formattedArgKey = argKey.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
                             argItems.push(`<em>${formattedArgKey}</em>: ${String(value[argKey]).replace(/</g, "&lt;").replace(/>/g, "&gt;")}`);
                         }
-                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>Arguments:</strong> <span>${argItems.join('; ')}</span></div>`;
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>Tool Arguments:</strong> <span>${argItems.join('; ')}</span></div>`;
                     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
                         partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>${displayKey}:</strong></div>`;
                         partHtml += formatRecursive(value, currentType, currentStage, currentStatus, indentLevel + 1);
@@ -575,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                         partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>${displayKey}:</strong> <span>[${arrayItems.join(', ')}]</span></div>`;
                     } else {
-                        partHtml += addDetailKeyValue(key, value, indentLevel);
+                        partHtml += addDetailKeyValue(key, value, indentLevel); // addDetailKeyValue handles formatting key
                     }
                 }
             }
@@ -607,16 +656,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const detailsEl = document.createElement('div');
             detailsEl.className = 'log-item-details';
             const { type, stage, status } = parseItemClasses(itemClasses);
+            // formatLogDetails will handle potential camelCase keys in `details`
             const formattedDetailsHtml = formatLogDetails(details, type, stage, status);
 
             if (formattedDetailsHtml) {
                 detailsEl.innerHTML = formattedDetailsHtml;
-            } else {
+            } else { // Fallback to raw JSON string if formatting returns nothing
                 try {
                     let detailsText = typeof details === 'object' ? JSON.stringify(details, null, 2) : String(details);
                     detailsEl.innerHTML = `<pre><code>${detailsText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
                 } catch (e) {
-                    detailsEl.textContent = String(details);
+                    detailsEl.textContent = String(details); // Fallback for unstringifiable objects
                 }
             }
             textWrapperEl.appendChild(detailsEl);
@@ -678,7 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function scrollToProcessLogBottom(instant = false) {
         if (!dom.processLogContent) return;
-        const container = dom.processLogContainer;
+        const container = dom.processLogContainer; // processLogContainer is the scrollable element
         const behavior = instant || state.animationLevel === 'none' ? 'auto' : 'smooth';
         container.scrollTo({ top: container.scrollHeight, behavior: behavior });
     }
@@ -686,7 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showProcessLog(ensureExpanded = false) {
         if (!dom.processLogContainer) return;
         state.isProcessLogVisible = true;
-        dom.processLogContainer.style.display = 'flex';
+        dom.processLogContainer.style.display = 'flex'; // It's a flex container
 
         if (state.animationLevel !== 'none' && !dom.processLogContainer.classList.contains('animate__fadeInDown')) {
             dom.processLogContainer.classList.remove('animate__fadeOutUp');
@@ -694,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.processLogContainer.style.setProperty('--animate-duration', '0.4s');
         }
         if (ensureExpanded && state.isProcessLogCollapsed) {
-            toggleProcessLogCollapse(false);
+            toggleProcessLogCollapse(false); // false means don't use instant animation for uncollapsing
         }
          localStorage.setItem(APP_PREFIX + 'isProcessLogVisible', state.isProcessLogVisible.toString());
     }
@@ -706,9 +756,10 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.processLogContainer.classList.remove('animate__fadeInDown');
             dom.processLogContainer.classList.add('animate__animated', 'animate__fadeOutUp');
             dom.processLogContainer.addEventListener('animationend', () => {
-                if (!state.isProcessLogVisible) {
+                if (!state.isProcessLogVisible) { // Check again in case state changed during animation
                     dom.processLogContainer.style.display = 'none';
                 }
+                // Always remove animation classes after it ends
                 dom.processLogContainer.classList.remove('animate__animated', 'animate__fadeOutUp');
             }, { once: true });
         } else {
@@ -716,7 +767,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem(APP_PREFIX + 'isProcessLogVisible', state.isProcessLogVisible.toString());
     }
-
 
     function toggleProcessLogCollapse(instant = false) {
         state.isProcessLogCollapsed = !state.isProcessLogCollapsed;
@@ -728,12 +778,12 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(APP_PREFIX + 'processLogCollapsed', state.isProcessLogCollapsed.toString());
 
         if (!instant && state.animationLevel !== 'none') {
+            // CSS handles transition for max-height and padding
             dom.processLogContainer.style.transition = 'max-height var(--transition-duration-long) var(--transition-timing-function-smooth), padding var(--transition-duration-long) var(--transition-timing-function-smooth)';
         } else {
-            dom.processLogContainer.style.transition = 'none';
+            dom.processLogContainer.style.transition = 'none'; // Apply instantly
         }
     }
-
 
     function updateProcessLogCollapseState(collapse, instant = false) {
         state.isProcessLogCollapsed = collapse;
@@ -743,12 +793,16 @@ document.addEventListener('DOMContentLoaded', () => {
             iconElement.className = state.isProcessLogCollapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
         }
         if (instant || state.animationLevel === 'none') {
+             // Temporarily disable transition for instant update
             if (dom.processLogContainer.style.transition !== 'none') dom.processLogContainer.style.transition = 'none';
         }
+        // If not instant, rely on existing CSS transitions (or default if none was set explicitly)
     }
 
+
     function initializeApp() {
-        console.log("IDT Agent Pro V8.2.1 GlassUI Initializing...");
+        // VERSION UPDATE: Log message reflects V8.3.2
+        console.log("IDT Agent Pro V8.3.2 CamelCase Reasoning Initializing...");
         updateLoaderProgress(10);
         loadSettings();
         updateLoaderProgress(25);
@@ -763,21 +817,23 @@ document.addEventListener('DOMContentLoaded', () => {
         adjustTextareaHeight();
         updateCharCounter();
         updateLoaderProgress(85);
-        updateSidebarState(state.isSidebarExpanded, true);
-        updateSessionManagerState(state.isSessionManagerCollapsed, true);
-        updateProcessLogCollapseState(state.isProcessLogCollapsed, true);
+        updateSidebarState(state.isSidebarExpanded, true); // true for instant
+        updateSessionManagerState(state.isSessionManagerCollapsed, true); // true for instant
+        updateProcessLogCollapseState(state.isProcessLogCollapsed, true); // true for instant
+
 
         if (localStorage.getItem(APP_PREFIX + 'isProcessLogVisible') === 'true') {
-            showProcessLog(true);
+            showProcessLog(true); // true to ensure expanded if visible
         } else {
             hideProcessLog();
         }
-        connectWebSocket();
-        updateLoaderProgress(95);
+        connectWebSocket(); // Starts WebSocket connection
+        updateLoaderProgress(95); // Almost done before WS fully connects
         setTimeout(() => {
             if (dom.loaderProgress) dom.loaderProgress.style.width = '100%';
-        }, 200);
-        console.log("IDT Agent Pro V8.2.1 GlassUI initialization sequence complete, awaiting WebSocket confirmation.");
+        }, 200); // Simulate final bit of loading
+        // VERSION UPDATE
+        console.log("IDT Agent Pro V8.3.2 CamelCase Reasoning initialization sequence complete, awaiting WebSocket confirmation.");
     }
 
     function updateLoaderProgress(percentage) {
@@ -785,13 +841,15 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.loaderProgress.style.width = `${percentage}%`;
         }
         const loadingTextEl = dom.loader.querySelector('.loading-text');
+        // VERSION UPDATE: Loader text reflects V8.3.2 and CamelCase Reasoning where appropriate
         if (loadingTextEl) {
-            if (percentage < 30) loadingTextEl.textContent = "Calibrating optical parameters...";
-            else if (percentage < 60) loadingTextEl.textContent = "Loading neural pathways...";
+            if (percentage < 30) loadingTextEl.textContent = "Calibrating camelCase reasoning circuits...";
+            else if (percentage < 60) loadingTextEl.textContent = "Loading cognitive models (V8.3.2)...";
             else if (percentage < 90) loadingTextEl.textContent = "Polishing interface clarity...";
-            else loadingTextEl.textContent = "Establishing ethereal link...";
+            else loadingTextEl.textContent = "Establishing ethereal link (V8.3.2)...";
         }
     }
+
 
     function setupEventListeners() {
         dom.sendButton.addEventListener('click', handleSendMessage);
@@ -815,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (state.isProcessLogVisible) {
                 hideProcessLog();
             } else {
-                showProcessLog(true);
+                showProcessLog(true); // true to ensure expanded if toggled on
             }
         });
 
@@ -838,10 +896,10 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.micButton.addEventListener('click', () => showToast('Voice input module under calibration...', 'info'));
 
         if (dom.openSettingsButton) dom.openSettingsButton.addEventListener('click', openSettingsModal);
-        if (dom.closeSettingsButton) dom.closeSettingsButton.addEventListener('click', () => closeSettingsModal(true));
+        if (dom.closeSettingsButton) dom.closeSettingsButton.addEventListener('click', () => closeSettingsModal(true)); // true to revert changes
         if (dom.saveSettingsButton) dom.saveSettingsButton.addEventListener('click', () => {
             collectAndSaveSettings();
-            closeSettingsModal(false);
+            closeSettingsModal(false); // false to not revert (changes were saved)
             showToast('Personalization parameters calibrated and saved!', 'success');
         });
         if (dom.resetSettingsButton) dom.resetSettingsButton.addEventListener('click', resetToDefaultSettings);
@@ -849,24 +907,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.fontSizeInput) dom.fontSizeInput.addEventListener('input', () => {
             const newSize = dom.fontSizeInput.value;
             if (dom.fontSizeValue) dom.fontSizeValue.textContent = `${newSize}px`;
-            document.body.style.fontSize = `${newSize}px`;
+            document.body.style.fontSize = `${newSize}px`; // Apply live preview
         });
         if (dom.animationLevelSelect) dom.animationLevelSelect.addEventListener('change', (e) => {
-            applyAnimationLevel(e.target.value);
+            applyAnimationLevel(e.target.value); // Apply live preview
         });
         if (dom.showChatBubblesThinkToggle) dom.showChatBubblesThinkToggle.addEventListener('change', (e) => {
-            state.showChatBubblesThink = e.target.checked;
+            state.showChatBubblesThink = e.target.checked; // Live update state
         });
         if (dom.showLogBubblesThinkToggle) dom.showLogBubblesThinkToggle.addEventListener('change', (e) => {
-            state.showLogBubblesThink = e.target.checked;
+            state.showLogBubblesThink = e.target.checked; // Live update state
+        });
+         if (dom.autoSubmitQuickActionsToggle) dom.autoSubmitQuickActionsToggle.addEventListener('change', (e) => {
+            state.autoSubmitQuickActions = e.target.checked; // Live update state
         });
 
+
         if (dom.settingsModal) dom.settingsModal.addEventListener('click', (e) => {
-            if (e.target === dom.settingsModal) closeSettingsModal(true);
+            if (e.target === dom.settingsModal) closeSettingsModal(true); // Close and revert if clicking outside content
         });
 
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (state.currentTheme === 'auto') applyCurrentTheme();
+            if (state.currentTheme === 'auto') applyCurrentTheme(); // Re-apply if in auto mode
         });
 
         if (dom.toggleProcessLogCollapseButton) dom.toggleProcessLogCollapseButton.addEventListener('click', () => toggleProcessLogCollapse());
@@ -903,12 +965,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetSessionId = sortedSessions[0].id;
             }
         }
-
+        
         if (!targetSessionId || !state.sessions[targetSessionId]) {
             targetSessionId = createNewSession(true);
         }
+        
         switchSession(targetSessionId, isInitialLoadOrConnect);
     }
+
 
     function createNewSession(isInitialCreation = false) {
         const newId = generateSessionId();
@@ -916,7 +980,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sessionCount = Object.keys(state.sessions).length + 1;
         state.sessions[newId] = {
             id: newId,
-            name: `Nebula Session ${sessionCount}`,
+            name: `Nebula Session ${sessionCount}`, // Default name
             messages: [],
             createdAt: now,
             lastActivity: now,
@@ -938,6 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fallbackId = createNewSession(true);
             state.currentSessionId = fallbackId;
             if (!isInitialLoadOrConnect) {
+                 // Assuming backend expects snake_case 'session_id'
                 sendWebSocketMessage({ type: 'init', session_id: fallbackId });
             }
             dom.chatBox.innerHTML = '';
@@ -949,14 +1014,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!isInitialLoadOrConnect && state.currentSessionId !== sessionId) {
             state.currentSessionId = sessionId;
+             // Assuming backend expects snake_case 'session_id'
             sendWebSocketMessage({ type: 'init', session_id: sessionId });
             dom.chatBox.innerHTML = '';
             appendMessage("Loading conversation echoes...", 'system-info', false, null, true, [], "System Loading");
             dom.currentSessionNameDisplay.textContent = state.sessions[sessionId]?.name || "Loading...";
             renderSessionList();
-            return;
+            return; 
         }
-
+        
         state.currentSessionId = sessionId;
         if (state.sessions[sessionId]) {
             state.sessions[sessionId].lastActivity = Date.now();
@@ -971,6 +1037,7 @@ document.addEventListener('DOMContentLoaded', () => {
             appendWelcomeMessage();
         } else {
             state.sessions[sessionId]?.messages.forEach(msg => {
+                // When loading messages, use the stored 'thinking' and 'rawResponse' (which might be V8.3.2 camelCase)
                 appendMessage(msg.content, msg.sender, msg.isHTML, msg.thinking, true, msg.attachments, msg.errorType);
             });
         }
@@ -1139,8 +1206,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 timestamp: m.timestamp || Date.now(),
                                 isHTML: m.isHTML || false,
                                 attachments: m.attachments || [],
-                                thinking: m.thinking || null, // This will be correctly populated or null
-                                rawResponseV8_1: m.rawResponseV8_1,
+                                thinking: m.thinking || null,
+                                // When loading, check for both old and new raw response keys
+                                rawResponseV8_1: m.rawResponseV8_1, // Old key for compatibility if loading old data
+                                rawResponseV8_3_2_CamelCase: m.rawResponseV8_3_2_CamelCase, // New key
                                 errorType: m.errorType,
                             })),
                             createdAt: s.createdAt || Date.now(),
@@ -1168,7 +1237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const duration = state.animationLevel === 'none' || instant ? 'none' : 'var(--transition-duration-long) var(--transition-timing-function-smooth)';
         dom.sidebar.style.transition = `width ${duration}, background-color ${duration}`;
-
+        
         localStorage.setItem(APP_PREFIX + 'sidebarExpanded', state.isSidebarExpanded.toString());
 
         if (!state.isSidebarExpanded && !state.isSessionManagerCollapsed) {
@@ -1180,10 +1249,10 @@ document.addEventListener('DOMContentLoaded', () => {
         state.isSessionManagerCollapsed = collapse;
         dom.sessionManager.classList.toggle('collapsed', state.isSessionManagerCollapsed);
         dom.sessionManagerToggle.setAttribute('aria-expanded', (!state.isSessionManagerCollapsed).toString());
-
+        
         const duration = state.animationLevel === 'none' || instant ? 'none' : 'var(--transition-duration-long) var(--transition-timing-function-smooth)';
         dom.sessionListContainer.style.transition = `max-height ${duration}, padding ${duration}`;
-
+        
         localStorage.setItem(APP_PREFIX + 'sessionManagerCollapsed', state.isSessionManagerCollapsed.toString());
     }
 
@@ -1212,7 +1281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setLoadingState(true);
         state.currentClientRequestId = generateClientRequestId();
-        state.lastResponseThinking = null; // Clear any cached thinking from previous turn
+        state.lastResponseThinking = null;
 
         const currentUserMessage = {
             content: messageText,
@@ -1245,6 +1314,7 @@ document.addEventListener('DOMContentLoaded', () => {
             backendMessageContent += `\n[User conceptually attached files: ${filesToSend.map(f => f.name).join(', ')}. Please process the text query based on these filenames.]`;
         }
 
+        // Assuming backend expects snake_case keys for 'message' type
         sendWebSocketMessage({
             type: 'message',
             session_id: state.currentSessionId,
@@ -1256,16 +1326,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addMessageToCurrentSession(messageObject) {
         if (state.sessions[state.currentSessionId]) {
-            // Ensure only agent messages store rawResponseV8_1 and thinking
             if (messageObject.sender !== 'agent') {
+                // For user messages, remove agent-specific raw response keys
                 delete messageObject.rawResponseV8_1;
-                delete messageObject.thinking; // User messages don't have agent thinking
-            } else {
-                 // For agent messages, ensure thinking is present if it should be.
-                 // If messageObject.thinking is undefined but should have been there, it might be an issue.
-                 // However, if it's intentionally null (e.g. error response without thinking), that's fine.
+                delete messageObject.rawResponseV8_3_2_CamelCase; // New key
+                delete messageObject.thinking;
             }
-
             if (!messageObject.errorType) {
                 delete messageObject.errorType;
             }
@@ -1276,18 +1342,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     function handleUserInputKeypress(event) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             handleSendMessage();
         }
     }
-
-    // ==========================================================================================
-    // KEY CHANGE: appendMessage now correctly handles rendering of thinking content
-    // The `thinkContent` parameter should be the actual thought_process string.
-    // The `isHTML` parameter is now more crucial if the main `content` includes HTML (like for suggestions).
-    // ==========================================================================================
+    
     function appendMessage(content, sender, isHTML = false, thinkContent = null, isSwitchingSession = false, attachments = [], errorType = null) {
         const messageDiv = document.createElement('div');
         const messageSenderClass = `message-${sender}`;
@@ -1328,20 +1390,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const messageContentWrapper = document.createElement('div');
         messageContentWrapper.classList.add('message-content-wrapper');
-
-        // Render thinking content if it exists and user wants to see it in chat bubbles
+        
         if (sender === 'agent' && thinkContent && state.showChatBubblesThink) {
             const thinkPrefixDiv = document.createElement('div');
             thinkPrefixDiv.classList.add('message-thought-prefix');
-            // Ensure thinkContent is treated as pre-formatted text, converting newlines
-            // And handling potential JSON blocks for better readability
-            let formattedThink = String(thinkContent).replace(/\n/g, '<br>'); // Ensure it's a string first
+            let formattedThink = String(thinkContent).replace(/\n/g, '<br>');
             const jsonBlockRegex = /```json([\s\S]*?)```/gi;
             formattedThink = formattedThink.replace(jsonBlockRegex, (match, jsonContentStr) => {
                 const trimmedJson = jsonContentStr.trim();
                 try {
                     const parsedJson = JSON.parse(trimmedJson);
-                    // Escape HTML within the stringified JSON
                     const escapedJsonString = JSON.stringify(parsedJson, null, 2)
                         .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     return `<pre class="embedded-json"><code>${escapedJsonString}</code></pre>`;
@@ -1359,11 +1417,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const textContentDiv = document.createElement('div');
         textContentDiv.classList.add('message-text-content');
 
-        if (isHTML) { // If content includes HTML (e.g., for suggestions with <a> tags)
+        if (isHTML) {
             textContentDiv.innerHTML = content;
         } else {
             const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-            const linkedContent = String(content) // Ensure content is a string
+            const linkedContent = String(content)
                 .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;").replace(/'/g, "&#039;")
                 .replace(/\n/g, '<br>')
@@ -1394,9 +1452,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         dom.chatBox.appendChild(messageDiv);
-        // Ensure quick actions within the new message (like from suggestions) get listeners
         attachQuickActionButtonListeners(messageDiv);
-
 
         if (!isSwitchingSession) {
             scrollToBottom();
@@ -1412,13 +1468,14 @@ document.addEventListener('DOMContentLoaded', () => {
             lastMessage.remove();
         }
 
+        // VERSION UPDATE: Welcome message reflects V8.3.2
         const welcomeHTML = `
             <div class="message-content">
                 <div class="welcome-header">
                     <i class="fas fa-atom robot-icon animate__animated animate__pulse animate__infinite" style="--animate-duration: 2.5s;"></i>
-                    <h2>IDT 智能助手 <span class="version-pro">Pro <span class="version-number">v8.2.1</span></span></h2>
+                    <h2>IDT 智能助手 <span class="version-pro">Pro <span class="version-number">v8.3.2</span></span></h2>
                 </div>
-                <p class="welcome-subtitle">Your advanced assistant for circuit design and programming. Ready to materialize your ideas.</p>
+                <p class="welcome-subtitle">Your advanced assistant for circuit design and programming, now with enhanced CamelCase Reasoning. Ready to materialize your ideas.</p>
                 <div class="capabilities">
                     <div class="capability"><i class="fas fa-bolt-lightning"></i><span>Rapid Analysis</span></div>
                     <div class="capability"><i class="fas fa-lightbulb"></i><span>Insightful Solutions</span></div>
@@ -1473,7 +1530,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const bubbleDiv = document.createElement('div');
         bubbleDiv.classList.add('message-bubble');
-
+        
         const contentWrapper = document.createElement('div');
         contentWrapper.classList.add('message-content-wrapper');
 
@@ -1482,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let dotsHTML = Array(3).fill('<span class="typing-dot"></span>').join('');
         textContent.innerHTML = `IDT Agent Pro is processing<span class="typing-dots">${dotsHTML}</span>`;
-
+        
         contentWrapper.appendChild(textContent);
         bubbleDiv.appendChild(contentWrapper);
         typingDiv.appendChild(avatarDiv);
@@ -1516,7 +1573,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxHeight = parseInt(getComputedStyle(dom.userInput).maxHeight, 10) || 200;
         const minHeight = parseInt(getComputedStyle(dom.userInput).minHeight, 10) || 48;
 
-        const singleLinePadding = 5;
+        const singleLinePadding = 5; 
         if (dom.userInput.value.split('\n').length <= 1) {
             scrollHeight += singleLinePadding;
         }
@@ -1645,6 +1702,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function closeFilePreview() {
         dom.filePreviewArea.classList.remove('active');
+        state.uploadedFiles = [];
+        dom.filePreviewContent.innerHTML = '';
     }
 
     function applyCurrentTheme() {
@@ -1760,11 +1819,13 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(dom.themeSelect.value);
         applyFontSize(dom.fontSizeInput.value);
         applyAnimationLevel(dom.animationLevelSelect.value);
+        
         state.autoScroll = dom.autoScrollToggle.checked;
         state.soundEnabled = dom.soundEnabledToggle.checked;
         state.showChatBubblesThink = dom.showChatBubblesThinkToggle.checked;
         state.showLogBubblesThink = dom.showLogBubblesThinkToggle.checked;
         state.autoSubmitQuickActions = dom.autoSubmitQuickActionsToggle.checked;
+
         saveSettings();
     }
 
@@ -1851,7 +1912,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.showChatBubblesThinkToggle) dom.showChatBubblesThinkToggle.checked = defaults.showChatBubblesThink;
         if (dom.showLogBubblesThinkToggle) dom.showLogBubblesThinkToggle.checked = defaults.showLogBubblesThink;
         if (dom.autoSubmitQuickActionsToggle) dom.autoSubmitQuickActionsToggle.checked = defaults.autoSubmitQuickActions;
-
+        
         dom.sidebarButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === defaults.currentMode));
         const sessionNameForPlaceholder = state.sessions[state.currentSessionId]?.name || 'current session';
         dom.userInput.placeholder = `Message in ${getModeDisplayName(defaults.currentMode)} mode (${sessionNameForPlaceholder})...`;
@@ -1862,7 +1923,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showToast(message, type = 'info', duration = 3500) {
         const toast = document.createElement('div');
-        toast.classList.add('toast', type, 'glass-effect'); // Added glass-effect
+        toast.classList.add('toast', type, 'glass-effect');
         const animIn = state.animationLevel !== 'none' ? 'animate__fadeInRight' : '';
         const animOut = state.animationLevel !== 'none' ? 'animate__fadeOutRight' : '';
 
@@ -1919,13 +1980,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initializeApp();
-    attachQuickActionButtonListeners(dom.chatBox);
+    attachQuickActionButtonListeners(dom.chatBox); 
 
-    // Apply glass effect to specified elements after DOM is ready
     [dom.appHeader, dom.sidebar, dom.inputArea, dom.processLogContainer, dom.settingsModal.querySelector('.modal-content'), dom.filePreviewArea]
     .forEach(el => {
         if (el) el.classList.add('glass-effect');
     });
 });
-
-

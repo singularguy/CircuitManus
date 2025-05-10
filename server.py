@@ -1,4 +1,3 @@
-# server.py
 import os
 import uuid
 import asyncio
@@ -29,15 +28,17 @@ except ImportError as e:
             self.verbose_mode = kwargs.get('verbose', False)
 
         async def process_user_request(self, user_request: str, status_callback: Callable[[Dict], Awaitable[None]] = None) -> None:
-            error_msg_content = "错误: 后端Agent核心模块未能加载,无法处理您的请求. 请联系管理员检查服务器日志. " # Removed <think> tag
+            # V8.3.0 - Fake agent error message does not need <think> tags.
+            error_msg_content = "错误: 后端Agent核心模块未能加载,无法处理您的请求. 请联系管理员检查服务器日志 (V8.3.0-Reasoning Fallback). "
             logger.error("假的Agent: 收到请求,返回错误信息. ")
             if status_callback:
-                 await status_callback({"type": "status", "stage": "error", "status": "completed", "message": "Agent核心模块未加载. ", "details": {"thinking": "Agent核心代码未加载"}})
+                 # This thinking detail is for the process log, not part of the user-facing message.
+                 await status_callback({"type": "status", "stage": "error", "status": "completed", "message": "Agent核心模块未加载. ", "details": {"thinking": "Agent核心代码未加载 (V8.3.0 Fallback)"}})
                  await status_callback({"type": "final_response", "content": error_msg_content})
 
 
 # --- FastAPI 应用实例 ---
-app = FastAPI(title="CircuitManus Agent API", version="1.0.0")
+app = FastAPI(title="CircuitManus Agent API - V8.3.0 Reasoning", version="1.3.0") # V8.3.0 Version Update
 
 # --- 挂载静态文件目录 ---
 try:
@@ -50,7 +51,7 @@ except RuntimeError as e:
 # --- Agent 实例和会话管理 ---
 agent_sessions: Dict[str, CircuitAgent] = {}
 agent_locks: Dict[str, asyncio.Lock] = {}
-active_websockets: Dict[str, WebSocket] = {} # Changed from ConnectionManager-like structure
+active_websockets: Dict[str, WebSocket] = {}
 
 # --- 获取 API Key ---
 API_KEY = os.environ.get("ZHIPUAI_API_KEY")
@@ -64,10 +65,11 @@ else:
 async def get_agent_instance(session_id: str) -> CircuitAgent:
     """根据会话 ID 获取或创建 Agent 实例. """
     if session_id not in agent_sessions:
-        logger.info(f"为 Session {session_id} 创建新的 Agent 实例...")
+        logger.info(f"为 Session {session_id} 创建新的 Agent 实例 (V8.3.0 Reasoning Model)...")
         if AGENT_AVAILABLE:
             try:
                 # Pass verbose=True for detailed logging from Agent to console/file
+                # Agent __init__ now defaults to glm-z1-flash
                 new_agent = CircuitAgent(api_key=API_KEY, verbose=True)
                 agent_sessions[session_id] = new_agent
                 agent_locks[session_id] = asyncio.Lock()
@@ -77,7 +79,7 @@ async def get_agent_instance(session_id: str) -> CircuitAgent:
                 raise RuntimeError(f"无法为会话 {session_id} 创建 Agent 实例: {e}") from e
         else:
              logger.warning(f"Agent 核心代码不可用,为 Session {session_id} 创建了一个假的 Agent 实例. ")
-             agent_sessions[session_id] = CircuitAgent(api_key=API_KEY, verbose=True)
+             agent_sessions[session_id] = CircuitAgent(api_key=API_KEY, verbose=True) # Fake agent
              agent_locks[session_id] = asyncio.Lock()
     return agent_sessions[session_id]
 
@@ -115,15 +117,15 @@ async def websocket_endpoint(websocket: WebSocket):
     """
     await websocket.accept()
     logger.info(f"WebSocket 连接已接受 (来自: {websocket.client.host}:{websocket.client.port}).")
-    session_id = None # Initialize session_id
-    agent_instance = None # Initialize agent_instance for the connection scope
+    session_id = None 
+    agent_instance = None
 
     try:
         async def send_status_update_to_client(status_data: Dict):
             """将Agent的状态信息通过WebSocket发送给当前连接的前端. """
-            nonlocal session_id # Ensure we are referring to the session_id of this connection
+            nonlocal session_id
             try:
-                logger.debug(f"SERVER SENDING TO CLIENT (Session {session_id if session_id else 'N/A'}): {json.dumps(status_data)}") # Log before sending
+                logger.debug(f"SERVER SENDING TO CLIENT (Session {session_id if session_id else 'N/A'}): {json.dumps(status_data)}")
                 await websocket.send_json(status_data)
             except WebSocketDisconnect:
                 logger.warning(f"尝试发送状态更新到 Session {session_id} 时WebSocket已断开. ")
@@ -149,12 +151,11 @@ async def websocket_endpoint(websocket: WebSocket):
                     active_websockets[session_id] = websocket
                     
                     try:
-                        agent_instance = await get_agent_instance(session_id) # Get or create Agent for this session
-                        # lock is now managed inside get_agent_instance or get_session_lock
+                        agent_instance = await get_agent_instance(session_id)
                         await websocket.send_json({
                             "type": "init_success",
                             "session_id": session_id,
-                            "message": "WebSocket连接建立成功,Agent已准备就绪. ",
+                            "message": "WebSocket连接建立成功,Agent (V8.3.0 Reasoning Model)已准备就绪. ", # V8.3.0 Version Update
                             "agent_available": AGENT_AVAILABLE
                         })
                         logger.info(f"Session {session_id} WebSocket初始化成功并发送确认. ")
@@ -162,14 +163,14 @@ async def websocket_endpoint(websocket: WebSocket):
                          logger.error(f"Session {session_id} Agent初始化失败: {e_init_agent}", exc_info=True)
                          await websocket.send_json({
                              "type": "init_error",
-                             "session_id": session_id, # Send session_id even on error for client context
+                             "session_id": session_id,
                              "message": f"Agent初始化失败: {str(e_init_agent)}",
-                             "agent_available": AGENT_AVAILABLE # Reflect actual availability
+                             "agent_available": AGENT_AVAILABLE
                          })
-                         await websocket.close(code=1011) # Internal server error
-                         break # Exit message receiving loop
+                         await websocket.close(code=1011)
+                         break
 
-                elif msg_type == "message" and session_id and agent_instance: # Ensure session_id and agent_instance are set
+                elif msg_type == "message" and session_id and agent_instance:
                     user_message_content = message.get("content")
                     if not user_message_content:
                          logger.warning(f"Session {session_id} 收到空消息内容. ")
@@ -183,7 +184,6 @@ async def websocket_endpoint(websocket: WebSocket):
                         logger.info(f"Session {session_id} 获取到锁,开始处理消息...")
                         start_time = time.monotonic()
                         try:
-                            # process_user_request now sends all data via status_callback
                             await agent_instance.process_user_request(user_message_content, status_callback=send_status_update_to_client)
                             duration = time.monotonic() - start_time
                             logger.info(f"Session {session_id} 消息处理流程调用完成,耗时: {duration:.3f} 秒. ")
@@ -192,9 +192,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         except Exception as e_process:
                             logger.error(f"Session {session_id} 消息处理时发生内部顶层错误: {e_process}", exc_info=True)
                             error_details_str = str(e_process)
-                            # Send a structured error status
                             await send_status_update_to_client({"type": "status", "stage": "processing", "status": "error", "message": "处理过程中发生未预期错误. ", "details": {"error_type": type(e_process).__name__, "error_message": error_details_str, "thinking": f"处理消息时发生错误: {error_details_str}"}})
-                            # And a final_response with user-friendly error
                             final_err_content_process = f"抱歉,处理您的消息时服务器内部发生了错误. "
                             await send_status_update_to_client({"type": "final_response", "content": final_err_content_process})
                         finally:
@@ -205,7 +203,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 elif msg_type:
                     logger.warning(f"Session {session_id} 收到未知消息类型: {msg_type}")
-                    if websocket.client_state.name == "CONNECTED": # Check if still connected
+                    if websocket.client_state.name == "CONNECTED":
                         await websocket.send_json({"type": "error", "message": f"服务器收到未知消息类型: {msg_type}"})
 
             except json.JSONDecodeError:
@@ -228,9 +226,9 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.info(f"Session {session_id or '未知'} WebSocket连接已断开 (在外部捕获): code={e_ws_disconnect.code}, reason='{e_ws_disconnect.reason}'")
     except Exception as e_websocket_main:
         logger.critical(f"Session {session_id or '未知'} WebSocket连接处理发生顶层未预期异常: {e_websocket_main}", exc_info=True)
-        if websocket.client_state.name == "CONNECTED": # Check enum name for comparison
-            try: await websocket.close(code=1011) # Internal server error
-            except Exception: pass # Ignore errors during close
+        if websocket.client_state.name == "CONNECTED":
+            try: await websocket.close(code=1011)
+            except Exception: pass
     finally:
         if session_id and session_id in active_websockets:
             del active_websockets[session_id]
@@ -241,14 +239,12 @@ async def websocket_endpoint(websocket: WebSocket):
 # --- 用于直接运行服务器进行测试 ---
 if __name__ == "__main__":
     import uvicorn
-    # from uvicorn.config import LOGGING_CONFIG # Can be omitted for default
-
-    logger.info("直接运行 server.py,启动 Uvicorn 开发服务器...")
+    logger.info("直接运行 server.py,启动 Uvicorn 开发服务器 (V8.3.0 Reasoning)...") # V8.3.0 Version Update
 
     uvicorn.run(
         "server:app",
-        host="127.0.0.1", # Or "0.0.0.0" for broader access
+        host="127.0.0.1",
         port=8000,
-        reload=True,      # Set to False in production
-        log_level="debug" # For very detailed Uvicorn and FastAPI logs
+        reload=True,
+        log_level="debug"
     )
