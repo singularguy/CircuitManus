@@ -1,0 +1,70 @@
+2025-05-10 09:54:32,350 - CircuitManusCore - INFO [CircuitManusCore.<module>:81] - Successfully configured file logging. Log messages will also be saved to: D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\WebUIAgentLogs\agent_log_20250510_095432_349_P21184.log
+2025-05-10 09:54:32,353 - __mp_main__ - INFO [server.<module>:24] - CircuitAgentV8_WS 模块导入成功。
+2025-05-10 09:54:32,355 - __mp_main__ - INFO [server.<module>:76] - 静态文件目录 'D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\static' 挂载成功。
+2025-05-10 09:54:32,355 - __mp_main__ - INFO [server.<module>:94] - 成功获取 ZHIPUAI_API_KEY 环境变量。
+2025-05-10 09:54:32,424 - asyncio - DEBUG [selector_events.__init__:54] - Using selector: SelectSelector
+2025-05-10 09:54:32,518 - server - INFO [server.<module>:24] - CircuitAgentV8_WS 模块导入成功。
+2025-05-10 09:54:32,519 - server - INFO [server.<module>:76] - 静态文件目录 'D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\static' 挂载成功。
+2025-05-10 09:54:32,519 - server - INFO [server.<module>:94] - 成功获取 ZHIPUAI_API_KEY 环境变量。
+2025-05-10 09:54:38,315 - server - INFO [server.read_root:150] - 请求根路径 '/'，尝试提供 static/index.html。
+2025-05-10 09:54:47,452 - server - INFO [server.websocket_endpoint:180] - WebSocket 连接已接受 (来自: 127.0.0.1:9807).
+2025-05-10 09:54:47,481 - server - DEBUG [server.websocket_endpoint:230] - SERVER RECEIVED FROM CLIENT (Session session_b5471b6e-41b1-4a5c-8f7d-deecfae0c906, Type: init): {'type': 'init', 'session_id': 'session_b5471b6e-41b1-4a5c-8f7d-deecfae0c906', 'verbose': True}...
+2025-05-10 09:54:47,484 - server - INFO [server.websocket_endpoint:238] - WebSocket 'init' 消息，使用客户端提供的 session_id: session_b5471b6e-41b1-4a5c-8f7d-deecfae0c906 (Verbose: True)
+2025-05-10 09:54:47,484 - server - INFO [server.get_agent_instance:101] - 为 Session session_b5471b6e-41b1-4a5c-8f7d-deecfae0c906 创建新的 AgentV8_WS 实例...
+2025-05-10 09:54:47,485 - CircuitManusCore - INFO [CircuitManusCore.__init__:612] - 
+============================== CircuitAgentV8_WS 初始化开始 (V8.0.2 Core, WebSocket) ==============================
+2025-05-10 09:54:47,486 - CircuitManusCore - INFO [CircuitManusCore.__init__:617] - [AgentV8_WS Init] Agent verbose_mode (for callbacks): True
+2025-05-10 09:54:47,486 - CircuitManusCore - INFO [CircuitManusCore.__init__:232] - [MemoryManager] 初始化记忆模块...
+2025-05-10 09:54:47,487 - CircuitManusCore - INFO [CircuitManusCore.__init__:113] - [Circuit] 初始化电路实体。
+2025-05-10 09:54:47,489 - CircuitManusCore - INFO [CircuitManusCore.__init__:120] - [Circuit] 电路实体初始化完成。
+2025-05-10 09:54:47,489 - CircuitManusCore - INFO [CircuitManusCore.__init__:239] - [MemoryManager] 记忆模块初始化完成。短期上限: 25 条, 长期上限: 50 条。
+2025-05-10 09:54:47,490 - CircuitManusCore - INFO [CircuitManusCore.__init__:288] - [LLMInterface] 初始化 LLM 接口，目标模型: glm-4-flash-250414
+2025-05-10 09:54:47,624 - CircuitManusCore - INFO [CircuitManusCore.__init__:296] - [LLMInterface] 智谱 AI 客户端初始化成功。
+2025-05-10 09:54:47,625 - CircuitManusCore - INFO [CircuitManusCore.__init__:303] - [LLMInterface] LLM 接口初始化完成 (Model: glm-4-flash-250414, Temp: 0.05, MaxTokens: 8190)。
+2025-05-10 09:54:47,625 - CircuitManusCore - INFO [CircuitManusCore.__init__:365] - [OutputParserV8] 初始化输出解析器 (适配全新V8 JSON结构)。
+2025-05-10 09:54:47,626 - CircuitManusCore - INFO [CircuitManusCore.__init__:489] - [ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止)。
+2025-05-10 09:54:47,627 - CircuitManusCore - INFO [CircuitManusCore.__init__:498] - [ToolExecutor] 工具执行配置: 每个工具最多重试 2 次，重试间隔 1.5 秒。Verbose Mode: True
+2025-05-10 09:54:47,628 - CircuitManusCore - INFO [CircuitManusCore.__init__:632] - [AgentV8_WS Init] 规划LLM重试: 3, 工具重试: 2, 重规划尝试: 2
+2025-05-10 09:54:47,628 - CircuitManusCore - INFO [CircuitManusCore.__init__:634] - [AgentV8_WS Init] 正在动态发现并注册工具...
+2025-05-10 09:54:47,629 - CircuitManusCore - INFO [CircuitManusCore.__init__:639] - [AgentV8_WS Init] ✓ 已注册工具: 'add_component_tool'
+2025-05-10 09:54:47,630 - CircuitManusCore - INFO [CircuitManusCore.__init__:639] - [AgentV8_WS Init] ✓ 已注册工具: 'clear_circuit_tool'
+2025-05-10 09:54:47,630 - CircuitManusCore - INFO [CircuitManusCore.__init__:639] - [AgentV8_WS Init] ✓ 已注册工具: 'connect_components_tool'
+2025-05-10 09:54:47,630 - CircuitManusCore - INFO [CircuitManusCore.__init__:639] - [AgentV8_WS Init] ✓ 已注册工具: 'describe_circuit_tool'
+2025-05-10 09:54:47,631 - CircuitManusCore - INFO [CircuitManusCore.__init__:642] - [AgentV8_WS Init] 共注册了 4 个工具。
+2025-05-10 09:54:47,631 - CircuitManusCore - INFO [CircuitManusCore.__init__:643] - 
+============================== CircuitAgentV8_WS 初始化成功 ==============================
+
+2025-05-10 09:54:47,632 - server - INFO [server.get_agent_instance:114] - AgentV8_WS 实例为 Session session_b5471b6e-41b1-4a5c-8f7d-deecfae0c906 创建成功 (Verbose: True)。
+2025-05-10 09:54:47,632 - server - DEBUG [server.send_status_update_to_client:210] - SERVER SENDING TO CLIENT (Session session_b5471b6e-41b1-4a5c-8f7d-deecfae0c906, Type: init_success): WebSocket连接建立成功，Agent V8核心已准备就绪。...
+2025-05-10 09:54:47,633 - server - INFO [server.websocket_endpoint:257] - Session session_b5471b6e-41b1-4a5c-8f7d-deecfae0c906 WebSocket初始化成功并发送确认。
+2025-05-10 09:54:56,523 - server - INFO [server.read_root:150] - 请求根路径 '/'，尝试提供 static/index.html。
+2025-05-10 09:54:58,253 - server - INFO [server.websocket_endpoint:180] - WebSocket 连接已接受 (来自: 127.0.0.1:9832).
+2025-05-10 09:54:58,295 - server - DEBUG [server.websocket_endpoint:230] - SERVER RECEIVED FROM CLIENT (Session session_ba9402af-98aa-4c8d-9e0a-2cb6e0674781, Type: init): {'type': 'init', 'session_id': 'session_ba9402af-98aa-4c8d-9e0a-2cb6e0674781', 'verbose': True}...
+2025-05-10 09:54:58,296 - server - INFO [server.websocket_endpoint:238] - WebSocket 'init' 消息，使用客户端提供的 session_id: session_ba9402af-98aa-4c8d-9e0a-2cb6e0674781 (Verbose: True)
+2025-05-10 09:54:58,298 - server - INFO [server.get_agent_instance:101] - 为 Session session_ba9402af-98aa-4c8d-9e0a-2cb6e0674781 创建新的 AgentV8_WS 实例...
+2025-05-10 09:54:58,300 - CircuitManusCore - INFO [CircuitManusCore.__init__:612] - 
+============================== CircuitAgentV8_WS 初始化开始 (V8.0.2 Core, WebSocket) ==============================
+2025-05-10 09:54:58,304 - CircuitManusCore - INFO [CircuitManusCore.__init__:617] - [AgentV8_WS Init] Agent verbose_mode (for callbacks): True
+2025-05-10 09:54:58,307 - CircuitManusCore - INFO [CircuitManusCore.__init__:232] - [MemoryManager] 初始化记忆模块...
+2025-05-10 09:54:58,310 - CircuitManusCore - INFO [CircuitManusCore.__init__:113] - [Circuit] 初始化电路实体。
+2025-05-10 09:54:58,311 - CircuitManusCore - INFO [CircuitManusCore.__init__:120] - [Circuit] 电路实体初始化完成。
+2025-05-10 09:54:58,312 - CircuitManusCore - INFO [CircuitManusCore.__init__:239] - [MemoryManager] 记忆模块初始化完成。短期上限: 25 条, 长期上限: 50 条。
+2025-05-10 09:54:58,312 - CircuitManusCore - INFO [CircuitManusCore.__init__:288] - [LLMInterface] 初始化 LLM 接口，目标模型: glm-4-flash-250414
+2025-05-10 09:54:58,378 - CircuitManusCore - INFO [CircuitManusCore.__init__:296] - [LLMInterface] 智谱 AI 客户端初始化成功。
+2025-05-10 09:54:58,379 - CircuitManusCore - INFO [CircuitManusCore.__init__:303] - [LLMInterface] LLM 接口初始化完成 (Model: glm-4-flash-250414, Temp: 0.05, MaxTokens: 8190)。
+2025-05-10 09:54:58,379 - CircuitManusCore - INFO [CircuitManusCore.__init__:365] - [OutputParserV8] 初始化输出解析器 (适配全新V8 JSON结构)。
+2025-05-10 09:54:58,380 - CircuitManusCore - INFO [CircuitManusCore.__init__:489] - [ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止)。
+2025-05-10 09:54:58,380 - CircuitManusCore - INFO [CircuitManusCore.__init__:498] - [ToolExecutor] 工具执行配置: 每个工具最多重试 2 次，重试间隔 1.5 秒。Verbose Mode: True
+2025-05-10 09:54:58,381 - CircuitManusCore - INFO [CircuitManusCore.__init__:632] - [AgentV8_WS Init] 规划LLM重试: 3, 工具重试: 2, 重规划尝试: 2
+2025-05-10 09:54:58,381 - CircuitManusCore - INFO [CircuitManusCore.__init__:634] - [AgentV8_WS Init] 正在动态发现并注册工具...
+2025-05-10 09:54:58,382 - CircuitManusCore - INFO [CircuitManusCore.__init__:639] - [AgentV8_WS Init] ✓ 已注册工具: 'add_component_tool'
+2025-05-10 09:54:58,382 - CircuitManusCore - INFO [CircuitManusCore.__init__:639] - [AgentV8_WS Init] ✓ 已注册工具: 'clear_circuit_tool'
+2025-05-10 09:54:58,383 - CircuitManusCore - INFO [CircuitManusCore.__init__:639] - [AgentV8_WS Init] ✓ 已注册工具: 'connect_components_tool'
+2025-05-10 09:54:58,383 - CircuitManusCore - INFO [CircuitManusCore.__init__:639] - [AgentV8_WS Init] ✓ 已注册工具: 'describe_circuit_tool'
+2025-05-10 09:54:58,383 - CircuitManusCore - INFO [CircuitManusCore.__init__:642] - [AgentV8_WS Init] 共注册了 4 个工具。
+2025-05-10 09:54:58,384 - CircuitManusCore - INFO [CircuitManusCore.__init__:643] - 
+============================== CircuitAgentV8_WS 初始化成功 ==============================
+
+2025-05-10 09:54:58,384 - server - INFO [server.get_agent_instance:114] - AgentV8_WS 实例为 Session session_ba9402af-98aa-4c8d-9e0a-2cb6e0674781 创建成功 (Verbose: True)。
+2025-05-10 09:54:58,385 - server - DEBUG [server.send_status_update_to_client:210] - SERVER SENDING TO CLIENT (Session session_ba9402af-98aa-4c8d-9e0a-2cb6e0674781, Type: init_success): WebSocket连接建立成功，Agent V8核心已准备就绪。...
+2025-05-10 09:54:58,385 - server - INFO [server.websocket_endpoint:257] - Session session_ba9402af-98aa-4c8d-9e0a-2cb6e0674781 WebSocket初始化成功并发送确认。

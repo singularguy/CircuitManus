@@ -1,0 +1,5 @@
+2025-05-10 09:57:38,085 - CircuitManusCore - INFO [CircuitManusCore.<module>:81] - Successfully configured file logging. Log messages will also be saved to: D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\WebUIAgentLogs\agent_log_20250510_095738_084_P3132.log
+2025-05-10 09:57:38,086 - __main__ - INFO [server.<module>:24] - CircuitAgentV8_WS 模块导入成功。
+2025-05-10 09:57:38,088 - __main__ - INFO [server.<module>:76] - 静态文件目录 'D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\static' 挂载成功。
+2025-05-10 09:57:38,088 - __main__ - INFO [server.<module>:94] - 成功获取 ZHIPUAI_API_KEY 环境变量。
+2025-05-10 09:57:38,151 - __main__ - INFO [server.<module>:410] - 直接运行 server.py (V8_WS)，启动 Uvicorn 开发服务器...
