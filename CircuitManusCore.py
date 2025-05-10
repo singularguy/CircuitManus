@@ -289,12 +289,12 @@ class MemoryManager:
         logger.debug(f"[MemoryManager] 添加后短期记忆数量: {len(self.short_term)}")
 
     def add_to_long_term(self, knowledge_snippet: str):
-        MAX_SNIPPET_LENGTH = 10000 
+        MAX_SNIPPET_LENGTH = 1000 
         if len(knowledge_snippet) > MAX_SNIPPET_LENGTH:
             logger.warning(f"[MemoryManager] 尝试添加的长期记忆片段过长 ({len(knowledge_snippet)} chars),已截断为 {MAX_SNIPPET_LENGTH} 字符. ")
             knowledge_snippet = knowledge_snippet[:MAX_SNIPPET_LENGTH] + "... (截断)"
 
-        logger.debug(f"[MemoryManager] 添加知识到长期记忆: '{knowledge_snippet[:100]}{'...' if len(knowledge_snippet) > 100 else ''}'. 当前数量: {len(self.long_term)}")
+        logger.debug(f"[MemoryManager] 添加知识到长期记忆: '{knowledge_snippet[:1000]}{'...' if len(knowledge_snippet) > 1000 else ''}'. 当前数量: {len(self.long_term)}")
         self.long_term.append(knowledge_snippet)
         if len(self.long_term) > self.max_long_term_items:
             removed = self.long_term.pop(0) 
@@ -359,7 +359,7 @@ class LLMInterface:
                      role = m.get("role")
                      content = str(m.get("content","")) 
                      if role == "system":
-                         content_preview = content[:10000] + ("..." if len(content) > 10000 else "") 
+                         content_preview = content[:1000] + ("..." if len(content) > 1000 else "") 
                      else:
                          content_preview = content[:1000] + ("..." if len(content) > 1000 else "") 
                      messages_content_for_log.append({"index": m_idx, "role": role, "content_preview_length": len(content), "content_preview": content_preview})
@@ -519,11 +519,11 @@ class OutputParserV8_1:
             first_brace = json_string_to_parse.find('{')
             if first_brace > 0: 
                 prefix_content = json_string_to_parse[:first_brace].strip()
-                logger.warning(f"[{parser_id}-OutputParserV8_1] 在预期的 JSON 开头 '{{' 之前检测到非空白内容: '{prefix_content[:200]}...'. 将尝试从 '{{' 开始解析. ")
+                logger.warning(f"[{parser_id}-OutputParserV8_1] 在预期的 JSON 开头 '{{' 之前检测到非空白内容: '{prefix_content[:1000]}...'. 将尝试从 '{{' 开始解析. ")
                 json_string_to_parse = json_string_to_parse[first_brace:]
             elif first_brace == -1 : 
                 error_message = "无法在 LLM 响应内容中找到 JSON 对象的起始 '{'. "
-                logger.error(f"[{parser_id}-OutputParserV8_1] 解析失败: {error_message} 原始响应预览: {raw_content[:200]}...")
+                logger.error(f"[{parser_id}-OutputParserV8_1] 解析失败: {error_message} 原始响应预览: {raw_content[:1000]}...")
                 return None, error_message, [{"json_path": "content", "issue_description": error_message}]
         
         logger.debug(f"[{parser_id}-OutputParserV8_1] 预处理后,准备解析的 JSON 字符串 (完整):\n{json_string_to_parse}")
@@ -533,7 +533,7 @@ class OutputParserV8_1:
             logger.info(f"[{parser_id}-OutputParserV8_1] JSON 字符串成功解析为字典. ")
         except json.JSONDecodeError as json_err:
             error_message = f"JSON 解析失败: {json_err}. "
-            logger.error(f"[{parser_id}-OutputParserV8_1] {error_message} Raw JSON string (截断): '{json_string_to_parse[:500]}...'")
+            logger.error(f"[{parser_id}-OutputParserV8_1] {error_message} Raw JSON string (截断): '{json_string_to_parse[:1000]}...'")
             return None, error_message, [{"json_path": "root", "issue_description": f"JSONDecodeError: {json_err}"}]
         except Exception as e: 
             error_message = f"解析 LLM 响应时发生未知错误: {e}"
@@ -662,7 +662,7 @@ class OutputParserV8_1:
                 error_message_parts.append(f"  -路径 '{err_point['json_path']}': {err_point['issue_description']}")
             error_message = "\n".join(error_message_parts)
             
-            json_content_for_log = json.dumps(parsed_json_dict, indent=2, ensure_ascii=False) if parsed_json_dict else json_string_to_parse[:500]
+            json_content_for_log = json.dumps(parsed_json_dict, indent=2, ensure_ascii=False) if parsed_json_dict else json_string_to_parse[:1000]
             logger.error(f"[{parser_id}-OutputParserV8_1]\n{error_message}\nParsed JSON content (可能不完整或无效):\n{json_content_for_log}")
             return None, error_message, failed_validation_points_list 
 
@@ -824,7 +824,7 @@ class ToolExecutor:
             if tool_succeeded_this_cycle:
                 result_data_summary = action_result_final_for_tool.get("data")
                 if result_data_summary is not None:
-                    try: details_for_cb["result_data_preview"] = json.dumps(result_data_summary, ensure_ascii=False, default=str, indent=None)[:200] 
+                    try: details_for_cb["result_data_preview"] = json.dumps(result_data_summary, ensure_ascii=False, default=str, indent=None)[:1000] 
                     except: details_for_cb["result_data_preview"] = "(数据无法序列化预览)"
             else: 
                 details_for_cb["error"] = action_result_final_for_tool.get("error", {"error_type": "UNKNOWN_ERROR", "error_code": "GENERIC_FAILURE", "technical_message": "未知工具执行错误"})
@@ -1121,7 +1121,7 @@ class CircuitAgent: # 类名更新
                 await status_callback({"type": "final_response", "request_id": self.current_request_id, "llm_interaction_id": empty_input_err_json["llm_interaction_id"], "content": empty_input_err_json["decision"]["RESPONSE_TO_USER"]["content"], "final_v8_1_json_if_success": None})
                 return
 
-            await status_callback({"type": "general_status", "request_id": self.current_request_id, "stage": "input_validation", "status": "received", "message": "收到用户指令,开始处理...", "details": {"user_request_preview": user_request[:200]}})
+            await status_callback({"type": "general_status", "request_id": self.current_request_id, "stage": "input_validation", "status": "received", "message": "收到用户指令,开始处理...", "details": {"user_request_preview": user_request[:1000]}})
             try:
                 self.memory_manager.add_to_short_term({"role": "user", "content": user_request})
             except Exception as e_mem_user:
@@ -1205,7 +1205,7 @@ class CircuitAgent: # 类名更新
                             error_to_report_cb = parser_error_msg_this_llm_call or "V8.1.1 JSON结构或内容校验失败. " # Version bump in log
                             if parsed_failed_validation_points_this_llm_call:
                                 error_to_report_cb += " 失败点: " + json.dumps(parsed_failed_validation_points_this_llm_call[:2], ensure_ascii=False) 
-                            await status_callback({"type": "general_status", "request_id": self.current_request_id, "stage": "planning", "status": "llm_retry_needed", "message": f"大脑计划处理遇到问题,尝试重新沟通 ({error_to_report_cb[:200]})", "details": {"llm_call_attempt": llm_call_attempt_inner + 1, "parser_error": parser_error_msg_this_llm_call, "validation_failures": parsed_failed_validation_points_this_llm_call}})
+                            await status_callback({"type": "general_status", "request_id": self.current_request_id, "stage": "planning", "status": "llm_retry_needed", "message": f"大脑计划处理遇到问题,尝试重新沟通 ({error_to_report_cb[:1000]})", "details": {"llm_call_attempt": llm_call_attempt_inner + 1, "parser_error": parser_error_msg_this_llm_call, "validation_failures": parsed_failed_validation_points_this_llm_call}})
                             if parsed_plan_v8_1_this_llm_call and parsed_plan_v8_1_this_llm_call.get("status") == "failure": 
                                 try: self.memory_manager.add_to_short_term(llm_msg_obj_planning.model_dump(exclude_unset=True))
                                 except Exception as e_mem_add_fail: logger.error(f"{log_prefix} 添加LLM失败规划到记忆失败: {e_mem_add_fail}")
@@ -1222,7 +1222,7 @@ class CircuitAgent: # 类名更新
                             
                     except Exception as e_llm_call_level: 
                         logger.error(f"{log_prefix} LLM调用或规划解析时发生严重错误 (LLM Call Attempt {llm_call_attempt_inner + 1}): {e_llm_call_level}", exc_info=True)
-                        parser_error_msg_this_llm_call = f"LLM调用/解析严重错误: {str(e_llm_call_level)[:200]}" 
+                        parser_error_msg_this_llm_call = f"LLM调用/解析严重错误: {str(e_llm_call_level)[:1000]}" 
                         parsed_failed_validation_points_this_llm_call = [{"json_path":"root", "issue_description": parser_error_msg_this_llm_call}]
                         if llm_call_attempt_inner < self.planning_llm_retries:
                              await status_callback({"type": "general_status", "request_id": self.current_request_id, "stage": "planning", "status": "llm_error_retrying", "message": f"与大脑沟通时发生严重错误,尝试重新连接 ({parser_error_msg_this_llm_call})", "details": {"llm_call_attempt": llm_call_attempt_inner + 1}})
@@ -1454,14 +1454,14 @@ class CircuitAgent: # 类名更新
 
         except Exception as e_process_top_level: 
             request_id_for_fatal = self.current_request_id or f"fatal_err_no_req_id_{str(uuid4())[:6]}"
-            logger.critical(f"[OrchestratorV8_1_1_WS - ReqID:{request_id_for_fatal}] 处理用户请求 '{user_request[:100]}' 时发生顶层未捕获异常: {e_process_top_level}", exc_info=True) # Version bump in log
+            logger.critical(f"[OrchestratorV8_1_1_WS - ReqID:{request_id_for_fatal}] 处理用户请求 '{user_request[:1000]}' 时发生顶层未捕获异常: {e_process_top_level}", exc_info=True) # Version bump in log
             error_msg_for_user_fatal = f"抱歉,处理您的请求 ('{user_request[:30]}...') 时发生严重的、未预期的内部系统错误. 请稍后再试或联系技术支持. "
             tb_str_for_thinking_log_fatal = traceback.format_exc().replace('\n', ' | ') 
             thinking_log_content_fatal = f"请求处理流程中发生顶层致命错误: {e_process_top_level}. Traceback (部分): {tb_str_for_thinking_log_fatal[:1000]}..."
             
             fatal_llm_interaction_id = f"fatal_agent_err_{str(uuid4())[:6]}"
             await status_callback({"type": "thinking_log", "request_id": request_id_for_fatal, "llm_interaction_id": fatal_llm_interaction_id, "stage": "fatal_error_capture", "content": thinking_log_content_fatal})
-            await status_callback({"type": "general_status", "request_id": request_id_for_fatal, "stage": "fatal_error_handler", "status": "error", "message": f"请求处理失败,发生致命内部错误: {str(e_process_top_level)[:200]}", "details": {"error_type": type(e_process_top_level).__name__, "full_error_message": str(e_process_top_level)}})
+            await status_callback({"type": "general_status", "request_id": request_id_for_fatal, "stage": "fatal_error_handler", "status": "error", "message": f"请求处理失败,发生致命内部错误: {str(e_process_top_level)[:1000]}", "details": {"error_type": type(e_process_top_level).__name__, "full_error_message": str(e_process_top_level)}})
             await status_callback({"type": "final_response", "request_id": request_id_for_fatal, "llm_interaction_id": fatal_llm_interaction_id, "content": error_msg_for_user_fatal, "final_v8_1_json_if_success": None})
         finally:
             request_end_time = time.monotonic()
