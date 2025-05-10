@@ -1,11 +1,11 @@
 # @FileName: CircuitManusCore.py
-# @Version: V8.3.2-CamelCaseJSON - Adapted for glm-z1-flash, robust boolean parsing, camelCase JSON keys
-# @Author: Your Most Loyal, Dedicated, Meticulous & Now Extremely Cautious Programmer (Enhanced JSON Key Naming for LLM Compatibility & Robust Boolean Parsing)
-# @Date: [Current Date] - Implemented camelCase for LLM-generated JSON keys and maintained robust boolean parsing.
+# @Version: V8.3.2-CamelCaseJSON - Adapted for glm-z1-flash, robust boolean parsing, camelCase JSON keys, Expanded to 10 Tools
+# @Author: Your Most Loyal, Dedicated, Meticulous & Now Extremely Cautious Programmer (Enhanced JSON Key Naming for LLM Compatibility & Robust Boolean Parsing, Expanded Toolset)
+# @Date: [Current Date] - Implemented camelCase for LLM-generated JSON keys, maintained robust boolean parsing, and expanded toolset to 10.
 # @License: MIT License
 # @Description:
 # ==============================================================================================
-#  Manus 系统 V8.3.2-CamelCaseJSON 技术实现说明
+#  Manus 系统 V8.3.2-CamelCaseJSON 技术实现说明 (附带10个工具)
 # ==============================================================================================
 #
 # V8.3.2-CamelCaseJSON 核心改动 (基于 V8.3.1-RobustBooleans):
@@ -27,6 +27,16 @@
 # 3.  **Parser Class Renamed**:
 #     - `OutputParserV8_3_Reasoning` has been renamed to
 #       `OutputParserV8_3_CamelCaseReasoning` to reflect the new JSON key convention.
+# 4.  **Expanded Toolset**:
+#     - The number of available tools for the agent has been increased from 4 to 10,
+#       providing more granular control and query capabilities over the circuit.
+#       New tools include:
+#         - `remove_component_tool`
+#         - `disconnect_components_tool`
+#         - `update_component_value_tool`
+#         - `find_component_by_id_tool`
+#         - `list_components_by_type_tool`
+#         - `get_component_connection_count_tool`
 #
 # (Inherits all fixes and features from V8.3.1-RobustBooleans)
 # ==============================================================================================
@@ -67,13 +77,13 @@ except OSError as e:
 current_time_for_log = datetime.now()
 log_file_name = os.path.join(
     LOG_DIR,
-    f"agent_log_v8_3_2_camelcase_{current_time_for_log.strftime('%Y%m%d_%H%M%S')}_{current_time_for_log.microsecond // 1000:03d}_P{os.getpid()}.log"
+    f"agent_log_v8_3_2_camelcase_10tools_{current_time_for_log.strftime('%Y%m%d_%H%M%S')}_{current_time_for_log.microsecond // 1000:03d}_P{os.getpid()}.log"
 )
 
 log_format = '%(asctime)s - %(name)s - %(levelname)s [%(module)s.%(funcName)s:%(lineno)d] - %(message)s'
 
 console_handler = logging.StreamHandler(sys.stderr)
-console_handler.setLevel(logging.DEBUG)
+console_handler.setLevel(logging.DEBUG) # Default to DEBUG, will be adjusted by Agent's verbose mode
 console_handler.setFormatter(logging.Formatter(log_format))
 
 root_logger = logging.getLogger()
@@ -138,12 +148,18 @@ class Circuit:
         comp_id_upper = component_id.strip().upper()
         if comp_id_upper not in self.components:
             raise ValueError(f"元件 '{comp_id_upper}' 在电路中不存在. ")
+        removed_component_details = self.components[comp_id_upper].to_dict()
         del self.components[comp_id_upper]
+        
         connections_to_remove = {conn for conn in self.connections if comp_id_upper in conn}
+        removed_connections_count = len(connections_to_remove)
         for conn in connections_to_remove:
             self.connections.remove(conn)
             logger.debug(f"[Circuit] 移除了涉及元件 '{comp_id_upper}' 的连接 {conn}.")
-        logger.debug(f"[Circuit] 元件 '{comp_id_upper}' 及其相关连接已从电路中移除. ")
+        
+        logger.debug(f"[Circuit] 元件 '{comp_id_upper}' 及其相关 {removed_connections_count} 个连接已从电路中移除. ")
+        return removed_component_details, removed_connections_count
+
 
     def connect_components(self, id1: str, id2: str):
         id1_upper = id1.strip().upper()
@@ -165,10 +181,10 @@ class Circuit:
         connection = tuple(sorted((id1_upper, id2_upper)))
         if connection not in self.connections:
              logger.warning(f"[Circuit] 连接 '{id1_upper}' <--> '{id2_upper}' 不存在,无需断开. ")
-             return False
+             return False # Indicate connection didn't exist to be removed
         self.connections.remove(connection)
         logger.debug(f"[Circuit] 断开了连接: {id1_upper} <--> {id2_upper}.")
-        return True
+        return True # Indicate successful removal
 
     def get_state_description(self) -> str:
         logger.debug("[Circuit] 正在生成电路状态描述...")
@@ -490,10 +506,13 @@ class OutputParserV8_3_CamelCaseReasoning:
             expected_type_str = param_schema_props[arg_name].get("type")
             # Type checking based on schema
             if expected_type_str == "string" and not isinstance(arg_value, str):
-                validation_errors.append({
-                    "jsonPath": f"decision.toolCallRequests[toolCallId={tool_call_id}].toolArguments.{arg_name}",
-                    "issue_description": f"工具 '{tool_name}' 的参数 '{arg_name}' 期望是字符串,但得到的是 {type(arg_value).__name__}. "
-                })
+                # Allow None if not a required parameter and schema implies optional strings can be null
+                is_optional_and_null_like = (arg_name not in required_params) and (arg_value is None)
+                if not is_optional_and_null_like:
+                    validation_errors.append({
+                        "jsonPath": f"decision.toolCallRequests[toolCallId={tool_call_id}].toolArguments.{arg_name}",
+                        "issue_description": f"工具 '{tool_name}' 的参数 '{arg_name}' 期望是字符串,但得到的是 {type(arg_value).__name__}. "
+                    })
             elif expected_type_str == "integer" and not isinstance(arg_value, int):
                  validation_errors.append({
                     "jsonPath": f"decision.toolCallRequests[toolCallId={tool_call_id}].toolArguments.{arg_name}",
@@ -644,9 +663,13 @@ class OutputParserV8_3_CamelCaseReasoning:
         elif status_val == "success" and parsed_json_dict.get("errorDetails") is not None:
              failed_validation_points_list.append({"jsonPath": "errorDetails", "issue_description": "当 'status' 为 'success' 时, 'errorDetails' 字段必须为 null 或不存在. "})
 
-        if not isinstance(parsed_json_dict.get("thoughtProcess"), str) or not parsed_json_dict.get("thoughtProcess","").strip():
-            if extracted_thought_process is None: # Only warn if not extracted from <think>
-                 logger.warning(f"[{parser_id}-OutputParserV8_3_CamelCaseReasoning] 'thoughtProcess' 字段为空或类型不正确 (且未从<think>块提取). LLM Prompt 应强调其重要性. ")
+        if not isinstance(parsed_json_dict.get("thoughtProcess"), str): # Allow empty string for thoughtProcess if <think> block was used
+            if parsed_json_dict.get("thoughtProcess") is not None: # if it's present but not string
+                logger.warning(f"[{parser_id}-OutputParserV8_3_CamelCaseReasoning] 'thoughtProcess' 字段存在但类型不正确 (应为字符串). ")
+                failed_validation_points_list.append({"jsonPath": "thoughtProcess", "issue_description": "'thoughtProcess' 字段如果存在,必须是字符串. "})
+        elif not parsed_json_dict.get("thoughtProcess","").strip() and extracted_thought_process is None:
+            logger.warning(f"[{parser_id}-OutputParserV8_3_CamelCaseReasoning] LLM未提供<think>块,且JSON内部的thoughtProcess为空或缺失. 思考过程可能不完整.")
+
 
         decision_obj = parsed_json_dict.get("decision")
         if not isinstance(decision_obj, dict):
@@ -692,10 +715,10 @@ class OutputParserV8_3_CamelCaseReasoning:
                             failed_validation_points_list.append({"jsonPath": f"{item_path_prefix}.toolName", "issue_description": "缺少有效的 'toolName' 字符串. "})
 
                         tool_arguments = tool_req_item.get("toolArguments") # camelCase for this key
-                        if not isinstance(tool_arguments, dict): # Content of toolArguments is tool-specific
+                        if not isinstance(tool_arguments, dict): # Content of toolArguments is tool-specific schema
                             failed_validation_points_list.append({"jsonPath": f"{item_path_prefix}.toolArguments", "issue_description": "'toolArguments' 必须是一个对象. "})
-                        elif tool_name: # Only validate arguments if tool_name is valid
-                            arg_validation_errors = self._validate_tool_arguments(tool_name, tool_arguments, tool_call_id if tool_call_id else f"index_{i}")
+                        elif tool_name and isinstance(tool_name, str) and tool_name.strip(): # Only validate arguments if tool_name is valid string
+                            arg_validation_errors = self._validate_tool_arguments(tool_name, tool_arguments, tool_call_id if (tool_call_id and isinstance(tool_call_id, str) and tool_call_id.strip()) else f"index_{i}")
                             failed_validation_points_list.extend(arg_validation_errors)
 
                         ui_hints = tool_req_item.get("uiHints") # camelCase
@@ -982,14 +1005,14 @@ class ToolExecutor:
         logger.info(f"[{executor_id}-ToolExecutor] 工具执行流程完成. 共处理/记录了 {total_processed_tools}/{total_tools_in_plan} 个计划中的工具调用 (可能因失败提前中止). ")
         return execution_results_for_llm_history
 
-# --- Agent 核心类 (V8.3.2-CamelCaseJSON) ---
+# --- Agent 核心类 (V8.3.2-CamelCaseJSON, 10 Tools) ---
 class CircuitAgent:
     def __init__(self, api_key: str, model_name: str = "glm-z1-flash",
                  max_short_term_items: int = 30, max_long_term_items: int = 75,
                  planning_llm_retries: int = 5, max_tool_retries: int = 3,
                  tool_retry_delay_seconds: float = 1.0, max_replanning_attempts: int = 3,
                  verbose: bool = True):
-        logger.info(f"\n{'='*30} CircuitAgent 初始化开始 (V8.3.2-CamelCaseJSON) {'='*30}")
+        logger.info(f"\n{'='*30} CircuitAgent 初始化开始 (V8.3.2-CamelCaseJSON, 10 Tools) {'='*30}")
         self.api_key = api_key
         self.verbose_mode = verbose
         self.current_request_id: Optional[str] = None # Set per request
@@ -1045,7 +1068,7 @@ class CircuitAgent:
 
         logger.info(f"\n{'='*30} CircuitAgent 初始化成功 {'='*30}\n")
 
-    # --- Action Implementations (Tool methods, identical to V8.2.2 / V8.3.1 logic-wise) ---
+    # --- Action Implementations (Tool methods) ---
     @register_tool(
         description="添加一个新的电路元件 (如电阻, 电容, 电池, LED, 开关, 芯片, 地线, 端子/连接点等). 如果用户未指定 ID,会自动生成. ",
         parameters={"type": "object", "properties": {"component_type": {"type": "string", "description": "元件的类型 (例如: '电阻', 'LED', 'Terminal', 'INPUT', 'GND')."}, "component_id": {"type": "string", "description": "可选的用户指定 ID. "}, "value": {"type": "string", "description": "可选的元件值 (例如: '1k', '10uF')."}}, "required": ["component_type"]}
@@ -1095,6 +1118,9 @@ class CircuitAgent:
 
         # Process value (ensure it's a string or None)
         processed_value = str(value_req).strip() if value_req is not None and str(value_req).strip() else None
+        if value_req is None and "value" in arguments: # If "value" was explicitly passed as null/None
+            processed_value = None
+
 
         try:
             if target_id_final is None: # Should not happen due to logic above, but as a safeguard
@@ -1201,6 +1227,240 @@ class CircuitAgent:
             err_msg = f"清空电路时发生意外的内部错误: {e_clear}"
             logger.error(f"{tool_call_logger_prefix} 未知错误: {err_msg}", exc_info=True)
             return {"status": "failure", "message": "错误: 清空电路时发生未知错误. ", "error": {"error_type": "UNEXPECTED_TOOL_ERROR", "error_code": "CLEAR_CIRCUIT_UNEXPECTED_FAILURE", "technical_message": str(e_clear), "exception_details": traceback.format_exc(limit=3)}}
+
+    @register_tool(
+        description="从电路中移除一个指定的元件及其所有连接.",
+        parameters={"type": "object", "properties": {"component_id": {"type": "string", "description": "要移除的元件的 ID."}}, "required": ["component_id"]}
+    )
+    def remove_component_tool(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        tool_call_logger_prefix = f"[Action-RemoveComponentTool-ReqID:{self.current_request_id or 'N/A'}]"
+        logger.info(f"{tool_call_logger_prefix} 执行移除元件操作.")
+        logger.debug(f"{tool_call_logger_prefix} 收到参数: {arguments}")
+        component_id_req = arguments.get("component_id")
+
+        if not component_id_req or not isinstance(component_id_req, str) or not component_id_req.strip():
+            err_msg = "必须提供一个有效的、非空的元件 ID 字符串."
+            logger.error(f"{tool_call_logger_prefix} 输入验证失败: {err_msg}")
+            return {"status": "failure", "message": f"错误: {err_msg}", "error": {"error_type": "USER_INPUT_VALIDATION_ERROR", "error_code": "MISSING_OR_INVALID_COMPONENT_ID_FOR_REMOVAL", "technical_message": err_msg}}
+
+        id_cleaned = component_id_req.strip().upper()
+        try:
+            removed_comp_details, removed_conn_count = self.memory_manager.circuit.remove_component(id_cleaned)
+            logger.info(f"{tool_call_logger_prefix} 成功移除元件 '{id_cleaned}' 及其 {removed_conn_count} 个连接.")
+            self.memory_manager.add_to_long_term(f"移除了元件: ID '{id_cleaned}', 类型 '{removed_comp_details.get('type', 'N/A')}' (请求ID: {self.current_request_id or 'N/A'})")
+            return {"status": "success", "message": f"操作成功: 已移除元件 '{id_cleaned}' 及其所有 {removed_conn_count} 个连接.", "data": {"removed_component": removed_comp_details, "connections_removed_count": removed_conn_count}}
+        except ValueError as ve_remove: # Component not found
+            err_msg_val = str(ve_remove)
+            logger.error(f"{tool_call_logger_prefix} 移除验证错误: {err_msg_val}")
+            return {"status": "failure", "message": f"错误: {err_msg_val}", "error": {"error_type": "CIRCUIT_OPERATION_ERROR", "error_code": "COMPONENT_NOT_FOUND_FOR_REMOVAL", "technical_message": err_msg_val}}
+        except Exception as e_remove:
+            err_msg = f"移除元件时发生未知的内部错误: {e_remove}"
+            logger.error(f"{tool_call_logger_prefix} 未知错误: {err_msg}", exc_info=True)
+            return {"status": "failure", "message": "错误: 移除元件时发生未知内部错误.", "error": {"error_type": "UNEXPECTED_TOOL_ERROR", "error_code": "REMOVE_COMPONENT_UNEXPECTED_FAILURE", "technical_message": str(e_remove), "exception_details": traceback.format_exc(limit=3)}}
+
+    @register_tool(
+        description="断开两个指定元件之间的连接.",
+        parameters={"type": "object", "properties": {"comp1_id": {"type": "string", "description": "第一个元件的 ID."}, "comp2_id": {"type": "string", "description": "第二个元件的 ID."}}, "required": ["comp1_id", "comp2_id"]}
+    )
+    def disconnect_components_tool(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        tool_call_logger_prefix = f"[Action-DisconnectComponentsTool-ReqID:{self.current_request_id or 'N/A'}]"
+        logger.info(f"{tool_call_logger_prefix} 执行断开元件连接操作.")
+        logger.debug(f"{tool_call_logger_prefix} 收到参数: {arguments}")
+        comp1_id_req = arguments.get("comp1_id")
+        comp2_id_req = arguments.get("comp2_id")
+
+        if not comp1_id_req or not isinstance(comp1_id_req, str) or not comp1_id_req.strip() or \
+           not comp2_id_req or not isinstance(comp2_id_req, str) or not comp2_id_req.strip():
+            err_msg = "必须提供两个有效的、非空的元件 ID 字符串."
+            logger.error(f"{tool_call_logger_prefix} 输入验证失败: {err_msg}")
+            return {"status": "failure", "message": f"错误: {err_msg}", "error": {"error_type": "USER_INPUT_VALIDATION_ERROR", "error_code": "MISSING_OR_INVALID_COMPONENT_IDS_FOR_DISCONNECTION", "technical_message": err_msg}}
+
+        id1_cleaned = comp1_id_req.strip().upper()
+        id2_cleaned = comp2_id_req.strip().upper()
+
+        if id1_cleaned == id2_cleaned: # Should be caught by Circuit class, but good to check early
+            err_msg = "不能断开一个元件与它自身的连接（它们本来就不可能连接）."
+            logger.error(f"{tool_call_logger_prefix} 输入验证失败: {err_msg}")
+            return {"status": "failure", "message": f"错误: {err_msg}", "error": {"error_type": "USER_INPUT_VALIDATION_ERROR", "error_code": "SELF_DISCONNECTION_ATTEMPTED", "technical_message": err_msg}}
+        
+        try:
+            # Check if components exist first, as disconnect_components might not check this explicitly
+            if id1_cleaned not in self.memory_manager.circuit.components:
+                raise ValueError(f"元件 '{id1_cleaned}' 在电路中不存在.")
+            if id2_cleaned not in self.memory_manager.circuit.components:
+                raise ValueError(f"元件 '{id2_cleaned}' 在电路中不存在.")
+
+            disconnected_successfully = self.memory_manager.circuit.disconnect_components(id1_cleaned, id2_cleaned)
+            if disconnected_successfully:
+                logger.info(f"{tool_call_logger_prefix} 成功断开连接: {id1_cleaned} <--> {id2_cleaned}")
+                self.memory_manager.add_to_long_term(f"断开了元件连接: {id1_cleaned} <--> {id2_cleaned} (请求ID: {self.current_request_id or 'N/A'})")
+                return {"status": "success", "message": f"操作成功: 已断开元件 '{id1_cleaned}' 与 '{id2_cleaned}' 之间的连接.", "data": {"disconnected_pair": sorted((id1_cleaned, id2_cleaned))}}
+            else:
+                msg_not_exist = f"元件 '{id1_cleaned}' 和 '{id2_cleaned}' 之间原本就没有连接,无需断开."
+                logger.info(f"{tool_call_logger_prefix} 连接不存在: {msg_not_exist}")
+                return {"status": "success", "message": f"注意: {msg_not_exist}", "data": {"disconnected_pair": sorted((id1_cleaned, id2_cleaned)), "already_disconnected_or_not_connected": True}}
+        except ValueError as ve_disconnect: # Catches non-existent components
+            err_msg_val = str(ve_disconnect)
+            logger.error(f"{tool_call_logger_prefix} 断开连接验证错误: {err_msg_val}")
+            return {"status": "failure", "message": f"错误: {err_msg_val}", "error": {"error_type": "CIRCUIT_OPERATION_ERROR", "error_code": "COMPONENT_NOT_FOUND_FOR_DISCONNECTION", "technical_message": err_msg_val}}
+        except Exception as e_disconnect:
+            err_msg = f"断开元件连接时发生未知的内部错误: {e_disconnect}"
+            logger.error(f"{tool_call_logger_prefix} 未知错误: {err_msg}", exc_info=True)
+            return {"status": "failure", "message": "错误: 断开元件连接时发生未知内部错误.", "error": {"error_type": "UNEXPECTED_TOOL_ERROR", "error_code": "DISCONNECT_COMPONENTS_UNEXPECTED_FAILURE", "technical_message": str(e_disconnect), "exception_details": traceback.format_exc(limit=3)}}
+
+    @register_tool(
+        description="更新电路中一个已存在元件的值 (例如电阻的欧姆值, 电容的法拉值等).",
+        parameters={"type": "object", "properties": {"component_id": {"type": "string", "description": "要更新值的元件的 ID."}, "new_value": {"type": "string", "description": "元件的新值. 如果要清除值,可以传入 null 或空字符串."}}, "required": ["component_id", "new_value"]}
+    )
+    def update_component_value_tool(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        tool_call_logger_prefix = f"[Action-UpdateComponentValueTool-ReqID:{self.current_request_id or 'N/A'}]"
+        logger.info(f"{tool_call_logger_prefix} 执行更新元件值操作.")
+        logger.debug(f"{tool_call_logger_prefix} 收到参数: {arguments}")
+        component_id_req = arguments.get("component_id")
+        # new_value can be None if LLM passes null, or a string.
+        new_value_req = arguments.get("new_value")
+
+        if not component_id_req or not isinstance(component_id_req, str) or not component_id_req.strip():
+            err_msg = "必须提供一个有效的、非空的元件 ID 字符串."
+            logger.error(f"{tool_call_logger_prefix} 输入验证失败: {err_msg}")
+            return {"status": "failure", "message": f"错误: {err_msg}", "error": {"error_type": "USER_INPUT_VALIDATION_ERROR", "error_code": "MISSING_OR_INVALID_COMPONENT_ID_FOR_UPDATE", "technical_message": err_msg}}
+        
+        # new_value is required by schema, but its content can be None (to clear) or string
+        if not isinstance(new_value_req, (str, type(None))): # Allow None for clearing
+            err_msg = "元件的新值 'new_value' 必须是字符串或 null (用于清除值)."
+            logger.error(f"{tool_call_logger_prefix} 输入验证失败: {err_msg}")
+            return {"status": "failure", "message": f"错误: {err_msg}", "error": {"error_type": "USER_INPUT_VALIDATION_ERROR", "error_code": "INVALID_NEW_VALUE_TYPE", "technical_message": err_msg}}
+
+        id_cleaned = component_id_req.strip().upper()
+        
+        # Process new_value: strip if string, else it's None
+        final_new_value = str(new_value_req).strip() if new_value_req is not None and str(new_value_req).strip() else None
+
+
+        try:
+            if id_cleaned not in self.memory_manager.circuit.components:
+                raise ValueError(f"元件 '{id_cleaned}' 在电路中不存在.")
+            
+            component_to_update = self.memory_manager.circuit.components[id_cleaned]
+            old_value = component_to_update.value
+            component_to_update.value = final_new_value
+            
+            logger.info(f"{tool_call_logger_prefix} 成功更新元件 '{id_cleaned}' 的值从 '{old_value}' 到 '{final_new_value}'.")
+            self.memory_manager.add_to_long_term(f"更新了元件 '{id_cleaned}' 的值: 旧值 '{old_value}', 新值 '{final_new_value}' (请求ID: {self.current_request_id or 'N/A'})")
+            return {"status": "success", "message": f"操作成功: 元件 '{id_cleaned}' 的值已从 '{old_value if old_value else '(无值)'}' 更新为 '{final_new_value if final_new_value else '(无值)'}'.", "data": component_to_update.to_dict()}
+        except ValueError as ve_update: # Component not found
+            err_msg_val = str(ve_update)
+            logger.error(f"{tool_call_logger_prefix} 更新值验证错误: {err_msg_val}")
+            return {"status": "failure", "message": f"错误: {err_msg_val}", "error": {"error_type": "CIRCUIT_OPERATION_ERROR", "error_code": "COMPONENT_NOT_FOUND_FOR_VALUE_UPDATE", "technical_message": err_msg_val}}
+        except Exception as e_update:
+            err_msg = f"更新元件值时发生未知的内部错误: {e_update}"
+            logger.error(f"{tool_call_logger_prefix} 未知错误: {err_msg}", exc_info=True)
+            return {"status": "failure", "message": "错误: 更新元件值时发生未知内部错误.", "error": {"error_type": "UNEXPECTED_TOOL_ERROR", "error_code": "UPDATE_COMPONENT_VALUE_UNEXPECTED_FAILURE", "technical_message": str(e_update), "exception_details": traceback.format_exc(limit=3)}}
+
+    @register_tool(
+        description="根据提供的 ID 查找电路中的一个特定元件,并返回其详细信息.",
+        parameters={"type": "object", "properties": {"component_id": {"type": "string", "description": "要查找的元件的 ID."}}, "required": ["component_id"]}
+    )
+    def find_component_by_id_tool(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        tool_call_logger_prefix = f"[Action-FindComponentByIdTool-ReqID:{self.current_request_id or 'N/A'}]"
+        logger.info(f"{tool_call_logger_prefix} 执行查找元件操作.")
+        logger.debug(f"{tool_call_logger_prefix} 收到参数: {arguments}")
+        component_id_req = arguments.get("component_id")
+
+        if not component_id_req or not isinstance(component_id_req, str) or not component_id_req.strip():
+            err_msg = "必须提供一个有效的、非空的元件 ID 字符串."
+            logger.error(f"{tool_call_logger_prefix} 输入验证失败: {err_msg}")
+            return {"status": "failure", "message": f"错误: {err_msg}", "error": {"error_type": "USER_INPUT_VALIDATION_ERROR", "error_code": "MISSING_OR_INVALID_COMPONENT_ID_FOR_FIND", "technical_message": err_msg}}
+
+        id_cleaned = component_id_req.strip().upper()
+        try:
+            if id_cleaned in self.memory_manager.circuit.components:
+                component_found = self.memory_manager.circuit.components[id_cleaned]
+                logger.info(f"{tool_call_logger_prefix} 成功找到元件 '{id_cleaned}'.")
+                return {"status": "success", "message": f"操作成功: 已找到元件 '{id_cleaned}'.", "data": component_found.to_dict()}
+            else:
+                logger.info(f"{tool_call_logger_prefix} 未找到元件 '{id_cleaned}'.")
+                return {"status": "failure", "message": f"错误: 电路中不存在 ID 为 '{id_cleaned}' 的元件.", "error": {"error_type": "CIRCUIT_QUERY_ERROR", "error_code": "COMPONENT_NOT_FOUND_BY_ID", "technical_message": f"Component with ID '{id_cleaned}' not found in circuit."}}
+        except Exception as e_find:
+            err_msg = f"查找元件时发生未知的内部错误: {e_find}"
+            logger.error(f"{tool_call_logger_prefix} 未知错误: {err_msg}", exc_info=True)
+            return {"status": "failure", "message": "错误: 查找元件时发生未知内部错误.", "error": {"error_type": "UNEXPECTED_TOOL_ERROR", "error_code": "FIND_COMPONENT_UNEXPECTED_FAILURE", "technical_message": str(e_find), "exception_details": traceback.format_exc(limit=3)}}
+
+    @register_tool(
+        description="列出电路中所有属于指定类型的元件.",
+        parameters={"type": "object", "properties": {"component_type": {"type": "string", "description": "要筛选的元件类型 (例如: '电阻', 'LED')."}}, "required": ["component_type"]}
+    )
+    def list_components_by_type_tool(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        tool_call_logger_prefix = f"[Action-ListComponentsByTypeTool-ReqID:{self.current_request_id or 'N/A'}]"
+        logger.info(f"{tool_call_logger_prefix} 执行按类型列出元件操作.")
+        logger.debug(f"{tool_call_logger_prefix} 收到参数: {arguments}")
+        component_type_req = arguments.get("component_type")
+
+        if not component_type_req or not isinstance(component_type_req, str) or not component_type_req.strip():
+            err_msg = "必须提供一个有效的、非空的元件类型字符串."
+            logger.error(f"{tool_call_logger_prefix} 输入验证失败: {err_msg}")
+            return {"status": "failure", "message": f"错误: {err_msg}", "error": {"error_type": "USER_INPUT_VALIDATION_ERROR", "error_code": "MISSING_OR_INVALID_COMPONENT_TYPE_FOR_LIST", "technical_message": err_msg}}
+        
+        type_cleaned = component_type_req.strip() # Case-sensitive match as types are stored as provided
+        
+        try:
+            found_components = []
+            for comp in self.memory_manager.circuit.components.values():
+                # Perform a case-insensitive comparison if desired, or exact match
+                # For this implementation, let's assume the stored type is what we match against directly.
+                # If type_cleaned is "Resistor" and component.type is "resistor", they won't match.
+                # LLM should be consistent or we need a mapping here.
+                # For now, let's do a case-insensitive comparison for robustness.
+                if comp.type.lower() == type_cleaned.lower():
+                    found_components.append(comp.to_dict())
+            
+            if found_components:
+                logger.info(f"{tool_call_logger_prefix} 成功找到 {len(found_components)} 个类型为 '{type_cleaned}' 的元件.")
+                return {"status": "success", "message": f"操作成功: 找到 {len(found_components)} 个类型为 '{type_cleaned}' 的元件.", "data": {"components": found_components, "count": len(found_components)}}
+            else:
+                logger.info(f"{tool_call_logger_prefix} 未找到类型为 '{type_cleaned}' 的元件.")
+                return {"status": "success", "message": f"提示: 电路中没有找到类型为 '{type_cleaned}' 的元件.", "data": {"components": [], "count": 0}} # Success, but empty result
+        except Exception as e_list:
+            err_msg = f"按类型列出元件时发生未知的内部错误: {e_list}"
+            logger.error(f"{tool_call_logger_prefix} 未知错误: {err_msg}", exc_info=True)
+            return {"status": "failure", "message": "错误: 按类型列出元件时发生未知内部错误.", "error": {"error_type": "UNEXPECTED_TOOL_ERROR", "error_code": "LIST_COMPONENTS_UNEXPECTED_FAILURE", "technical_message": str(e_list), "exception_details": traceback.format_exc(limit=3)}}
+
+    @register_tool(
+        description="获取指定元件连接到其他元件的数量.",
+        parameters={"type": "object", "properties": {"component_id": {"type": "string", "description": "要查询连接数量的元件的 ID."}}, "required": ["component_id"]}
+    )
+    def get_component_connection_count_tool(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        tool_call_logger_prefix = f"[Action-GetComponentConnectionCountTool-ReqID:{self.current_request_id or 'N/A'}]"
+        logger.info(f"{tool_call_logger_prefix} 执行获取元件连接数操作.")
+        logger.debug(f"{tool_call_logger_prefix} 收到参数: {arguments}")
+        component_id_req = arguments.get("component_id")
+
+        if not component_id_req or not isinstance(component_id_req, str) or not component_id_req.strip():
+            err_msg = "必须提供一个有效的、非空的元件 ID 字符串."
+            logger.error(f"{tool_call_logger_prefix} 输入验证失败: {err_msg}")
+            return {"status": "failure", "message": f"错误: {err_msg}", "error": {"error_type": "USER_INPUT_VALIDATION_ERROR", "error_code": "MISSING_OR_INVALID_COMPONENT_ID_FOR_CONNECTION_COUNT", "technical_message": err_msg}}
+
+        id_cleaned = component_id_req.strip().upper()
+        try:
+            if id_cleaned not in self.memory_manager.circuit.components:
+                raise ValueError(f"元件 '{id_cleaned}' 在电路中不存在,无法查询其连接数.")
+            
+            connection_count = 0
+            for conn_pair in self.memory_manager.circuit.connections:
+                if id_cleaned in conn_pair:
+                    connection_count += 1
+            
+            logger.info(f"{tool_call_logger_prefix} 元件 '{id_cleaned}' 有 {connection_count} 个连接.")
+            return {"status": "success", "message": f"操作成功: 元件 '{id_cleaned}' 当前有 {connection_count} 个连接.", "data": {"component_id": id_cleaned, "connection_count": connection_count}}
+        except ValueError as ve_count: # Component not found
+            err_msg_val = str(ve_count)
+            logger.error(f"{tool_call_logger_prefix} 获取连接数验证错误: {err_msg_val}")
+            return {"status": "failure", "message": f"错误: {err_msg_val}", "error": {"error_type": "CIRCUIT_QUERY_ERROR", "error_code": "COMPONENT_NOT_FOUND_FOR_CONNECTION_COUNT", "technical_message": err_msg_val}}
+        except Exception as e_count:
+            err_msg = f"获取元件连接数时发生未知的内部错误: {e_count}"
+            logger.error(f"{tool_call_logger_prefix} 未知错误: {err_msg}", exc_info=True)
+            return {"status": "failure", "message": "错误: 获取元件连接数时发生未知内部错误.", "error": {"error_type": "UNEXPECTED_TOOL_ERROR", "error_code": "GET_CONNECTION_COUNT_UNEXPECTED_FAILURE", "technical_message": str(e_count), "exception_details": traceback.format_exc(limit=3)}}
+
 
     # --- Orchestration Layer Method (V8.3.2-CamelCaseJSON) ---
     async def process_user_request(self, user_request: str, status_callback: Callable[[Dict[str, Any]], Awaitable[None]]) -> None:
@@ -1636,7 +1896,11 @@ class CircuitAgent:
     def _get_tool_schemas_for_prompt(self) -> str:
         if not self.tools_registry: return "  (当前无可用工具)"
         tool_schemas_parts = []
-        for tool_name, schema in self.tools_registry.items(): # tool_name is Pythonic (e.g., add_component_tool)
+        # Sort tools by name for consistent prompt generation
+        sorted_tool_names = sorted(self.tools_registry.keys())
+
+        for tool_name in sorted_tool_names:
+            schema = self.tools_registry[tool_name]
             desc = schema.get('description', '无描述. ')
             params_schema = schema.get('parameters', {}) # This is the schema for tool_arguments content
             props_schema = params_schema.get('properties', {}) # e.g., {"component_type": ..., "component_id": ...}
@@ -1644,7 +1908,10 @@ class CircuitAgent:
 
             param_desc_segments = []
             if props_schema:
-                for param_name, param_details_dict in props_schema.items(): # param_name is Pythonic (e.g., component_type)
+                # Sort parameter names for consistent prompt generation
+                sorted_param_names = sorted(props_schema.keys())
+                for param_name in sorted_param_names: 
+                    param_details_dict = props_schema[param_name]
                     param_type = param_details_dict.get('type','any')
                     is_required_str = "必须 (required)" if param_name in req_params else "可选 (optional)"
                     param_description = param_details_dict.get('description','无参数描述')
@@ -1893,7 +2160,7 @@ class CircuitAgent:
             )
 
         prompt_parts = [
-            "您是一位顶尖的、极其严谨的电路设计编程助理 (Agent Version V8.3.2-CamelCaseJSON). 您的行为必须专业、精确,并严格遵循指令. \n",
+            "您是一位顶尖的、极其严谨的电路设计编程助理 (Agent Version V8.3.2-CamelCaseJSON, 10 Tools). 您的行为必须专业、精确,并严格遵循指令. \n", # Indicate 10 tools
             reasoning_model_instructions,
             "\n【核心任务: 规划阶段 (V8.3.2-CamelCaseJSON)】\n"
             "请首先在 `<think>...</think>` 标签内深入分析用户的最新指令、完整的对话历史、当前的电路状态和记忆. 然后,在 `</think>` 标签之后,生成一个符合V8.3.2-CamelCaseJSON规范的JSON对象作为您的行动计划或直接回复. JSON中所有key【必须】使用camelCase (例如: `isCallTools`, `toolCallRequests`, `requestId`).\n",
@@ -1914,7 +2181,7 @@ class CircuitAgent:
             prompt_parts.append(replan_example_v8_3_2)
 
         prompt_parts.extend([
-            "\n【可用工具列表与参数规范 (V8.3.2)】:\n", # Note: tool_arguments keys inside this list are snake_case as per Python convention
+            "\n【可用工具列表与参数规范 (V8.3.2 - 10 Tools)】:\n", # Indicate 10 tools
             tool_schemas_desc,
             "\n\n【当前上下文信息 (V8.3.2-CamelCaseJSON)】:\n"
             f"Current Request ID (if available, echo in your JSON's requestId field): {request_id or 'N/A_NOT_PROVIDED_IN_PROMPT_SET_TO_NULL'}\n"
@@ -2019,7 +2286,7 @@ class CircuitAgent:
         )
 
         return (
-            "您是一位顶尖的电路设计编程助理 (Agent Version V8.3.2-CamelCaseJSON), 经验丰富,技术精湛,并且极其擅长清晰、准确、诚实地汇报工作结果. \n"
+            "您是一位顶尖的电路设计编程助理 (Agent Version V8.3.2-CamelCaseJSON, 10 Tools), 经验丰富,技术精湛,并且极其擅长清晰、准确、诚实地汇报工作结果. \n" # Indicate 10 tools
             f"{reasoning_model_instructions_resp_phase}\n"
             "【核心任务: 响应生成阶段 (V8.3.2-CamelCaseJSON)】\n"
             "您当前的任务是: 基于到目前为止的【完整对话历史】(包括用户最初的指令、您在规划阶段生成的V8.3.2-CamelCaseJSON计划、以及所有【已执行工具的结果详情】,这些工具结果是以 'role: tool', 'toolCallId: ...', 'name: ...', 'content: JSON_string_of_tool_output' 的格式存在于历史记录中的), 首先在 `<think>...</think>` 标签内进行思考和总结, 然后在 `</think>` 之后生成【最终的、面向用户的V8.3.2-CamelCaseJSON回复】. JSON中所有key【必须】使用camelCase.\n\n"
@@ -2038,6 +2305,121 @@ class CircuitAgent:
             f"Current Request ID (if available, echo in your JSON's requestId field): {request_id or 'N/A_NOT_PROVIDED_IN_PROMPT_SET_TO_NULL'}\n"
             f"Current UTC Time (for your reference when generating timestampUtc): {current_timestamp_utc}\n"
             f"当前电路与记忆摘要:\n{memory_context}\n"
-            f"我的可用工具列表 (仅供你参考,此阶段不应再调用它们):\n{tool_schemas_desc}\n\n"
+            f"我的可用工具列表 (共10个, 仅供你参考,此阶段不应再调用它们):\n{tool_schemas_desc}\n\n" # Indicate 10 tools
             "【最后再次强调】: 您的输出【必须】以 `<think>...</think>` 块开始,后跟一个被 ```json ... ``` 包围的、严格符合上述V8.3.2-CamelCaseJSON规范 (所有key使用camelCase) 的单个JSON对象. 在这个阶段,您【绝对不能】再请求调用任何新工具. 您的任务是总结并回复. "
         )
+
+# --- Main entry point for testing (Optional) ---
+async def main_test_flow(agent: CircuitAgent, user_query: str):
+    """Simple async test flow for the agent."""
+    logger.info(f"\n\n>>>>>>>>> 测试开始: 用户查询: '{user_query}' <<<<<<<<<<")
+
+    async def mock_status_callback(status_update: Dict[str, Any]):
+        # Pretty print JSON parts of the status update for readability
+        if "final_v8_3_2_camelcase_json_if_success" in status_update and status_update["final_v8_3_2_camelcase_json_if_success"]:
+            # Make a copy to modify for printing
+            printable_update = status_update.copy()
+            try:
+                printable_update["final_v8_3_2_camelcase_json_if_success"] = json.loads(json.dumps(status_update["final_v8_3_2_camelcase_json_if_success"], indent=2, ensure_ascii=False))
+            except: # In case it's already a string or not serializable
+                pass
+            logger.info(f"[StatusCallback] {json.dumps(printable_update, indent=2, ensure_ascii=False, default=str)}")
+        elif "plan" in status_update and isinstance(status_update["plan"], list):
+            printable_update = status_update.copy()
+            try:
+                printable_update["plan"] = json.loads(json.dumps(status_update["plan"], indent=2, ensure_ascii=False))
+            except:
+                pass
+            logger.info(f"[StatusCallback] {json.dumps(printable_update, indent=2, ensure_ascii=False, default=str)}")
+        else:
+            logger.info(f"[StatusCallback] {json.dumps(status_update, ensure_ascii=False, default=str)}")
+
+
+    await agent.process_user_request(user_query, mock_status_callback)
+    logger.info(f">>>>>>>>>> 测试结束: 用户查询: '{user_query}' <<<<<<<<<<\n")
+
+if __name__ == "__main__":
+    logger.info("========== CircuitAgent V8.3.2-CamelCaseJSON (10 Tools) - 命令行测试模式 ==========")
+    
+    # IMPORTANT: Replace with your actual ZHIPU AI API Key
+    zhipu_api_key = os.environ.get("ZHIPUAI_API_KEY")
+    if not zhipu_api_key:
+        logger.critical("CRITICAL: ZHIPUAI_API_KEY environment variable not set. Agent cannot function.")
+        sys.exit("ZHIPUAI_API_KEY not set. Please set it before running.")
+
+    try:
+        # Initialize Agent with high verbosity for testing
+        test_agent = CircuitAgent(
+            api_key=zhipu_api_key,
+            model_name="glm-z1-flash", # Using the specified model
+            verbose=True,
+            max_short_term_items=20, # Smaller for testing if needed
+            planning_llm_retries=1,  # Fewer retries for faster tests
+            max_tool_retries=1,
+            max_replanning_attempts=1
+        )
+        logger.info("CircuitAgent V8.3.2 (10 Tools) 初始化成功,准备接收测试指令.")
+    except Exception as e_init:
+        logger.critical(f"Agent 初始化失败: {e_init}", exc_info=True)
+        sys.exit(f"Agent initialization failed: {e_init}")
+
+    # --- Test Scenarios ---
+    test_queries = [
+        # Basic interactions
+        "你好",
+        "当前电路什么样?",
+        # Add components
+        "帮我添加一个10k的电阻R10.",
+        "再添加一个名为LED1的发光二极管,不需要指定ID.",
+        "添加一个5V电池,ID是BAT1.",
+        "Current circuit status, please.", # English test
+        # Connect components
+        "把R10和LED1连起来.",
+        "Connect R10 and BAT1.",
+        # Update component value
+        "把R10的值改成5k欧姆.",
+        "我想把BAT1的电压值清除掉.",
+        # Find component
+        "查找一下元件R10的详细信息.",
+        "元件X99存在吗?",
+        # List by type
+        "列出所有电阻类型的元件.",
+        "电路里有哪些电池?",
+        # Connection count
+        "R10现在有多少个连接?",
+        "BAT1连接了几个东西?",
+        # Remove components
+        "移除LED1.",
+        # Disconnect
+        "断开R10和BAT1的连接.",
+        # Complex command involving multiple new tools
+        "帮我把R10的值更新为2k, 然后查一下R10有几个连接, 最后再移除R10.",
+        # Error handling: connect non-existent
+        "连接R10和R999.",
+        # Clear circuit
+        "清空电路.",
+        "电路现在是空的吗?",
+        # Replanning scenario: Try to add existing ID, then re-plan
+        "添加一个电阻R1.", # Assume R1 might exist from a previous run if not cleared
+        "再添加一个电阻R1.", # This should trigger a problem if R1 exists
+        "现在添加一个电阻R2,值为100欧姆,然后把它和GND连接起来.", # Test adding terminal if GND is abstract
+    ]
+
+    async def run_all_tests():
+        for i, query in enumerate(test_queries):
+            logger.info(f"\n--- Test Case {i+1}/{len(test_queries)} ---")
+            await main_test_flow(test_agent, query)
+            logger.info(f"--- Test Case {i+1} Completed ---\n")
+            if i < len(test_queries) - 1: # Pause between tests
+                 await asyncio.sleep(2) # Brief pause
+
+    try:
+        loop.run_until_complete(run_all_tests())
+    except KeyboardInterrupt:
+        logger.info("测试被用户中断.")
+    except Exception as e_main_run:
+        logger.critical(f"运行测试时发生未处理的异常: {e_main_run}", exc_info=True)
+    finally:
+        if loop.is_running():
+            loop.close()
+        logger.info("========== CircuitAgent V8.3.2 (10 Tools) - 命令行测试结束 ==========")

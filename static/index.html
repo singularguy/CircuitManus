@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IDT Agent Pro X - 智能交互终端 (V8.3.2 CC-Reasoning)</title> <!-- Version & Name Updated -->
+    <title>IDT Agent Pro - 智能交互终端 (V8.3.2 CamelCase Reasoning)</title> <!-- Version Updated -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -16,63 +16,24 @@
 </head>
 
 <body>
-    <div class="page-background-container">
-        <div class="page-background-gradient" id="page-background-gradient"></div>
-        <canvas id="particle-canvas" class="particle-canvas"></canvas>
-    </div>
+    <div class="page-background-gradient"></div>
 
     <div class="loader-container" id="loader">
         <div class="loader-logo">
-            <!-- Enhanced Loader Logo -->
-            <svg class="loader-icon-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="loaderIconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:var(--primary-color); stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:var(--primary-hover); stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <circle cx="50" cy="50" r="40" stroke="url(#loaderIconGradient)" stroke-width="8" fill="none"
-                    stroke-dasharray="251.2" stroke-dashoffset="0" class="loader-circle-path">
-                    <animate attributeName="stroke-dashoffset" dur="2s" repeatCount="indefinite" values="0;502.4;0" />
-                    <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="2.5s"
-                        repeatCount="indefinite" />
-                </circle>
-                <path d="M35 50 L45 40 L55 50 L45 60 Z" fill="var(--primary-color)" class="loader-inner-shape">
-                     <animateTransform attributeName="transform" type="scale" dur="1.5s" values="1;1.2;1;0.8;1" repeatCount="indefinite" additive="sum" accumulate="sum"/>
-                </path>
-            </svg>
+            <i class="fas fa-microchip fa-beat" style="--fa-animation-duration: 1.5s;"></i>
             <span>IDT Agent</span>
         </div>
         <div class="loader-progress-bar">
             <div class="loader-progress"></div>
         </div>
-        <p class="loading-text">智能核心校准 (V8.3.2 CC-Reasoning)...</p> <!-- Version Updated -->
+        <p class="loading-text">核心模块校准中 (V8.3.2 CamelCase Reasoning)...</p> <!-- Version Updated -->
     </div>
 
     <div class="main-container" id="main-container">
         <header class="header glass-effect" id="app-header">
             <div class="logo">
-                <div class="logo-icon">
-                    <!-- Animated SVG Logo -->
-                    <svg class="header-logo-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="18" cy="18" r="16" class="logo-bg-circle" />
-                        <path class="logo-brain-path"
-                            d="M22.5 11.5C22.5 10.1716 21.3284 9 20 9C18.6716 9 17.5 10.1716 17.5 11.5V12.5C17.5 13.8284 18.6716 15 20 15C21.3284 15 22.5 13.8284 22.5 12.5V11.5Z" />
-                        <path class="logo-brain-path"
-                            d="M13.5 11.5C13.5 10.1716 14.6716 9 16 9C17.3284 9 18.5 10.1716 18.5 11.5V12.5C18.5 13.8284 17.3284 15 16 15C14.6716 15 13.5 13.8284 13.5 12.5V11.5Z" />
-                        <path class="logo-brain-path"
-                            d="M12 17H10C9.44772 17 9 17.4477 9 18V24C9 24.5523 9.44772 25 10 25H12C12.5523 25 13 24.5523 13 24V18C13 17.4477 12.5523 17 12 17Z" />
-                        <path class="logo-brain-path"
-                            d="M24 17H26C26.5523 17 27 17.4477 27 18V24C27 24.5523 26.5523 25 26 25H24C23.4477 25 23 24.5523 23 24V18C23 17.4477 23.4477 17 24 17Z" />
-                        <path class="logo-brain-path"
-                            d="M18 16C15.7909 16 14 17.7909 14 20V22H22V20C22 17.7909 20.2091 16 18 16Z" />
-                        <path class="logo-brain-main"
-                            d="M27 18.5C27 15.8333 26.5 13 20 13M9 18.5C9 15.8333 9.5 13 16 13M16 13C16.8299 13 17.5517 13.0607 18.1306 13.1697C18.6498 13.2676 19.0701 13.3318 19.3694 13.3694M20 13C19.1701 13 18.4483 13.0607 17.8694 13.1697M16 13L16 9M20 13L20 9" />
-                        <path class="logo-brain-main"
-                            d="M16 27C13 27 11 25.5 10 23M20 27C23 27 25 25.5 26 23M10 23L9 18.5M26 23L27 18.5M10 23H26" />
-                    </svg>
-                </div>
-                <h1>IDT Agent <span class="version-pro">Pro X <span class="version-number">v8.3.2</span></span></h1> <!-- Version & Name Updated -->
+                <div class="logo-icon"><i class="fas fa-brain fa-fade" style="--fa-animation-duration: 2s;"></i></div>
+                <h1>IDT Agent <span class="version-pro">Pro <span class="version-number">v8.3.2</span></span></h1> <!-- Version Updated -->
             </div>
             <div class="header-buttons">
                 <button id="theme-toggle" class="header-btn icon-btn" title="切换主题">
@@ -98,7 +59,7 @@
                             <i class="fas fa-comments"></i>
                             <span>对话</span>
                         </button>
-                        <button class="sidebar-button" data-mode="code" title="编程助手">
+                        <button class="sidebar-button" data-mode="code" title="编程助手 (概念)">
                             <i class="fas fa-laptop-code"></i>
                             <span>编程</span>
                         </button>
@@ -140,7 +101,7 @@
 
                     <div class="process-log-container glass-effect" id="process-log-container" style="display: none;">
                         <div class="process-log-header">
-                            <span><i class="fas fa-cogs"></i> Agent 运行日志</span> <!-- Icon & Text Updated -->
+                            <span><i class="fas fa-tasks"></i> Agent 处理日志</span>
                             <button class="icon-btn" id="toggle-process-log-collapse" title="折叠/展开日志"><i
                                     class="fas fa-chevron-up"></i></button>
                         </div>
@@ -152,15 +113,6 @@
                     <div class="chat-box" id="chat-box">
                         <!-- Welcome message will be appended by JS -->
                     </div>
-                    
-                    <!-- Agent Thinking Indicator Area (Conceptual) -->
-                    <div class="agent-thinking-indicator-area" id="agent-thinking-indicator-area" style="display: none;">
-                        <div class="thinking-dots-animation">
-                            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-                        </div>
-                        <span class="thinking-text">IDT Agent 正在深度思考...</span>
-                    </div>
-
 
                     <div class="file-preview glass-effect" id="file-preview">
                         <div class="file-preview-header">
@@ -178,7 +130,7 @@
                             <i class="fas fa-paperclip"></i>
                         </button>
                         <div class="input-wrapper">
-                            <textarea id="user-input" placeholder="向 IDT Agent Pro X 发送指令... (Shift+Enter 换行)"
+                            <textarea id="user-input" placeholder="向 IDT Agent Pro 发送消息... (Shift+Enter 换行)"
                                 rows="1"></textarea>
                             <div class="input-actions-overlay">
                                 <button id="mic-button" class="overlay-btn icon-btn" title="语音输入 (开发中)">
@@ -187,15 +139,11 @@
                                 <span id="char-counter" class="char-counter">0/4000</span>
                             </div>
                         </div>
-                        <button id="send-button" class="send-button icon-btn" title="发送指令"> <!-- Title Updated -->
+                        <button id="send-button" class="send-button icon-btn" title="发送消息">
                             <svg viewBox="0 0 24 24" fill="currentColor" class="send-icon">
                                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
                             </svg>
-                            <div class="send-loading-indicator"> <!-- Enhanced Loading -->
-                                <span class="send-loading-dot"></span>
-                                <span class="send-loading-dot"></span>
-                                <span class="send-loading-dot"></span>
-                            </div>
+                            <i class="fas fa-spinner fa-spin send-loading-icon" style="display: none;"></i>
                         </button>
                         <input type="file" id="file-input" multiple style="display: none">
                     </div>
@@ -231,9 +179,9 @@
                     <div class="setting-item">
                         <label for="animation-level">动画效果</label>
                         <select id="animation-level">
-                            <option value="full">完整动效 (炫酷)</option> <!-- Updated option text -->
-                            <option value="basic">基本动效 (流畅)</option> <!-- Updated option text -->
-                            <option value="none">无动效 (极速)</option> <!-- Updated option text -->
+                            <option value="full">完整动效</option>
+                            <option value="basic">基本动效</option>
+                            <option value="none">无动效</option>
                         </select>
                     </div>
                 </div>
@@ -245,7 +193,7 @@
                                 class="slider round"></span></label>
                     </div>
                     <div class="setting-item">
-                        <label for="sound-enabled">消息提示音 (开发中)</label>
+                        <label for="sound-enabled">消息提示音 (待开发)</label>
                         <label class="switch"><input type="checkbox" id="sound-enabled"><span
                                 class="slider round"></span></label>
                     </div>
