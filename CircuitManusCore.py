@@ -322,7 +322,7 @@ class MemoryManager:
 
 # --- 模块化组件: LLMInterface (与V8.1.0一致, 但 agent_instance 类型改为 CircuitAgent) ---
 class LLMInterface:
-    def __init__(self, agent_instance: 'CircuitAgent', model_name: str = "glm-4-flash", default_temperature: float = 0.01, default_max_tokens: int = 8190): 
+    def __init__(self, agent_instance: 'CircuitAgent', model_name: str = "glm-4-flash-250414", default_temperature: float = 0.01, default_max_tokens: int = 8190): 
         logger.info(f"[LLMInterface] 初始化 LLM 接口,目标模型: {model_name}")
         if not agent_instance or not hasattr(agent_instance, 'api_key'):
              raise ValueError("LLMInterface 需要一个包含 'api_key' 属性的 Agent 实例. ")
@@ -878,10 +878,10 @@ class ToolExecutor:
 
 # --- Agent 核心类 (V8.1.1-WS-PJS-FIXED - Perfected JSON Schema Integration, Prompt Fix) ---
 class CircuitAgent: # 类名更新
-    def __init__(self, api_key: str, model_name: str = "glm-4-flash", 
+    def __init__(self, api_key: str, model_name: str = "glm-4-flash-250414", 
                  max_short_term_items: int = 30, max_long_term_items: int = 75, 
-                 planning_llm_retries: int = 2, max_tool_retries: int = 1, 
-                 tool_retry_delay_seconds: float = 1.0, max_replanning_attempts: int = 2, 
+                 planning_llm_retries: int = 5, max_tool_retries: int = 3, 
+                 tool_retry_delay_seconds: float = 1.0, max_replanning_attempts: int = 3, 
                  verbose: bool = True):
         logger.info(f"\n{'='*30} CircuitAgent 初始化开始 (V8.1.1-PJS Core, Perfected JSON, Prompt Fix) {'='*30}") # Version bump
         self.api_key = api_key

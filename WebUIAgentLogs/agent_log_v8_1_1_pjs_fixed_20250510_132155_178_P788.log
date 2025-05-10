@@ -1,0 +1,876 @@
+2025-05-10 13:21:55,178 - CircuitManusCore - INFO [CircuitManusCore.<module>:78] - Successfully configured file logging. Log messages will also be saved to: D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\WebUIAgentLogs\agent_log_v8_1_1_pjs_fixed_20250510_132155_178_P788.log
+2025-05-10 13:21:55,182 - __mp_main__ - INFO [server.<module>:21] - CircuitAgent 模块导入成功. 
+2025-05-10 13:21:55,186 - __mp_main__ - INFO [server.<module>:45] - 静态文件目录 '/static' 挂载成功. 
+2025-05-10 13:21:55,186 - __mp_main__ - INFO [server.<module>:60] - 成功获取 ZHIPUAI_API_KEY 环境变量. 
+2025-05-10 13:21:55,307 - asyncio - DEBUG [selector_events.__init__:54] - Using selector: SelectSelector
+2025-05-10 13:21:55,430 - server - INFO [server.<module>:21] - CircuitAgent 模块导入成功. 
+2025-05-10 13:21:55,432 - server - INFO [server.<module>:45] - 静态文件目录 '/static' 挂载成功. 
+2025-05-10 13:21:55,432 - server - INFO [server.<module>:60] - 成功获取 ZHIPUAI_API_KEY 环境变量. 
+2025-05-10 13:22:05,715 - server - INFO [server.read_root:96] - 请求根路径 '/',尝试提供 static/index.html. 
+2025-05-10 13:22:06,244 - server - INFO [server.websocket_endpoint:117] - WebSocket 连接已接受 (来自: 127.0.0.1:17861).
+2025-05-10 13:22:06,287 - server - INFO [server.websocket_endpoint:144] - 收到WebSocket初始化消息,未提供session_id,生成新的: 9c262ee6-2f91-456e-9f44-aebe1e950f30
+2025-05-10 13:22:06,288 - server - INFO [server.get_agent_instance:67] - 为 Session 9c262ee6-2f91-456e-9f44-aebe1e950f30 创建新的 Agent 实例...
+2025-05-10 13:22:06,288 - CircuitManusCore - INFO [CircuitManusCore.__init__:886] - 
+============================== CircuitAgent 初始化开始 (V8.1.1-PJS Core, Perfected JSON, Prompt Fix) ==============================
+2025-05-10 13:22:06,289 - CircuitManusCore - INFO [CircuitManusCore.__init__:895] - [AgentV8_1_1_WS Init] 控制台日志级别已设置为: DEBUG (Verbose Mode: True)
+2025-05-10 13:22:06,290 - CircuitManusCore - INFO [CircuitManusCore.__init__:900] - [AgentV8_1_1_WS Init] 正在动态发现并注册工具...
+2025-05-10 13:22:06,290 - CircuitManusCore - INFO [CircuitManusCore.__init__:906] - [AgentV8_1_1_WS Init] ✓ 已注册工具: 'add_component_tool'
+2025-05-10 13:22:06,292 - CircuitManusCore - INFO [CircuitManusCore.__init__:906] - [AgentV8_1_1_WS Init] ✓ 已注册工具: 'clear_circuit_tool'
+2025-05-10 13:22:06,292 - CircuitManusCore - INFO [CircuitManusCore.__init__:906] - [AgentV8_1_1_WS Init] ✓ 已注册工具: 'connect_components_tool'
+2025-05-10 13:22:06,293 - CircuitManusCore - INFO [CircuitManusCore.__init__:906] - [AgentV8_1_1_WS Init] ✓ 已注册工具: 'describe_circuit_tool'
+2025-05-10 13:22:06,294 - CircuitManusCore - INFO [CircuitManusCore.__init__:912] - [AgentV8_1_1_WS Init] 共发现并注册了 4 个工具. 
+2025-05-10 13:22:06,296 - CircuitManusCore - DEBUG [CircuitManusCore.__init__:914] - [AgentV8_1_1_WS Init] 工具注册表详情:
+{
+  "add_component_tool": {
+    "description": "添加一个新的电路元件 (如电阻, 电容, 电池, LED, 开关, 芯片, 地线等). 如果用户未指定 ID,会自动生成. ",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "component_type": {
+          "type": "string",
+          "description": "元件的类型 (例如: '电阻', 'LED')."
+        },
+        "component_id": {
+          "type": "string",
+          "description": "可选的用户指定 ID. "
+        },
+        "value": {
+          "type": "string",
+          "description": "可选的元件值 (例如: '1k', '10uF')."
+        }
+      },
+      "required": [
+        "component_type"
+      ]
+    }
+  },
+  "clear_circuit_tool": {
+    "description": "彻底清空当前的电路设计. ",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "connect_components_tool": {
+    "description": "使用两个已存在元件的 ID 将它们连接起来. ",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "comp1_id": {
+          "type": "string",
+          "description": "第一个元件的 ID. "
+        },
+        "comp2_id": {
+          "type": "string",
+          "description": "第二个元件的 ID. "
+        }
+      },
+      "required": [
+        "comp1_id",
+        "comp2_id"
+      ]
+    }
+  },
+  "describe_circuit_tool": {
+    "description": "获取当前电路的详细描述. ",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  }
+}
+2025-05-10 13:22:06,297 - CircuitManusCore - INFO [CircuitManusCore.__init__:255] - [MemoryManager] 初始化记忆模块...
+2025-05-10 13:22:06,298 - CircuitManusCore - INFO [CircuitManusCore.__init__:109] - [Circuit] 初始化电路实体. 
+2025-05-10 13:22:06,299 - CircuitManusCore - INFO [CircuitManusCore.__init__:116] - [Circuit] 电路实体初始化完成. 
+2025-05-10 13:22:06,299 - CircuitManusCore - INFO [CircuitManusCore.__init__:267] - [MemoryManager] 记忆模块初始化完成. 短期上限: 30 条, 长期上限: 75 条. 
+2025-05-10 13:22:06,300 - CircuitManusCore - INFO [CircuitManusCore.__init__:326] - [LLMInterface] 初始化 LLM 接口,目标模型: glm-4-flash
+2025-05-10 13:22:06,526 - CircuitManusCore - INFO [CircuitManusCore.__init__:334] - [LLMInterface] 智谱 AI 客户端初始化成功. 
+2025-05-10 13:22:06,527 - CircuitManusCore - INFO [CircuitManusCore.__init__:343] - [LLMInterface] LLM 接口初始化完成 (Model: glm-4-flash, Temp: 0.01, MaxTokens: 8190). 
+2025-05-10 13:22:06,527 - CircuitManusCore - INFO [CircuitManusCore.__init__:427] - [OutputParserV8_1] 初始化输出解析器 (适配 ManusLLMResponse-V8.1-Perfected JSON结构). 
+2025-05-10 13:22:06,528 - CircuitManusCore - INFO [CircuitManusCore.__init__:676] - [ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止, UI回调增强 V8.1.1). 
+2025-05-10 13:22:06,529 - CircuitManusCore - INFO [CircuitManusCore.__init__:687] - [ToolExecutor] 工具执行配置: 每个工具最多重试 1 次,重试间隔 1.0 秒. Verbose Mode: True
+2025-05-10 13:22:06,530 - CircuitManusCore - INFO [CircuitManusCore.__init__:933] - [AgentV8_1_1_WS Init] 规划LLM重试次数: 2, 工具执行重试次数: 1, 最大重规划尝试次数: 2
+2025-05-10 13:22:06,530 - CircuitManusCore - INFO [CircuitManusCore.__init__:935] - 
+============================== CircuitAgent 初始化成功 ==============================
+
+2025-05-10 13:22:06,531 - server - INFO [server.get_agent_instance:74] - Agent 实例为 Session 9c262ee6-2f91-456e-9f44-aebe1e950f30 创建成功. 
+2025-05-10 13:22:06,534 - server - INFO [server.websocket_endpoint:160] - Session 9c262ee6-2f91-456e-9f44-aebe1e950f30 WebSocket初始化成功并发送确认. 
+2025-05-10 13:22:20,960 - server - INFO [server.websocket_endpoint:228] - Session 9c262ee6-2f91-456e-9f44-aebe1e950f30 WebSocket连接已断开 (在外部捕获): code=1001, reason=''
+2025-05-10 13:22:20,969 - server - INFO [server.websocket_endpoint:237] - Session 9c262ee6-2f91-456e-9f44-aebe1e950f30 的WebSocket连接已从活动列表中移除. 
+2025-05-10 13:22:20,979 - server - INFO [server.websocket_endpoint:238] - Session 9c262ee6-2f91-456e-9f44-aebe1e950f30 WebSocket连接处理结束 (客户端: 127.0.0.1:17861).
+2025-05-10 13:22:30,273 - server - INFO [server.read_root:96] - 请求根路径 '/',尝试提供 static/index.html. 
+2025-05-10 13:22:30,589 - server - INFO [server.websocket_endpoint:117] - WebSocket 连接已接受 (来自: 127.0.0.1:17898).
+2025-05-10 13:22:30,644 - server - INFO [server.websocket_endpoint:144] - 收到WebSocket初始化消息,未提供session_id,生成新的: 906a508e-bf9f-4299-bb61-b29ca081556e
+2025-05-10 13:22:30,645 - server - INFO [server.get_agent_instance:67] - 为 Session 906a508e-bf9f-4299-bb61-b29ca081556e 创建新的 Agent 实例...
+2025-05-10 13:22:30,645 - CircuitManusCore - INFO [CircuitManusCore.__init__:886] - 
+============================== CircuitAgent 初始化开始 (V8.1.1-PJS Core, Perfected JSON, Prompt Fix) ==============================
+2025-05-10 13:22:30,646 - CircuitManusCore - INFO [CircuitManusCore.__init__:895] - [AgentV8_1_1_WS Init] 控制台日志级别已设置为: DEBUG (Verbose Mode: True)
+2025-05-10 13:22:30,646 - CircuitManusCore - INFO [CircuitManusCore.__init__:900] - [AgentV8_1_1_WS Init] 正在动态发现并注册工具...
+2025-05-10 13:22:30,647 - CircuitManusCore - INFO [CircuitManusCore.__init__:906] - [AgentV8_1_1_WS Init] ✓ 已注册工具: 'add_component_tool'
+2025-05-10 13:22:30,647 - CircuitManusCore - INFO [CircuitManusCore.__init__:906] - [AgentV8_1_1_WS Init] ✓ 已注册工具: 'clear_circuit_tool'
+2025-05-10 13:22:30,648 - CircuitManusCore - INFO [CircuitManusCore.__init__:906] - [AgentV8_1_1_WS Init] ✓ 已注册工具: 'connect_components_tool'
+2025-05-10 13:22:30,649 - CircuitManusCore - INFO [CircuitManusCore.__init__:906] - [AgentV8_1_1_WS Init] ✓ 已注册工具: 'describe_circuit_tool'
+2025-05-10 13:22:30,649 - CircuitManusCore - INFO [CircuitManusCore.__init__:912] - [AgentV8_1_1_WS Init] 共发现并注册了 4 个工具. 
+2025-05-10 13:22:30,651 - CircuitManusCore - DEBUG [CircuitManusCore.__init__:914] - [AgentV8_1_1_WS Init] 工具注册表详情:
+{
+  "add_component_tool": {
+    "description": "添加一个新的电路元件 (如电阻, 电容, 电池, LED, 开关, 芯片, 地线等). 如果用户未指定 ID,会自动生成. ",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "component_type": {
+          "type": "string",
+          "description": "元件的类型 (例如: '电阻', 'LED')."
+        },
+        "component_id": {
+          "type": "string",
+          "description": "可选的用户指定 ID. "
+        },
+        "value": {
+          "type": "string",
+          "description": "可选的元件值 (例如: '1k', '10uF')."
+        }
+      },
+      "required": [
+        "component_type"
+      ]
+    }
+  },
+  "clear_circuit_tool": {
+    "description": "彻底清空当前的电路设计. ",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "connect_components_tool": {
+    "description": "使用两个已存在元件的 ID 将它们连接起来. ",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "comp1_id": {
+          "type": "string",
+          "description": "第一个元件的 ID. "
+        },
+        "comp2_id": {
+          "type": "string",
+          "description": "第二个元件的 ID. "
+        }
+      },
+      "required": [
+        "comp1_id",
+        "comp2_id"
+      ]
+    }
+  },
+  "describe_circuit_tool": {
+    "description": "获取当前电路的详细描述. ",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  }
+}
+2025-05-10 13:22:30,652 - CircuitManusCore - INFO [CircuitManusCore.__init__:255] - [MemoryManager] 初始化记忆模块...
+2025-05-10 13:22:30,653 - CircuitManusCore - INFO [CircuitManusCore.__init__:109] - [Circuit] 初始化电路实体. 
+2025-05-10 13:22:30,653 - CircuitManusCore - INFO [CircuitManusCore.__init__:116] - [Circuit] 电路实体初始化完成. 
+2025-05-10 13:22:30,654 - CircuitManusCore - INFO [CircuitManusCore.__init__:267] - [MemoryManager] 记忆模块初始化完成. 短期上限: 30 条, 长期上限: 75 条. 
+2025-05-10 13:22:30,655 - CircuitManusCore - INFO [CircuitManusCore.__init__:326] - [LLMInterface] 初始化 LLM 接口,目标模型: glm-4-flash
+2025-05-10 13:22:30,736 - CircuitManusCore - INFO [CircuitManusCore.__init__:334] - [LLMInterface] 智谱 AI 客户端初始化成功. 
+2025-05-10 13:22:30,737 - CircuitManusCore - INFO [CircuitManusCore.__init__:343] - [LLMInterface] LLM 接口初始化完成 (Model: glm-4-flash, Temp: 0.01, MaxTokens: 8190). 
+2025-05-10 13:22:30,737 - CircuitManusCore - INFO [CircuitManusCore.__init__:427] - [OutputParserV8_1] 初始化输出解析器 (适配 ManusLLMResponse-V8.1-Perfected JSON结构). 
+2025-05-10 13:22:30,738 - CircuitManusCore - INFO [CircuitManusCore.__init__:676] - [ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止, UI回调增强 V8.1.1). 
+2025-05-10 13:22:30,739 - CircuitManusCore - INFO [CircuitManusCore.__init__:687] - [ToolExecutor] 工具执行配置: 每个工具最多重试 1 次,重试间隔 1.0 秒. Verbose Mode: True
+2025-05-10 13:22:30,739 - CircuitManusCore - INFO [CircuitManusCore.__init__:933] - [AgentV8_1_1_WS Init] 规划LLM重试次数: 2, 工具执行重试次数: 1, 最大重规划尝试次数: 2
+2025-05-10 13:22:30,740 - CircuitManusCore - INFO [CircuitManusCore.__init__:935] - 
+============================== CircuitAgent 初始化成功 ==============================
+
+2025-05-10 13:22:30,740 - server - INFO [server.get_agent_instance:74] - Agent 实例为 Session 906a508e-bf9f-4299-bb61-b29ca081556e 创建成功. 
+2025-05-10 13:22:30,742 - server - INFO [server.websocket_endpoint:160] - Session 906a508e-bf9f-4299-bb61-b29ca081556e WebSocket初始化成功并发送确认. 
+2025-05-10 13:22:32,940 - server - INFO [server.websocket_endpoint:179] - Session 906a508e-bf9f-4299-bb61-b29ca081556e 收到用户消息: '将R1与LED1的正极连接，再将LED1的负极连接到GND...'
+2025-05-10 13:22:32,941 - server - INFO [server.websocket_endpoint:183] - Session 906a508e-bf9f-4299-bb61-b29ca081556e 获取到锁,开始处理消息...
+2025-05-10 13:22:32,942 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1098] - 
+========================= CircuitAgent 开始处理用户请求 (ReqID: req_13751da8-de4) =========================
+2025-05-10 13:22:32,942 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1099] - [OrchestratorV8_1_1_WS] 收到用户指令: "将R1与LED1的正极连接，再将LED1的负极连接到GND"
+2025-05-10 13:22:32,944 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "input_validation", "status": "received", "message": "\u6536\u5230\u7528\u6237\u6307\u4ee4,\u5f00\u59cb\u5904\u7406...", "details": {"user_request_preview": "\u5c06R1\u4e0eLED1\u7684\u6b63\u6781\u8fde\u63a5\uff0c\u518d\u5c06LED1\u7684\u8d1f\u6781\u8fde\u63a5\u5230GND"}}
+2025-05-10 13:22:32,950 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:270] - [MemoryManager] 添加消息到短期记忆 (Role: user). 当前数量: 0
+2025-05-10 13:22:32,959 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:289] - [MemoryManager] 添加后短期记忆数量: 1
+2025-05-10 13:22:32,960 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1149] - 
+--- [OrchestratorV8_1_1_WS - PlanAttempt 1 - ReqID: req_13751da8-de4] 开始 ---
+2025-05-10 13:22:32,963 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "planning", "status": "started", "message": "\u6b63\u5728\u5206\u6790\u6307\u4ee4\u5e76\u5236\u5b9a\u8ba1\u5212...", "details": {"attempt_number": 1, "max_replanning_attempts": 2}}
+2025-05-10 13:22:32,965 - CircuitManusCore - DEBUG [CircuitManusCore.get_memory_context_for_prompt:308] - [MemoryManager] 正在格式化记忆上下文用于 Prompt...
+2025-05-10 13:22:32,966 - CircuitManusCore - DEBUG [CircuitManusCore.get_state_description:161] - [Circuit] 正在生成电路状态描述...
+2025-05-10 13:22:32,966 - CircuitManusCore - DEBUG [CircuitManusCore.get_memory_context_for_prompt:320] - [MemoryManager] 记忆上下文 (电路+长期) 格式化完成. 
+2025-05-10 13:22:32,967 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1167] - [OrchestratorV8_1_1_WS - PlanAttempt 1 - ReqID: req_13751da8-de4] 调用规划 LLM (LLM Call Attempt 1 of 3)...
+2025-05-10 13:22:32,968 - CircuitManusCore - INFO [CircuitManusCore.call_llm:353] - [LLMInterface] 准备异步调用 LLM (glm-4-flash, Phase: planning, Expecting V8.1.1 JSON)...
+2025-05-10 13:22:32,969 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:354] - [LLMInterface] 发送的消息条数: 2
+2025-05-10 13:22:32,970 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:367] - [LLMInterface] 发送给 LLM 的消息列表 (预览):
+[
+  {
+    "index": 0,
+    "role": "system",
+    "content_preview_length": 11340,
+    "content_preview": "您是一位顶尖的、极其严谨的电路设计编程助理 (Agent Version V8.1.1-WS-PJS). 您的行为必须专业、精确,并严格遵循指令. 您的输出【必须且只能是】一个符合下述V8.1.1规范的JSON对象,且该JSON对象需要被三个反引号和'json'标记包围 (即 ```json ... ```). JSON对象之外不应有任何其他文本、注释或解释. \n\n【核心任务: 规划阶段 (V8.1.1)】\n深入分析用户的最新指令、完整的对话历史(包括您之前的思考、规划以及所有工具执行结果,特别是'tool' role和'assistant' role中可能的错误反馈)、当前的电路状态和记忆. 然后,生成一个符合V8.1.1规范的JSON对象作为您的行动计划或直接回复. \n【V8.1.1 JSON 输出格式规范 (必须严格遵守)】\n\n```json\n{\n  \"request_id\": \"string_or_null_current_user_request_cycle_id_echo_this_value_from_system_prompt_s_context_information_if_provided_otherwise_null\",\n  \"llm_interaction_id\": \"string_MUST_BE_UNIQUE_id_for_this_llm_response_e.g.,_plan_llm_id_followed_by_8_random_chars_like_plan_llm_id_a1b2c3d4\",\n  \"timestamp_utc\": \"string_current_utc_timestamp_in_iso_8601_format_e.g.,_2024-07-16T12:00:00.000Z\",\n  \"status\": \"string_MUST_BE_either_'success'_or_'failure'._Indicates_if_THIS_SPECIFIC_JSON_OUTPUT_was_successfully_generated_by_LLM_for_the_current_phase.\",\n  \"error_details\": { \n    \"error_type\": \"string_enum_HIGH_LEVEL_ERROR_CATEGORY_e.g._PLANNING_ERROR_LLM_OUTPUT_VALIDATION_ERROR_INTERNAL_LOGIC_ERROR\", \n    \"error_code\": \"string_SPECIFIC_ERROR_CODE_e.g._JSON_MALFORMED_MISSING_REQUIRED_FIELD_TOOL_PARAMS_INVALID_REPLAN_MAX_ATTEMPTS_REACHED\", \n    \"message_to_user\": \"string_A_user_friendly_explanation_if_this_error_is_directly_related_to_user_action_or_if_a_user_facing_message_is_appropriate_otherwise_generic_agent_error_message.\", \n    \"technical_message\": \"string_Detailed_technical_error_message_for_logging_and_debugging_This_is_what_LLM_thinks_went_wrong_with_its_OWN_output_generation_process.\", \n    \"is_direct_llm_failure\": \"boolean_True_if_LLM_explicitly_states_it_cannot_fulfill_request_or_generate_valid_JSON_False_if_error_is_due_to_Agent_side_validation_of_an_otherwise_syntactically_valid_LLM_JSON_output.\", \n    \"failed_validation_points\": [ \n      {\n        \"json_path\": \"string_e.g._decision.TOOL_CALL_REQUESTS[0].tool_arguments.component_id\",\n        \"issue_description\": \"string_e.g._Required_field_missing_or_Value_must_be_a_string_but_got_integer\"\n      }\n    ]\n  },\n  \"execution_phase\": \"string_MUST_BE_'planning'_for_this_task\",\n  \"thought_process\": \"string_YOUR_DETAILED_STEP_BY_STEP_REASONING_AS_BEFORE_VERY_IMPORTANT.\",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": \"boolean_true_if_tools_are_to_be_called_false_otherwise\",\n    \"TOOL_CALL_REQUESTS\": [ \n      {\n        \"tool_call_id\": \"string_UNIQUE_ID_generated_by_YOU_for_this_specific_tool_call\",\n        \"tool_name\": \"string_name_of_the_tool_to_be_called_from_available_list\",\n        \"tool_arguments\": { },\n        \"ui_hints\": { \n            \"display_name_for_tool\": \"string_optional_A_more_user_friendly_name_for_this_tool_call_e.g._Adding_Resistor_R1\",\n            \"estimated_duration_category\": \"string_enum_optional_short_medium_long_very_long\",\n            \"show_progress_granularly\": \"boolean_optional_If_true_UI_might_expect_finer_grained_progress_if_tool_supports_it_Default_false\"\n        },\n        \"estimated_complexity_or_notes\": \"string_optional_LLMs_internal_notes_dependencies_or_confidence_level_for_this_call.\"\n      }\n    ],\n    \"RESPONSE_TO_USER\": { \n      \"content_type\": \"string_e.g._text/plain_or_application/markdown\",\n      \"content\": \"string_If_IS_CALL_TOOLS_is_false_this_is_your_direct_and_complete_reply_to_the_user_It_MUST_NOT_be_empty_If_IS_CALL_TOOLS_is_true_this_SHOULD_BE_a_meaningful_transitional_message_reflecting_the_planned_actions_e.g._Okay_I_will_add_component_X_and_then_connect_it_to_Y_It_can_be_an_empty_string_if_no_transitional_message_is_truly_needed_but_a_good_one_is_preferred_for_UX.\",\n      \"suggestions_for_next_steps\": [ \n        {\n          \"suggestion_id\": \"string_optional_unique_id_for_this_suggestion_e.g._sugg_ask_about_led_color\",\n          \"text_for_user\": \"string_The_suggestion_text_to_display_to_the_user_e.g._Would_you_like_to_specify_the_LED_color\",\n          \"action_type\": \"string_enum_optional_USER_INPUT_EXPECTED_or_PREDEFINED_AGENT_ACTION_or_UI_NAVIGATION\",\n          \"action_payload\": \"object_or_string_optional_If_PREDEFINED_AGENT_ACTION_this_could_be_a_simplified_request_object_or_command_string_for_the_agent_to_process_if_selected_by_user\"\n        }\n      ],\n      \"requires_user_clarification_for_current_request\": \"boolean_optional_Set_to_true_if_the_current_request_cannot_proceed_without_further_input_from_the_user_and_the_content_is_asking_for_that_clarification_Default_false\"\n    }\n  },\n  \"diagnostics\": { \n      \"llm_confidence_score_for_this_output\": \"float_optional_0.0_to_1.0_LLMs_self_assessed_confidence_in_the_correctness_and_completeness_of_THIS_JSON_output\",\n      \"alternative_plans_considered_count\": \"integer_optional_If_LLM_considered_multiple_plans_before_settling_on_this_one\",\n      \"parsing_feedback_from_previous_attempt_id\": \"string_or_null_If_this_is_a_correction_to_a_previously_malformed_JSON_this_is_the_llm_interaction_id_of_that_failed_attempt\"\n  },\n  \"usage_metadata\": null\n}\n```\n\n【重要指令与检查清单 (V8.1.1)】:\n1.  **请求ID回显**: 准确复制System Prompt上下文中提供的 `Current Request ID` 到您的JSON输出的 `request_id` 字段. 如果未提供,则设为 `null`. \n2.  **LLM交互ID**: 【必须】为本次JSON输出生成唯一的 `llm_interaction_id`. \n3.  **UTC时间戳**: 【必须】提供当前UTC时间的ISO 8601格式 `timestamp_utc`. \n4.  **顶层 `status`**: (再次强调,请仔细阅读上面对 `status` 的详细说明和重规划指示中的要求)如果您【当前这次】成功生成了符合规范且逻辑合理的V8.1.1 JSON计划,设为 `\"success\"`. 如果您在理解请求或生成计划时遇到【自身】的内部问题,导致无法产出有效JSON,设为 `\"failure\"` 并在 `error_details` 中详细说明原因. \n5.  **`error_details` 对象**: 仅当顶层 `status` 为 `\"failure\"` 时提供. 否则为 `null`. 确保包含 `error_type`, `error_code`, `technical_message`, `is_direct_llm_failure`. `message_to_user` 和 `failed_validation_points` 根据情况提供. \n6.  **`execution_phase`**: 在此阶段,此值【必须】是 `\"planning\"`. \n7.  **`thought_process`**: 【极其重要】请在此详细记录您的思考步骤. 务必清晰、详尽、符合逻辑. \n8.  **`decision.IS_CALL_TOOLS`**: 根据您的分析决定是否需要调用工具. \n9.  **`decision.TOOL_CALL_REQUESTS`**: 如果 `IS_CALL_TOOLS` 为 `true`,此列表包含您计划调用的工具. 每个工具调用对象【必须】包含一个由您生成的唯一的 `tool_call_id` (例如 `tc_` 加上工具名和随机字符),工具名 `tool_name`,以及符合Schema的 `tool_arguments` (空对象 `{}` 如果无参数). 工具按您期望的执行顺序列出. 如果 `IS_CALL_TOOLS` 为 `false`,此字段应为 `[]` (空数组) 或 `null`. \n10. **`decision.RESPONSE_TO_USER.content`**: \n    - 如果 `IS_CALL_TOOLS` 为 `false` (直接回复): 此处是您给用户的【完整最终答复】. 它【不能】为空字符串或仅包含空白. \n    - 如果 `IS_CALL_TOOLS` 为 `true` (调用工具): 此处【应该】是一句【有意义的、能简要预示您接下来计划操作的过渡性】的话. 如果不需要,可为空字符串 `\"\"`. \n11. **`decision.RESPONSE_TO_USER.suggestions_for_next_steps`**: (可选) 提供结构化的建议列表. \n12. **`decision.RESPONSE_TO_USER.requires_user_clarification_for_current_request`**: (可选) 如果需要用户澄清,设为 `true`. \n13. **操作前检查 (重要)**: 在规划涉及操作现有元件的工具调用前,请务必通过 `thought_process` 确认这些元件是否已存在. 如不确定,优先规划 `add_component_tool` 或 `describe_circuit_tool`. \n\n\n【通用示例1: 直接回答用户问题 (无需工具) - V8.1.1 JSON】\n如果用户问: “你好,什么是电容？”\n您的输出V8.1.1 JSON应类似 (ID和时间戳会变化): \n```json\n{\n  \"request_id\": \"req_13751da8-de4\",\n  \"llm_interaction_id\": \"plan_ex_llm_id_92b952_direct_qa_cap\",\n  \"timestamp_utc\": \"2025-05-10T05:22:32.967289+00:00\",\n  \"status\": \"success\",\n  \"error_details\": null,\n  \"execution_phase\": \"planning\",\n  \"thought_process\": \"用户询问电容的定义. 这是一个概念性问题,不需要调用任何电路设计工具,我可以根据我的知识库直接回答. 我将提供一个关于电容基本作用、单位和常见类型的解释,并给出下一步建议. \",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": false,\n    \"TOOL_CALL_REQUESTS\": [],\n    \"RESPONSE_TO_USER\": {\n      \"content_type\": \"text/plain\",\n      \"content\": \"电容是一种能够储存电荷的电子元件,由两块导体板中间夹一层绝缘介质构成. 它的主要特性是电容量,单位是法拉(F),常用单位有微法(μF)、纳法(nF)和皮法(pF). 电容在电路中常用于滤波、耦合、隔直流、储能等. \",\n      \"suggestions_for_next_steps\": [\n        {\"text_for_user\": \"您想了解电容在具体电路中的应用吗？\", \"action_type\": \"USER_INPUT_EXPECTED\"},\n        {\"text_for_user\": \"需要我帮您在当前电路中添加一个电容吗？\", \"action_type\": \"USER_INPUT_EXPECTED\", \"action_payload\": \"请帮我添加一个10uF的电解电容\"}\n      ],\n      \"requires_user_clarification_for_current_request\": false\n    }\n  },\n  \"diagnostics\": {\"llm_confidence_score_for_this_output\": 0.95},\n  \"usage_metadata\": null\n}\n```\n\n【通用示例2: 需要调用工具时的输出V8.1.1 JSON】\n如果用户说: “帮我加一个1k欧姆的电阻R1,再加一个3V的电池B1,然后把它们连起来. ”\n您的输出V8.1.1 JSON应类似 (ID和时间戳会变化,每个tool_call_id必须唯一,由您生成): \n```json\n{\n  \"request_id\": \"req_13751da8-de4\",\n  \"llm_interaction_id\": \"plan_ex_llm_id_92b952_multi_tool_rc\",\n  \"timestamp_utc\": \"2025-05-10T05:22:32.967289+00:00\",\n  \"status\": \"success\",\n  \"error_details\": null,\n  \"execution_phase\": \"planning\",\n  \"thought_process\": \"用户需要执行三个操作: 1. 添加电阻R1 (1kΩ). 2. 添加电池B1 (3V). 3. 连接R1和B1. 我将按顺序规划这三个工具调用. 确保为每个工具调用生成唯一的tool_call_id. 并为用户提供一个过渡性的回复. \",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": true,\n    \"TOOL_CALL_REQUESTS\": [\n      {\n        \"tool_call_id\": \"tc_add_r1_2398afcd\",\n        \"tool_name\": \"add_component_tool\",\n        \"tool_arguments\": {\"component_type\": \"电阻\", \"component_id\": \"R1\", \"value\": \"1kΩ\"},\n        \"ui_hints\": {\"display_name_for_tool\": \"添加电阻 R1 (1kΩ)\", \"estimated_duration_category\": \"short\"},\n        \"estimated_complexity_or_notes\": \"标准电阻添加操作,低复杂度. \"\n      },\n      {\n        \"tool_call_id\": \"tc_add_b1_61a1c2a8\",\n        \"tool_name\": \"add_component_tool\",\n        \"tool_arguments\": {\"component_type\": \"电池\", \"component_id\": \"B1\", \"value\": \"3V\"},\n        \"ui_hints\": {\"display_name_for_tool\": \"添加电池 B1 (3V)\", \"estimated_duration_category\": \"short\"},\n        \"estimated_complexity_or_notes\": \"标准电池添加操作,低复杂度. \"\n      },\n      {\n        \"tool_call_id\": \"tc_conn_r1b1_ca47a0f3\",\n        \"tool_name\": \"connect_components_tool\",\n        \"tool_arguments\": {\"comp1_id\": \"R1\", \"comp2_id\": \"B1\"},\n        \"ui_hints\": {\"display_name_for_tool\": \"连接 R1 与 B1\", \"estimated_duration_category\": \"short\"},\n        \"estimated_complexity_or_notes\": \"连接两个已添加的元件,依赖前两个操作成功. \"\n      }\n    ],\n    \"RESPONSE_TO_USER\": {\n      \"content_type\": \"text/plain\",\n      \"content\": \"好的,我正在为您添加电阻R1 (1kΩ)、电池B1 (3V),并将它们连接起来. 请稍候...\",\n      \"suggestions_for_next_steps\": [\n        {\"text_for_user\": \"操作完成后,您想查看电路图吗？\", \"action_type\": \"USER_INPUT_EXPECTED\"},\n        {\"text_for_user\": \"需要为这些元件设置其他参数吗？\", \"action_type\": \"USER_INPUT_EXPECTED\"}\n      ],\n      \"requires_user_clarification_for_current_request\": false\n    }\n  },\n  \"diagnostics\": {\"llm_confidence_score_for_this_output\": 0.9, \"alternative_plans_considered_count\": 0},\n  \"usage_metadata\": null\n}\n```\n\n【可用工具列表与参数规范 (V8.1.1)】:\n  - 工具名称: `add..."
+  },
+  {
+    "index": 1,
+    "role": "user",
+    "content_preview_length": 29,
+    "content_preview": "将R1与LED1的正极连接，再将LED1的负极连接到GND"
+  }
+]
+2025-05-10 13:22:32,972 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "llm_communication_status", "request_id": "req_13751da8-de4", "llm_phase": "planning", "status": "started", "message": "\u6b63\u5728\u4e0e\u667a\u80fd\u5927\u8111\u6c9f\u901a (planning)..."}
+2025-05-10 13:22:33,037 - httpcore.connection - DEBUG [_trace.trace:47] - connect_tcp.started host='127.0.0.1' port=11334 local_address=None timeout=8.0 socket_options=None
+2025-05-10 13:22:33,041 - httpcore.connection - DEBUG [_trace.trace:47] - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000025DEAA9FC10>
+2025-05-10 13:22:33,041 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'CONNECT']>
+2025-05-10 13:22:33,043 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-10 13:22:33,044 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'CONNECT']>
+2025-05-10 13:22:33,044 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-10 13:22:33,045 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-05-10 13:22:33,046 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-05-10 13:22:33,047 - httpcore.proxy - DEBUG [_trace.trace:47] - start_tls.started ssl_context=<ssl.SSLContext object at 0x0000025DEAAA07C0> server_hostname='open.bigmodel.cn' timeout=8.0
+2025-05-10 13:22:34,036 - httpcore.proxy - DEBUG [_trace.trace:47] - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000025DEAA9FC40>
+2025-05-10 13:22:34,037 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'POST']>
+2025-05-10 13:22:34,038 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-10 13:22:34,041 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'POST']>
+2025-05-10 13:22:34,042 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-10 13:22:34,043 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'POST']>
+2025-05-10 13:22:48,659 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 10 May 2025 05:23:44 GMT'), (b'Content-Type', b'application/json; charset=UTF-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Set-Cookie', b'acw_tc=1a0c66dc17468546103596270e00550405150391cd8c7291e6c89edfdad92a;path=/;HttpOnly;Max-Age=1800'), (b'Vary', b'Accept-Encoding'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'X-LOG-ID', b'20250510132330ab9306f09d7f4a63'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'Content-Encoding', b'gzip')])
+2025-05-10 13:22:48,665 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.started request=<Request [b'POST']>
+2025-05-10 13:22:48,667 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.complete
+2025-05-10 13:22:48,668 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.started
+2025-05-10 13:22:48,669 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.complete
+2025-05-10 13:22:48,678 - CircuitManusCore - INFO [CircuitManusCore.call_llm:386] - [LLMInterface] LLM 异步调用成功. 耗时: 15.703 秒. 
+2025-05-10 13:22:48,678 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "llm_communication_status", "request_id": "req_13751da8-de4", "llm_phase": "planning", "status": "completed", "message": "\u4e0e\u667a\u80fd\u5927\u8111\u6c9f\u901a\u5b8c\u6210 (planning). ", "details": {"duration_seconds": 15.703000000001339}}
+2025-05-10 13:22:48,680 - CircuitManusCore - INFO [CircuitManusCore.call_llm:398] - [LLMInterface] Token 统计: Prompt=3906, Completion=618, Total=4524
+2025-05-10 13:22:48,680 - CircuitManusCore - INFO [CircuitManusCore.call_llm:401] - [LLMInterface] 完成原因: stop
+2025-05-10 13:22:48,681 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:404] - [LLMInterface] LLM 原始响应内容 (完整):
+```json
+{
+  "request_id": "req_13751da8-de4",
+  "llm_interaction_id": "plan_ex_llm_id_92b952_connect_r1_led1",
+  "timestamp_utc": "2025-05-10T05:22:32.967289+00:00",
+  "status": "success",
+  "error_details": null,
+  "execution_phase": "planning",
+  "thought_process": "用户要求将电阻R1与LED1的正极连接，然后将LED1的负极连接到地线GND。首先，我需要确认R1和LED1是否已经存在于电路中。如果它们存在，我将调用连接组件的工具来完成这个任务。如果它们不存在，我将首先添加这些组件。这里不需要添加任何新的工具调用，因为只是连接已存在的组件。",
+  "decision": {
+    "IS_CALL_TOOLS": true,
+    "TOOL_CALL_REQUESTS": [
+      {
+        "tool_call_id": "tc_connect_r1_led1_positive",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "R1",
+          "comp2_id": "LED1_positive"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "连接 R1 与 LED1 正极",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      },
+      {
+        "tool_call_id": "tc_connect_led1_negative_gnd",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "LED1_negative",
+          "comp2_id": "GND"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "连接 LED1 负极 到 GND",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      }
+    ],
+    "RESPONSE_TO_USER": {
+      "content_type": "text/plain",
+      "content": "好的，我正在为您将R1与LED1的正极连接，并将LED1的负极连接到GND。请稍候...",
+      "suggestions_for_next_steps": [
+        {"text_for_user": "操作完成后，您想查看电路图吗？", "action_type": "USER_INPUT_EXPECTED"},
+        {"text_for_user": "需要为这些元件设置其他参数吗？", "action_type": "USER_INPUT_EXPECTED"}
+      ],
+      "requires_user_clarification_for_current_request": false
+    }
+  },
+  "diagnostics": {
+    "llm_confidence_score_for_this_output": 0.95,
+    "alternative_plans_considered_count": 0
+  },
+  "usage_metadata": null
+}
+```
+2025-05-10 13:22:48,682 - CircuitManusCore - DEBUG [CircuitManusCore.parse_llm_response_to_structured_json:495] - [parse_v81_8c26e61e-OutputParserV8_1] 开始解析 LLM 响应 (Phase: planning)...
+2025-05-10 13:22:48,683 - CircuitManusCore - DEBUG [CircuitManusCore.parse_llm_response_to_structured_json:511] - [parse_v81_8c26e61e-OutputParserV8_1] 接收到的原始 LLM content (完整):
+```json
+{
+  "request_id": "req_13751da8-de4",
+  "llm_interaction_id": "plan_ex_llm_id_92b952_connect_r1_led1",
+  "timestamp_utc": "2025-05-10T05:22:32.967289+00:00",
+  "status": "success",
+  "error_details": null,
+  "execution_phase": "planning",
+  "thought_process": "用户要求将电阻R1与LED1的正极连接，然后将LED1的负极连接到地线GND。首先，我需要确认R1和LED1是否已经存在于电路中。如果它们存在，我将调用连接组件的工具来完成这个任务。如果它们不存在，我将首先添加这些组件。这里不需要添加任何新的工具调用，因为只是连接已存在的组件。",
+  "decision": {
+    "IS_CALL_TOOLS": true,
+    "TOOL_CALL_REQUESTS": [
+      {
+        "tool_call_id": "tc_connect_r1_led1_positive",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "R1",
+          "comp2_id": "LED1_positive"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "连接 R1 与 LED1 正极",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      },
+      {
+        "tool_call_id": "tc_connect_led1_negative_gnd",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "LED1_negative",
+          "comp2_id": "GND"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "连接 LED1 负极 到 GND",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      }
+    ],
+    "RESPONSE_TO_USER": {
+      "content_type": "text/plain",
+      "content": "好的，我正在为您将R1与LED1的正极连接，并将LED1的负极连接到GND。请稍候...",
+      "suggestions_for_next_steps": [
+        {"text_for_user": "操作完成后，您想查看电路图吗？", "action_type": "USER_INPUT_EXPECTED"},
+        {"text_for_user": "需要为这些元件设置其他参数吗？", "action_type": "USER_INPUT_EXPECTED"}
+      ],
+      "requires_user_clarification_for_current_request": false
+    }
+  },
+  "diagnostics": {
+    "llm_confidence_score_for_this_output": 0.95,
+    "alternative_plans_considered_count": 0
+  },
+  "usage_metadata": null
+}
+```
+2025-05-10 13:22:48,685 - CircuitManusCore - DEBUG [CircuitManusCore.parse_llm_response_to_structured_json:517] - [parse_v81_8c26e61e-OutputParserV8_1] 从 Markdown 代码块中提取到 JSON 字符串. 
+2025-05-10 13:22:48,686 - CircuitManusCore - DEBUG [CircuitManusCore.parse_llm_response_to_structured_json:529] - [parse_v81_8c26e61e-OutputParserV8_1] 预处理后,准备解析的 JSON 字符串 (完整):
+{
+  "request_id": "req_13751da8-de4",
+  "llm_interaction_id": "plan_ex_llm_id_92b952_connect_r1_led1",
+  "timestamp_utc": "2025-05-10T05:22:32.967289+00:00",
+  "status": "success",
+  "error_details": null,
+  "execution_phase": "planning",
+  "thought_process": "用户要求将电阻R1与LED1的正极连接，然后将LED1的负极连接到地线GND。首先，我需要确认R1和LED1是否已经存在于电路中。如果它们存在，我将调用连接组件的工具来完成这个任务。如果它们不存在，我将首先添加这些组件。这里不需要添加任何新的工具调用，因为只是连接已存在的组件。",
+  "decision": {
+    "IS_CALL_TOOLS": true,
+    "TOOL_CALL_REQUESTS": [
+      {
+        "tool_call_id": "tc_connect_r1_led1_positive",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "R1",
+          "comp2_id": "LED1_positive"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "连接 R1 与 LED1 正极",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      },
+      {
+        "tool_call_id": "tc_connect_led1_negative_gnd",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "LED1_negative",
+          "comp2_id": "GND"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "连接 LED1 负极 到 GND",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      }
+    ],
+    "RESPONSE_TO_USER": {
+      "content_type": "text/plain",
+      "content": "好的，我正在为您将R1与LED1的正极连接，并将LED1的负极连接到GND。请稍候...",
+      "suggestions_for_next_steps": [
+        {"text_for_user": "操作完成后，您想查看电路图吗？", "action_type": "USER_INPUT_EXPECTED"},
+        {"text_for_user": "需要为这些元件设置其他参数吗？", "action_type": "USER_INPUT_EXPECTED"}
+      ],
+      "requires_user_clarification_for_current_request": false
+    }
+  },
+  "diagnostics": {
+    "llm_confidence_score_for_this_output": 0.95,
+    "alternative_plans_considered_count": 0
+  },
+  "usage_metadata": null
+}
+2025-05-10 13:22:48,687 - CircuitManusCore - INFO [CircuitManusCore.parse_llm_response_to_structured_json:533] - [parse_v81_8c26e61e-OutputParserV8_1] JSON 字符串成功解析为字典. 
+2025-05-10 13:22:48,695 - CircuitManusCore - INFO [CircuitManusCore.parse_llm_response_to_structured_json:669] - [parse_v81_8c26e61e-OutputParserV8_1] LLM 响应 (Phase: planning, LLM_ID: plan_ex_llm_id_92b952_connect_r1_led1) 已成功解析并验证为 ManusLLMResponse-V8.1-Perfected JSON结构！
+2025-05-10 13:22:48,704 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "thinking_log", "request_id": "req_13751da8-de4", "llm_interaction_id": "plan_ex_llm_id_92b952_connect_r1_led1", "stage": "planning", "content": "\u7528\u6237\u8981\u6c42\u5c06\u7535\u963bR1\u4e0eLED1\u7684\u6b63\u6781\u8fde\u63a5\uff0c\u7136\u540e\u5c06LED1\u7684\u8d1f\u6781\u8fde\u63a5\u5230\u5730\u7ebfGND\u3002\u9996\u5148\uff0c\u6211\u9700\u8981\u786e\u8ba4R1\u548cLED1\u662f\u5426\u5df2\u7ecf\u5b58\u5728\u4e8e\u7535\u8def\u4e2d\u3002\u5982\u679c\u5b83\u4eec\u5b58\u5728\uff0c\u6211\u5c06\u8c03\u7528\u8fde\u63a5\u7ec4\u4ef6\u7684\u5de5\u5177\u6765\u5b8c\u6210\u8fd9\u4e2a\u4efb\u52a1\u3002\u5982\u679c\u5b83\u4eec\u4e0d\u5b58\u5728\uff0c\u6211\u5c06\u9996\u5148\u6dfb\u52a0\u8fd9\u4e9b\u7ec4\u4ef6\u3002\u8fd9\u91cc\u4e0d\u9700\u8981\u6dfb\u52a0\u4efb\u4f55\u65b0\u7684\u5de5\u5177\u8c03\u7528\uff0c\u56e0\u4e3a\u53ea\u662f\u8fde\u63a5\u5df2\u5b58\u5728\u7684\u7ec4\u4ef6\u3002"}
+2025-05-10 13:22:48,708 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1185] - [OrchestratorV8_1_1_WS - PlanAttempt 1 - ReqID: req_13751da8-de4] 成功解析并验证V8.1.1 JSON计划. LLM报告状态为 'success' (LLM_ID: plan_ex_llm_id_92b952_connect_r1_led1). Agent采纳此计划. 
+2025-05-10 13:22:48,713 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:270] - [MemoryManager] 添加消息到短期记忆 (Role: assistant). 当前数量: 1
+2025-05-10 13:22:48,714 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:289] - [MemoryManager] 添加后短期记忆数量: 2
+2025-05-10 13:22:48,714 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "planning", "status": "completed_and_validated", "message": "\u89c4\u5212\u5b8c\u6210\u5e76\u901a\u8fc7\u9a8c\u8bc1,\u51c6\u5907\u6267\u884c\u6216\u76f4\u63a5\u56de\u590d. ", "details": {"plan_llm_id": "plan_ex_llm_id_92b952_connect_r1_led1"}}
+2025-05-10 13:22:48,716 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "plan_details", "request_id": "req_13751da8-de4", "llm_interaction_id": "plan_ex_llm_id_92b952_connect_r1_led1", "plan": [{"tool_call_id": "tc_connect_r1_led1_positive", "tool_name": "connect_components_tool", "tool_arguments": {"comp1_id": "R1", "comp2_id": "LED1_positive"}, "ui_hints": {"display_name_for_tool": "\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781", "estimated_duration_category": "short"}, "status": "pending", "order": 1}, {"tool_call_id": "tc_connect_led1_negative_gnd", "tool_name": "connect_components_tool", "tool_arguments": {"comp1_id": "LED1_negative", "comp2_id": "GND"}, "ui_hints": {"display_name_for_tool": "\u8fde\u63a5 LED1 \u8d1f\u6781 \u5230 GND", "estimated_duration_category": "short"}, "status": "pending", "order": 2}]}
+2025-05-10 13:22:48,718 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1286] - [OrchestratorV8_1_1_WS - PlanAttempt 1 - ReqID: req_13751da8-de4] 决策: 执行 2 个工具. 
+2025-05-10 13:22:48,718 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "action_execution", "status": "started", "message": "\u5f00\u59cb\u6267\u884c 2 \u4e2a\u8ba1\u5212\u64cd\u4f5c...", "details": {"tool_count": 2}}
+2025-05-10 13:22:48,720 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "interim_response", "request_id": "req_13751da8-de4", "llm_interaction_id": "plan_ex_llm_id_92b952_connect_r1_led1", "content": "\u597d\u7684\uff0c\u6211\u6b63\u5728\u4e3a\u60a8\u5c06R1\u4e0eLED1\u7684\u6b63\u6781\u8fde\u63a5\uff0c\u5e76\u5c06LED1\u7684\u8d1f\u6781\u8fde\u63a5\u5230GND\u3002\u8bf7\u7a0d\u5019..."}
+2025-05-10 13:22:48,722 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:729] - [exec_v811_c5b477fc-ToolExecutor] 准备异步执行 2 个工具调用请求 (V8.1.1)...
+2025-05-10 13:22:48,723 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:749] - [exec_v811_c5b477fc-ToolExecutor] 处理工具调用 1/2: Name='connect_components_tool', LLM_ToolCallID='tc_connect_r1_led1_positive'
+2025-05-10 13:22:48,723 - CircuitManusCore - DEBUG [CircuitManusCore.execute_tool_calls:750] - [exec_v811_c5b477fc-ToolExecutor] 待执行工具 'connect_components_tool' 的参数: {'comp1_id': 'R1', 'comp2_id': 'LED1_positive'}
+2025-05-10 13:22:48,724 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_connect_r1_led1_positive", "tool_name": "connect_components_tool", "tool_arguments_summary_str": "comp1_id: R1; comp2_id: LED1_positive", "status": "running", "message": "\u5f00\u59cb\u6267\u884c\u64cd\u4f5c: \u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781...", "details": {"ui_hints": {"display_name_for_tool": "\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781", "estimated_duration_category": "short"}}}
+2025-05-10 13:22:48,727 - CircuitManusCore - INFO [CircuitManusCore.connect_components_tool:1022] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 执行连接元件操作. 
+2025-05-10 13:22:48,727 - CircuitManusCore - DEBUG [CircuitManusCore.connect_components_tool:1023] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 收到参数: {'comp1_id': 'R1', 'comp2_id': 'LED1_positive'}
+2025-05-10 13:22:48,728 - CircuitManusCore - ERROR [CircuitManusCore.connect_components_tool:1051] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 连接验证错误: 元件 'R1' 在电路中不存在. 
+2025-05-10 13:22:48,730 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:792] - [exec_v811_c5b477fc-ToolExecutor] 工具 'connect_components_tool' 执行完毕 (Attempt 1). 状态: failure
+2025-05-10 13:22:48,730 - CircuitManusCore - WARNING [CircuitManusCore.execute_tool_calls:799] - [exec_v811_c5b477fc-ToolExecutor] 工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive) 执行失败 (Attempt 1). 
+2025-05-10 13:22:48,731 - CircuitManusCore - WARNING [CircuitManusCore.execute_tool_calls:775] - [exec_v811_c5b477fc-ToolExecutor] 工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive) 执行失败,正在进行第 1/1 次重试...
+2025-05-10 13:22:48,732 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_connect_r1_led1_positive", "tool_name": "connect_components_tool", "tool_arguments_summary_str": "comp1_id: R1; comp2_id: LED1_positive", "status": "retrying", "message": "\u64cd\u4f5c '\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781' \u5931\u8d25,\u7b49\u5f85 1.0 \u79d2\u540e\u91cd\u8bd5 (\u5c1d\u8bd5 2)...", "details": {"retry_count": 1, "max_retries": 1, "ui_hints": {"display_name_for_tool": "\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781", "estimated_duration_category": "short"}}}
+2025-05-10 13:22:49,737 - CircuitManusCore - INFO [CircuitManusCore.connect_components_tool:1022] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 执行连接元件操作. 
+2025-05-10 13:22:49,738 - CircuitManusCore - DEBUG [CircuitManusCore.connect_components_tool:1023] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 收到参数: {'comp1_id': 'R1', 'comp2_id': 'LED1_positive'}
+2025-05-10 13:22:49,739 - CircuitManusCore - ERROR [CircuitManusCore.connect_components_tool:1051] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 连接验证错误: 元件 'R1' 在电路中不存在. 
+2025-05-10 13:22:49,740 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:792] - [exec_v811_c5b477fc-ToolExecutor] 工具 'connect_components_tool' 执行完毕 (Attempt 2). 状态: failure
+2025-05-10 13:22:49,742 - CircuitManusCore - WARNING [CircuitManusCore.execute_tool_calls:799] - [exec_v811_c5b477fc-ToolExecutor] 工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive) 执行失败 (Attempt 2). 
+2025-05-10 13:22:49,743 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_connect_r1_led1_positive", "tool_name": "connect_components_tool", "tool_arguments_summary_str": "N/A", "status": "failed", "message": "\u9519\u8bef: \u5143\u4ef6 'R1' \u5728\u7535\u8def\u4e2d\u4e0d\u5b58\u5728. ", "details": {"ui_hints": {"display_name_for_tool": "\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781", "estimated_duration_category": "short"}, "error": {"error_type": "CIRCUIT_OPERATION_ERROR", "error_code": "COMPONENT_NOT_FOUND_FOR_CONNECTION", "technical_message": "\u5143\u4ef6 'R1' \u5728\u7535\u8def\u4e2d\u4e0d\u5b58\u5728. "}}}
+2025-05-10 13:22:49,745 - CircuitManusCore - DEBUG [CircuitManusCore.execute_tool_calls:845] - [exec_v811_c5b477fc-ToolExecutor] 已记录工具 'tc_connect_r1_led1_positive' 的最终执行结果 (状态: failed) 到LLM历史. 
+2025-05-10 13:22:49,746 - CircuitManusCore - WARNING [CircuitManusCore.execute_tool_calls:848] - [exec_v811_c5b477fc-ToolExecutor] 工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive) 在所有重试后仍然失败. 中止后续工具执行. 
+2025-05-10 13:22:49,746 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_connect_led1_negative_gnd", "tool_name": "connect_components_tool", "tool_arguments_summary_str": "N/A", "status": "aborted_due_to_previous_failure", "message": "\u64cd\u4f5c '\u8fde\u63a5 LED1 \u8d1f\u6781 \u5230 GND' \u5df2\u4e2d\u6b62,\u56e0\u4e3a\u5148\u524d\u7684\u5de5\u5177 '\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781' \u6267\u884c\u5931\u8d25. ", "details": {"reason": "Aborted due to failure of tool 'connect_components_tool' (ID: tc_connect_r1_led1_positive)", "ui_hints": {"display_name_for_tool": "\u8fde\u63a5 LED1 \u8d1f\u6781 \u5230 GND", "estimated_duration_category": "short"}}}
+2025-05-10 13:22:49,755 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:872] - [exec_v811_c5b477fc-ToolExecutor] 为中止的工具 'connect_components_tool' (ID: tc_connect_led1_negative_gnd) 添加了模拟失败记录到LLM历史. 
+2025-05-10 13:22:49,763 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:876] - [exec_v811_c5b477fc-ToolExecutor] 工具执行流程完成. 共处理/记录了 2/2 个计划中的工具调用 (可能因失败提前中止). 
+2025-05-10 13:22:49,764 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:270] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 2
+2025-05-10 13:22:49,764 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:289] - [MemoryManager] 添加后短期记忆数量: 3
+2025-05-10 13:22:49,765 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:270] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 3
+2025-05-10 13:22:49,765 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:289] - [MemoryManager] 添加后短期记忆数量: 4
+2025-05-10 13:22:49,767 - CircuitManusCore - WARNING [CircuitManusCore.process_user_request:1331] - [OrchestratorV8_1_1_WS - PlanAttempt 1 - ReqID: req_13751da8-de4] 工具执行过程中发生了一个或多个持久性失败. 
+2025-05-10 13:22:49,767 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "action_execution", "status": "tool_failure_detected", "message": "\u90e8\u5206\u64cd\u4f5c\u5931\u8d25,\u51c6\u5907\u8bc4\u4f30\u662f\u5426\u91cd\u89c4\u5212. ", "details": {"last_error_message": "\u5de5\u5177 'connect_components_tool' \u672a\u6267\u884c,\u56e0\u4e3a\u524d\u5e8f\u5de5\u5177 'connect_components_tool' (ID: tc_connect_r1_led1_positive) \u5931\u8d25. "}}
+2025-05-10 13:22:49,769 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1149] - 
+--- [OrchestratorV8_1_1_WS - PlanAttempt 2 - ReqID: req_13751da8-de4] 开始 ---
+2025-05-10 13:22:49,770 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "planning", "status": "started", "message": "\u6b63\u5728\u5c1d\u8bd5\u7b2c 1/2 \u6b21\u91cd\u89c4\u5212...", "details": {"attempt_number": 2, "max_replanning_attempts": 2}}
+2025-05-10 13:22:49,774 - CircuitManusCore - DEBUG [CircuitManusCore.get_memory_context_for_prompt:308] - [MemoryManager] 正在格式化记忆上下文用于 Prompt...
+2025-05-10 13:22:49,783 - CircuitManusCore - DEBUG [CircuitManusCore.get_state_description:161] - [Circuit] 正在生成电路状态描述...
+2025-05-10 13:22:49,788 - CircuitManusCore - DEBUG [CircuitManusCore.get_memory_context_for_prompt:320] - [MemoryManager] 记忆上下文 (电路+长期) 格式化完成. 
+2025-05-10 13:22:49,789 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1167] - [OrchestratorV8_1_1_WS - PlanAttempt 2 - ReqID: req_13751da8-de4] 调用规划 LLM (LLM Call Attempt 1 of 3)...
+2025-05-10 13:22:49,790 - CircuitManusCore - INFO [CircuitManusCore.call_llm:353] - [LLMInterface] 准备异步调用 LLM (glm-4-flash, Phase: planning, Expecting V8.1.1 JSON)...
+2025-05-10 13:22:49,791 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:354] - [LLMInterface] 发送的消息条数: 5
+2025-05-10 13:22:49,793 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:367] - [LLMInterface] 发送给 LLM 的消息列表 (预览):
+[
+  {
+    "index": 0,
+    "role": "system",
+    "content_preview_length": 15010,
+    "content_preview": "您是一位顶尖的、极其严谨的电路设计编程助理 (Agent Version V8.1.1-WS-PJS). 您的行为必须专业、精确,并严格遵循指令. 您的输出【必须且只能是】一个符合下述V8.1.1规范的JSON对象,且该JSON对象需要被三个反引号和'json'标记包围 (即 ```json ... ```). JSON对象之外不应有任何其他文本、注释或解释. \n\n【核心任务: 规划阶段 (V8.1.1)】\n深入分析用户的最新指令、完整的对话历史(包括您之前的思考、规划以及所有工具执行结果,特别是'tool' role和'assistant' role中可能的错误反馈)、当前的电路状态和记忆. 然后,生成一个符合V8.1.1规范的JSON对象作为您的行动计划或直接回复. \n\n【重要: 重规划指示 (V8.1.1)】\n您当前正在进行重规划. 这意味着您之前的规划或工具执行遇到了问题(详见对话历史中的 'tool' role messages 或您之前输出的JSON中的 'error_details'). 请: \n1. **仔细分析失败原因**: 是工具参数错误、工具本身执行失败、还是您之前输出的JSON格式/逻辑有误？对话历史中角色为 'assistant' 的消息,如果其内容是模拟的V8.1.1 JSON且 `status` 为 `failure`,也可能包含Agent对您上一次输出的解析/校验错误信息(在 `error_details.failed_validation_points` 中). \n2. **生成修正后的新计划**: 基于您的分析,您现在必须生成一个【全新的、修正了先前问题的V8.1.1 JSON计划】. 请注意,如果您成功地为【当前这次思考和规划】输出了一个结构完整且逻辑合理的V8.1.1 JSON(无论是调用新工具还是直接回复用户),那么这个【新JSON本身的顶层 `status` 字段必须设置为 `'success'`】. 您应该在 `thought_process` 字段中详细解释您是如何分析上一次失败、如何修正计划、以及为什么新的计划是合理的. \n3. **无法解决的情况**: 如果您经过深入分析,认为确实无法通过进一步的工具调用或重规划来完成用户的核心请求,那么您应该制定一个【直接回复用户并解释情况的计划】. 在这种情况下,您的V8.1.1 JSON的顶层 `status` 字段同样应为 `'success'`(因为您成功地决定了如何回复),`decision.IS_CALL_TOOLS` 应设为 `false`,并在 `decision.RESPONSE_TO_USER.content` 中清晰、礼貌地向用户说明情况和原因. 同时,`decision.RESPONSE_TO_USER.requires_user_clarification_for_current_request` 字段可以设为 `true` (如果需要用户提供更多信息才能继续). \n4. **真正意义上的规划失败**: 只有当您在【当前这次重规划尝试中】,由于自身的理解困难、无法形成任何有效的JSON结构、或遇到无法克服的内部逻辑困境,而【未能成功生成一个符合规范的V8.1.1 JSON输出】时,才应将顶层 `status` 字段设为 `'failure'`,并在 `error_details` 中详细说明您【当前这次规划尝试】失败的具体原因 (包括 `error_type`, `error_code`, `technical_message`, `is_direct_llm_failure` 等). \n**核心原则**: 不要因为*过去*的工具执行失败,就将您*当前新制定*的计划标记为 `status: 'failure'`. `status` 反映的是您【当前这次生成JSON这个行为本身】的成功与否. \n不要简单重复之前失败的计划！您的新计划必须严格符合下面描述的V8.1.1 JSON格式. \n【V8.1.1 JSON 输出格式规范 (必须严格遵守)】\n\n```json\n{\n  \"request_id\": \"string_or_null_current_user_request_cycle_id_echo_this_value_from_system_prompt_s_context_information_if_provided_otherwise_null\",\n  \"llm_interaction_id\": \"string_MUST_BE_UNIQUE_id_for_this_llm_response_e.g.,_plan_llm_id_followed_by_8_random_chars_like_plan_llm_id_a1b2c3d4\",\n  \"timestamp_utc\": \"string_current_utc_timestamp_in_iso_8601_format_e.g.,_2024-07-16T12:00:00.000Z\",\n  \"status\": \"string_MUST_BE_either_'success'_or_'failure'._Indicates_if_THIS_SPECIFIC_JSON_OUTPUT_was_successfully_generated_by_LLM_for_the_current_phase.\",\n  \"error_details\": { \n    \"error_type\": \"string_enum_HIGH_LEVEL_ERROR_CATEGORY_e.g._PLANNING_ERROR_LLM_OUTPUT_VALIDATION_ERROR_INTERNAL_LOGIC_ERROR\", \n    \"error_code\": \"string_SPECIFIC_ERROR_CODE_e.g._JSON_MALFORMED_MISSING_REQUIRED_FIELD_TOOL_PARAMS_INVALID_REPLAN_MAX_ATTEMPTS_REACHED\", \n    \"message_to_user\": \"string_A_user_friendly_explanation_if_this_error_is_directly_related_to_user_action_or_if_a_user_facing_message_is_appropriate_otherwise_generic_agent_error_message.\", \n    \"technical_message\": \"string_Detailed_technical_error_message_for_logging_and_debugging_This_is_what_LLM_thinks_went_wrong_with_its_OWN_output_generation_process.\", \n    \"is_direct_llm_failure\": \"boolean_True_if_LLM_explicitly_states_it_cannot_fulfill_request_or_generate_valid_JSON_False_if_error_is_due_to_Agent_side_validation_of_an_otherwise_syntactically_valid_LLM_JSON_output.\", \n    \"failed_validation_points\": [ \n      {\n        \"json_path\": \"string_e.g._decision.TOOL_CALL_REQUESTS[0].tool_arguments.component_id\",\n        \"issue_description\": \"string_e.g._Required_field_missing_or_Value_must_be_a_string_but_got_integer\"\n      }\n    ]\n  },\n  \"execution_phase\": \"string_MUST_BE_'planning'_for_this_task\",\n  \"thought_process\": \"string_YOUR_DETAILED_STEP_BY_STEP_REASONING_AS_BEFORE_VERY_IMPORTANT.\",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": \"boolean_true_if_tools_are_to_be_called_false_otherwise\",\n    \"TOOL_CALL_REQUESTS\": [ \n      {\n        \"tool_call_id\": \"string_UNIQUE_ID_generated_by_YOU_for_this_specific_tool_call\",\n        \"tool_name\": \"string_name_of_the_tool_to_be_called_from_available_list\",\n        \"tool_arguments\": { },\n        \"ui_hints\": { \n            \"display_name_for_tool\": \"string_optional_A_more_user_friendly_name_for_this_tool_call_e.g._Adding_Resistor_R1\",\n            \"estimated_duration_category\": \"string_enum_optional_short_medium_long_very_long\",\n            \"show_progress_granularly\": \"boolean_optional_If_true_UI_might_expect_finer_grained_progress_if_tool_supports_it_Default_false\"\n        },\n        \"estimated_complexity_or_notes\": \"string_optional_LLMs_internal_notes_dependencies_or_confidence_level_for_this_call.\"\n      }\n    ],\n    \"RESPONSE_TO_USER\": { \n      \"content_type\": \"string_e.g._text/plain_or_application/markdown\",\n      \"content\": \"string_If_IS_CALL_TOOLS_is_false_this_is_your_direct_and_complete_reply_to_the_user_It_MUST_NOT_be_empty_If_IS_CALL_TOOLS_is_true_this_SHOULD_BE_a_meaningful_transitional_message_reflecting_the_planned_actions_e.g._Okay_I_will_add_component_X_and_then_connect_it_to_Y_It_can_be_an_empty_string_if_no_transitional_message_is_truly_needed_but_a_good_one_is_preferred_for_UX.\",\n      \"suggestions_for_next_steps\": [ \n        {\n          \"suggestion_id\": \"string_optional_unique_id_for_this_suggestion_e.g._sugg_ask_about_led_color\",\n          \"text_for_user\": \"string_The_suggestion_text_to_display_to_the_user_e.g._Would_you_like_to_specify_the_LED_color\",\n          \"action_type\": \"string_enum_optional_USER_INPUT_EXPECTED_or_PREDEFINED_AGENT_ACTION_or_UI_NAVIGATION\",\n          \"action_payload\": \"object_or_string_optional_If_PREDEFINED_AGENT_ACTION_this_could_be_a_simplified_request_object_or_command_string_for_the_agent_to_process_if_selected_by_user\"\n        }\n      ],\n      \"requires_user_clarification_for_current_request\": \"boolean_optional_Set_to_true_if_the_current_request_cannot_proceed_without_further_input_from_the_user_and_the_content_is_asking_for_that_clarification_Default_false\"\n    }\n  },\n  \"diagnostics\": { \n      \"llm_confidence_score_for_this_output\": \"float_optional_0.0_to_1.0_LLMs_self_assessed_confidence_in_the_correctness_and_completeness_of_THIS_JSON_output\",\n      \"alternative_plans_considered_count\": \"integer_optional_If_LLM_considered_multiple_plans_before_settling_on_this_one\",\n      \"parsing_feedback_from_previous_attempt_id\": \"string_or_null_If_this_is_a_correction_to_a_previously_malformed_JSON_this_is_the_llm_interaction_id_of_that_failed_attempt\"\n  },\n  \"usage_metadata\": null\n}\n```\n\n【重要指令与检查清单 (V8.1.1)】:\n1.  **请求ID回显**: 准确复制System Prompt上下文中提供的 `Current Request ID` 到您的JSON输出的 `request_id` 字段. 如果未提供,则设为 `null`. \n2.  **LLM交互ID**: 【必须】为本次JSON输出生成唯一的 `llm_interaction_id`. \n3.  **UTC时间戳**: 【必须】提供当前UTC时间的ISO 8601格式 `timestamp_utc`. \n4.  **顶层 `status`**: (再次强调,请仔细阅读上面对 `status` 的详细说明和重规划指示中的要求)如果您【当前这次】成功生成了符合规范且逻辑合理的V8.1.1 JSON计划,设为 `\"success\"`. 如果您在理解请求或生成计划时遇到【自身】的内部问题,导致无法产出有效JSON,设为 `\"failure\"` 并在 `error_details` 中详细说明原因. \n5.  **`error_details` 对象**: 仅当顶层 `status` 为 `\"failure\"` 时提供. 否则为 `null`. 确保包含 `error_type`, `error_code`, `technical_message`, `is_direct_llm_failure`. `message_to_user` 和 `failed_validation_points` 根据情况提供. \n6.  **`execution_phase`**: 在此阶段,此值【必须】是 `\"planning\"`. \n7.  **`thought_process`**: 【极其重要】请在此详细记录您的思考步骤. 务必清晰、详尽、符合逻辑. \n8.  **`decision.IS_CALL_TOOLS`**: 根据您的分析决定是否需要调用工具. \n9.  **`decision.TOOL_CALL_REQUESTS`**: 如果 `IS_CALL_TOOLS` 为 `true`,此列表包含您计划调用的工具. 每个工具调用对象【必须】包含一个由您生成的唯一的 `tool_call_id` (例如 `tc_` 加上工具名和随机字符),工具名 `tool_name`,以及符合Schema的 `tool_arguments` (空对象 `{}` 如果无参数). 工具按您期望的执行顺序列出. 如果 `IS_CALL_TOOLS` 为 `false`,此字段应为 `[]` (空数组) 或 `null`. \n10. **`decision.RESPONSE_TO_USER.content`**: \n    - 如果 `IS_CALL_TOOLS` 为 `false` (直接回复): 此处是您给用户的【完整最终答复】. 它【不能】为空字符串或仅包含空白. \n    - 如果 `IS_CALL_TOOLS` 为 `true` (调用工具): 此处【应该】是一句【有意义的、能简要预示您接下来计划操作的过渡性】的话. 如果不需要,可为空字符串 `\"\"`. \n11. **`decision.RESPONSE_TO_USER.suggestions_for_next_steps`**: (可选) 提供结构化的建议列表. \n12. **`decision.RESPONSE_TO_USER.requires_user_clarification_for_current_request`**: (可选) 如果需要用户澄清,设为 `true`. \n13. **操作前检查 (重要)**: 在规划涉及操作现有元件的工具调用前,请务必通过 `thought_process` 确认这些元件是否已存在. 如不确定,优先规划 `add_component_tool` 或 `describe_circuit_tool`. \n\n\n【通用示例1: 直接回答用户问题 (无需工具) - V8.1.1 JSON】\n如果用户问: “你好,什么是电容？”\n您的输出V8.1.1 JSON应类似 (ID和时间戳会变化): \n```json\n{\n  \"request_id\": \"req_13751da8-de4\",\n  \"llm_interaction_id\": \"plan_ex_llm_id_969625_direct_qa_cap\",\n  \"timestamp_utc\": \"2025-05-10T05:22:49.789422+00:00\",\n  \"status\": \"success\",\n  \"error_details\": null,\n  \"execution_phase\": \"planning\",\n  \"thought_process\": \"用户询问电容的定义. 这是一个概念性问题,不需要调用任何电路设计工具,我可以根据我的知识库直接回答. 我将提供一个关于电容基本作用、单位和常见类型的解释,并给出下一步建议. \",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": false,\n    \"TOOL_CALL_REQUESTS\": [],\n    \"RESPONSE_TO_USER\": {\n      \"content_type\": \"text/plain\",\n      \"content\": \"电容是一种能够储存电荷的电子元件,由两块导体板中间夹一层绝缘介质构成. 它的主要特性是电容量,单位是法拉(F),常用单位有微法(μF)、纳法(nF)和皮法(pF). 电容在电路中常用于滤波、耦合、隔直流、储能等. \",\n      \"suggestions_for_next_steps\": [\n        {\"text_for_user\": \"您想了解电容在具体电路中的应用吗？\", \"action_type\": \"USER_INPUT_EXPECTED\"},\n        {\"text_for_user\": \"需要我帮您在当前电路中添加一个电容吗？\", \"action_type\": \"USER_INPUT_EXPECTED\", \"action_payload\": \"请帮我添加一个10uF的电解电容\"}\n      ],\n      \"requires_user_clarification_for_current_request\": false\n    }\n  },\n  \"diagnostics\": {\"llm_confidence_score_for_this_output\": 0.95},\n  \"usage_metadata\": null\n}\n```\n\n【通用示例2: 需要调用工具时的输出V8.1.1 JSON】\n如果用户说: “帮我加一个1k欧姆的电阻R1,再加一个3V的电池B1,然后把它们连起来. ”\n您的输出V8.1.1 JSON应类似 (ID和时间戳会变化,每个tool_call_id必须唯一,由您生成): \n```json\n{\n  \"request_id\": \"req_13751da8-de4\",\n  \"llm_interaction_id\": \"plan_ex_llm_id_969625_multi_tool_rc\",\n  \"timestamp_utc\": \"2025-05-10T05:22:49.789422+00:00\",\n  \"status\": \"success\",\n  \"error_details\": null,\n  \"execution_phase\": \"planning\",\n  \"thought_process\": \"用户需要执行三个操作: 1. 添加电阻R1 (1kΩ). 2. 添加电池B1 (3V). 3. 连接R1和B1. 我将按顺序规划这三个工具调用. 确保为每个工具调用生成唯一的tool_call_id. 并为用户提供一个过渡性的回复. \",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": true,\n    \"TOOL_CALL_REQUESTS\": [\n      {\n        \"tool_call_id\": \"tc_add_r1_9b2ef735\",\n        \"tool_name\": \"add_component_tool\",\n        \"tool_arguments\": {\"component_type\": \"电阻\", \"component_id\": \"R1\", \"value\": \"1kΩ\"},\n        \"ui_hints\": {\"display_name_for_tool\": \"添加电阻 R1 (1kΩ)\", \"estimated_duration_category\": \"short\"},\n        \"estimated_complexity_or..."
+  },
+  {
+    "index": 1,
+    "role": "user",
+    "content_preview_length": 29,
+    "content_preview": "将R1与LED1的正极连接，再将LED1的负极连接到GND"
+  },
+  {
+    "index": 2,
+    "role": "assistant",
+    "content_preview_length": 1896,
+    "content_preview": "```json\n{\n  \"request_id\": \"req_13751da8-de4\",\n  \"llm_interaction_id\": \"plan_ex_llm_id_92b952_connect_r1_led1\",\n  \"timestamp_utc\": \"2025-05-10T05:22:32.967289+00:00\",\n  \"status\": \"success\",\n  \"error_details\": null,\n  \"execution_phase\": \"planning\",\n  \"thought_process\": \"用户要求将电阻R1与LED1的正极连接，然后将LED1的负极连接到地线GND。首先，我需要确认R1和LED1是否已经存在于电路中。如果它们存在，我将调用连接组件的工具来完成这个任务。如果它们不存在，我将首先添加这些组件。这里不需要添加任何新的工具调用，因为只是连接已存在的组件。\",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": true,\n    \"TOOL_CALL_REQUESTS\": [\n      {\n        \"tool_call_id\": \"tc_connect_r1_led1_positive\",\n        \"tool_name\": \"connect_components_tool\",\n        \"tool_arguments\": {\n          \"comp1_id\": \"R1\",\n          \"comp2_id\": \"LED1_positive\"\n        },\n        \"ui_hints\": {\n          \"display_name_for_tool\": \"连接 R1 与 LED1 正极\",\n          \"estimated_duration_category\": \"short\"\n        },\n        \"estimated_complexity_or_notes\": \"连接两个已添加的元件，低复杂度。\"\n      },\n      {\n        \"tool_call_id\": \"tc_connect_led1_negative_gnd\",\n        \"tool_name\": \"connect_com..."
+  },
+  {
+    "index": 3,
+    "role": "tool",
+    "content_preview_length": 203,
+    "content_preview": "{\"status\": \"failure\", \"message\": \"错误: 元件 'R1' 在电路中不存在. \", \"error\": {\"error_type\": \"CIRCUIT_OPERATION_ERROR\", \"error_code\": \"COMPONENT_NOT_FOUND_FOR_CONNECTION\", \"technical_message\": \"元件 'R1' 在电路中不存在. \"}}"
+  },
+  {
+    "index": 4,
+    "role": "tool",
+    "content_preview_length": 390,
+    "content_preview": "{\"status\": \"failure\", \"message\": \"工具 'connect_components_tool' 未执行,因为前序工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive) 失败. \", \"error\": {\"error_type\": \"TOOL_CHAIN_ABORTED\", \"error_code\": \"PRECEDING_TOOL_FAILURE\", \"technical_message\": \"Execution of 'connect_components_tool' was skipped due to the failure of tool 'connect_components_tool' (ID: tc_connect_r1_led1_positive).\"}}"
+  }
+]
+2025-05-10 13:22:49,795 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "llm_communication_status", "request_id": "req_13751da8-de4", "llm_phase": "planning", "status": "started", "message": "\u6b63\u5728\u4e0e\u667a\u80fd\u5927\u8111\u6c9f\u901a (planning)..."}
+2025-05-10 13:22:49,799 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'POST']>
+2025-05-10 13:22:49,801 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-10 13:22:49,801 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'POST']>
+2025-05-10 13:22:49,803 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-10 13:22:49,803 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'POST']>
+2025-05-10 13:23:09,033 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 10 May 2025 05:24:05 GMT'), (b'Content-Type', b'application/json; charset=UTF-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'X-LOG-ID', b'20250510132346ec3b2831a82d4997'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'Content-Encoding', b'gzip')])
+2025-05-10 13:23:09,042 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.started request=<Request [b'POST']>
+2025-05-10 13:23:09,052 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.complete
+2025-05-10 13:23:09,052 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.started
+2025-05-10 13:23:09,053 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.complete
+2025-05-10 13:23:09,058 - CircuitManusCore - INFO [CircuitManusCore.call_llm:386] - [LLMInterface] LLM 异步调用成功. 耗时: 19.266 秒. 
+2025-05-10 13:23:09,058 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "llm_communication_status", "request_id": "req_13751da8-de4", "llm_phase": "planning", "status": "completed", "message": "\u4e0e\u667a\u80fd\u5927\u8111\u6c9f\u901a\u5b8c\u6210 (planning). ", "details": {"duration_seconds": 19.265999999995984}}
+2025-05-10 13:23:09,060 - CircuitManusCore - INFO [CircuitManusCore.call_llm:398] - [LLMInterface] Token 统计: Prompt=6127, Completion=724, Total=6851
+2025-05-10 13:23:09,060 - CircuitManusCore - INFO [CircuitManusCore.call_llm:401] - [LLMInterface] 完成原因: stop
+2025-05-10 13:23:09,060 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:404] - [LLMInterface] LLM 原始响应内容 (完整):
+```json
+{
+  "request_id": "req_13751da8-de4",
+  "llm_interaction_id": "plan_ex_llm_id_969625_replan_add_r1",
+  "timestamp_utc": "2025-05-10T05:22:49.789422+00:00",
+  "status": "success",
+  "error_details": null,
+  "execution_phase": "planning",
+  "thought_process": "分析历史记录：在尝试连接R1和LED1时，由于R1在电路中不存在，连接操作失败。因此，我的新计划是首先添加R1。然后，我将再次尝试连接R1和LED1，以及LED1的负极到GND。",
+  "decision": {
+    "IS_CALL_TOOLS": true,
+    "TOOL_CALL_REQUESTS": [
+      {
+        "tool_call_id": "tc_add_r1_6f986d2b",
+        "tool_name": "add_component_tool",
+        "tool_arguments": {
+          "component_type": "电阻",
+          "component_id": "R1",
+          "value": "1kΩ"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "添加电阻 R1 (1kΩ)",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "添加一个标准电阻，低复杂度。"
+      },
+      {
+        "tool_call_id": "tc_connect_r1_led1_positive_replan",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "R1",
+          "comp2_id": "LED1_positive"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "重新连接 R1 与 LED1 正极",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      },
+      {
+        "tool_call_id": "tc_connect_led1_negative_gnd_replan",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "LED1_negative",
+          "comp2_id": "GND"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "重新连接 LED1 负极 到 GND",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      }
+    ],
+    "RESPONSE_TO_USER": {
+      "content_type": "text/plain",
+      "content": "看起来元件R1之前不存在。我将先尝试添加一个1kΩ的电阻R1，然后再将它与LED1的正极连接，并将LED1的负极连接到GND。如果操作成功，我将再次尝试连接这些元件。",
+      "suggestions_for_next_steps": [
+        {"text_for_user": "确认操作完成后显示电路状态。"},
+        {"text_for_user": "如果需要，我可以帮助您进一步修改电路。"}
+      ],
+      "requires_user_clarification_for_current_request": false
+    }
+  },
+  "diagnostics": {
+    "llm_confidence_score_for_this_output": 0.95,
+    "alternative_plans_considered_count": 0
+  },
+  "usage_metadata": null
+}
+```
+2025-05-10 13:23:09,062 - CircuitManusCore - DEBUG [CircuitManusCore.parse_llm_response_to_structured_json:495] - [parse_v81_0ed366aa-OutputParserV8_1] 开始解析 LLM 响应 (Phase: planning)...
+2025-05-10 13:23:09,062 - CircuitManusCore - DEBUG [CircuitManusCore.parse_llm_response_to_structured_json:511] - [parse_v81_0ed366aa-OutputParserV8_1] 接收到的原始 LLM content (完整):
+```json
+{
+  "request_id": "req_13751da8-de4",
+  "llm_interaction_id": "plan_ex_llm_id_969625_replan_add_r1",
+  "timestamp_utc": "2025-05-10T05:22:49.789422+00:00",
+  "status": "success",
+  "error_details": null,
+  "execution_phase": "planning",
+  "thought_process": "分析历史记录：在尝试连接R1和LED1时，由于R1在电路中不存在，连接操作失败。因此，我的新计划是首先添加R1。然后，我将再次尝试连接R1和LED1，以及LED1的负极到GND。",
+  "decision": {
+    "IS_CALL_TOOLS": true,
+    "TOOL_CALL_REQUESTS": [
+      {
+        "tool_call_id": "tc_add_r1_6f986d2b",
+        "tool_name": "add_component_tool",
+        "tool_arguments": {
+          "component_type": "电阻",
+          "component_id": "R1",
+          "value": "1kΩ"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "添加电阻 R1 (1kΩ)",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "添加一个标准电阻，低复杂度。"
+      },
+      {
+        "tool_call_id": "tc_connect_r1_led1_positive_replan",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "R1",
+          "comp2_id": "LED1_positive"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "重新连接 R1 与 LED1 正极",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      },
+      {
+        "tool_call_id": "tc_connect_led1_negative_gnd_replan",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "LED1_negative",
+          "comp2_id": "GND"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "重新连接 LED1 负极 到 GND",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      }
+    ],
+    "RESPONSE_TO_USER": {
+      "content_type": "text/plain",
+      "content": "看起来元件R1之前不存在。我将先尝试添加一个1kΩ的电阻R1，然后再将它与LED1的正极连接，并将LED1的负极连接到GND。如果操作成功，我将再次尝试连接这些元件。",
+      "suggestions_for_next_steps": [
+        {"text_for_user": "确认操作完成后显示电路状态。"},
+        {"text_for_user": "如果需要，我可以帮助您进一步修改电路。"}
+      ],
+      "requires_user_clarification_for_current_request": false
+    }
+  },
+  "diagnostics": {
+    "llm_confidence_score_for_this_output": 0.95,
+    "alternative_plans_considered_count": 0
+  },
+  "usage_metadata": null
+}
+```
+2025-05-10 13:23:09,064 - CircuitManusCore - DEBUG [CircuitManusCore.parse_llm_response_to_structured_json:517] - [parse_v81_0ed366aa-OutputParserV8_1] 从 Markdown 代码块中提取到 JSON 字符串. 
+2025-05-10 13:23:09,064 - CircuitManusCore - DEBUG [CircuitManusCore.parse_llm_response_to_structured_json:529] - [parse_v81_0ed366aa-OutputParserV8_1] 预处理后,准备解析的 JSON 字符串 (完整):
+{
+  "request_id": "req_13751da8-de4",
+  "llm_interaction_id": "plan_ex_llm_id_969625_replan_add_r1",
+  "timestamp_utc": "2025-05-10T05:22:49.789422+00:00",
+  "status": "success",
+  "error_details": null,
+  "execution_phase": "planning",
+  "thought_process": "分析历史记录：在尝试连接R1和LED1时，由于R1在电路中不存在，连接操作失败。因此，我的新计划是首先添加R1。然后，我将再次尝试连接R1和LED1，以及LED1的负极到GND。",
+  "decision": {
+    "IS_CALL_TOOLS": true,
+    "TOOL_CALL_REQUESTS": [
+      {
+        "tool_call_id": "tc_add_r1_6f986d2b",
+        "tool_name": "add_component_tool",
+        "tool_arguments": {
+          "component_type": "电阻",
+          "component_id": "R1",
+          "value": "1kΩ"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "添加电阻 R1 (1kΩ)",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "添加一个标准电阻，低复杂度。"
+      },
+      {
+        "tool_call_id": "tc_connect_r1_led1_positive_replan",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "R1",
+          "comp2_id": "LED1_positive"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "重新连接 R1 与 LED1 正极",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      },
+      {
+        "tool_call_id": "tc_connect_led1_negative_gnd_replan",
+        "tool_name": "connect_components_tool",
+        "tool_arguments": {
+          "comp1_id": "LED1_negative",
+          "comp2_id": "GND"
+        },
+        "ui_hints": {
+          "display_name_for_tool": "重新连接 LED1 负极 到 GND",
+          "estimated_duration_category": "short"
+        },
+        "estimated_complexity_or_notes": "连接两个已添加的元件，低复杂度。"
+      }
+    ],
+    "RESPONSE_TO_USER": {
+      "content_type": "text/plain",
+      "content": "看起来元件R1之前不存在。我将先尝试添加一个1kΩ的电阻R1，然后再将它与LED1的正极连接，并将LED1的负极连接到GND。如果操作成功，我将再次尝试连接这些元件。",
+      "suggestions_for_next_steps": [
+        {"text_for_user": "确认操作完成后显示电路状态。"},
+        {"text_for_user": "如果需要，我可以帮助您进一步修改电路。"}
+      ],
+      "requires_user_clarification_for_current_request": false
+    }
+  },
+  "diagnostics": {
+    "llm_confidence_score_for_this_output": 0.95,
+    "alternative_plans_considered_count": 0
+  },
+  "usage_metadata": null
+}
+2025-05-10 13:23:09,065 - CircuitManusCore - INFO [CircuitManusCore.parse_llm_response_to_structured_json:533] - [parse_v81_0ed366aa-OutputParserV8_1] JSON 字符串成功解析为字典. 
+2025-05-10 13:23:09,066 - CircuitManusCore - INFO [CircuitManusCore.parse_llm_response_to_structured_json:669] - [parse_v81_0ed366aa-OutputParserV8_1] LLM 响应 (Phase: planning, LLM_ID: plan_ex_llm_id_969625_replan_add_r1) 已成功解析并验证为 ManusLLMResponse-V8.1-Perfected JSON结构！
+2025-05-10 13:23:09,066 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "thinking_log", "request_id": "req_13751da8-de4", "llm_interaction_id": "plan_ex_llm_id_969625_replan_add_r1", "stage": "planning", "content": "\u5206\u6790\u5386\u53f2\u8bb0\u5f55\uff1a\u5728\u5c1d\u8bd5\u8fde\u63a5R1\u548cLED1\u65f6\uff0c\u7531\u4e8eR1\u5728\u7535\u8def\u4e2d\u4e0d\u5b58\u5728\uff0c\u8fde\u63a5\u64cd\u4f5c\u5931\u8d25\u3002\u56e0\u6b64\uff0c\u6211\u7684\u65b0\u8ba1\u5212\u662f\u9996\u5148\u6dfb\u52a0R1\u3002\u7136\u540e\uff0c\u6211\u5c06\u518d\u6b21\u5c1d\u8bd5\u8fde\u63a5R1\u548cLED1\uff0c\u4ee5\u53caLED1\u7684\u8d1f\u6781\u5230GND\u3002"}
+2025-05-10 13:23:09,067 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1185] - [OrchestratorV8_1_1_WS - PlanAttempt 2 - ReqID: req_13751da8-de4] 成功解析并验证V8.1.1 JSON计划. LLM报告状态为 'success' (LLM_ID: plan_ex_llm_id_969625_replan_add_r1). Agent采纳此计划. 
+2025-05-10 13:23:09,068 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:270] - [MemoryManager] 添加消息到短期记忆 (Role: assistant). 当前数量: 4
+2025-05-10 13:23:09,069 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:289] - [MemoryManager] 添加后短期记忆数量: 5
+2025-05-10 13:23:09,069 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "planning", "status": "completed_and_validated", "message": "\u89c4\u5212\u5b8c\u6210\u5e76\u901a\u8fc7\u9a8c\u8bc1,\u51c6\u5907\u6267\u884c\u6216\u76f4\u63a5\u56de\u590d. ", "details": {"plan_llm_id": "plan_ex_llm_id_969625_replan_add_r1"}}
+2025-05-10 13:23:09,071 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "plan_details", "request_id": "req_13751da8-de4", "llm_interaction_id": "plan_ex_llm_id_969625_replan_add_r1", "plan": [{"tool_call_id": "tc_add_r1_6f986d2b", "tool_name": "add_component_tool", "tool_arguments": {"component_type": "\u7535\u963b", "component_id": "R1", "value": "1k\u03a9"}, "ui_hints": {"display_name_for_tool": "\u6dfb\u52a0\u7535\u963b R1 (1k\u03a9)", "estimated_duration_category": "short"}, "status": "pending", "order": 1}, {"tool_call_id": "tc_connect_r1_led1_positive_replan", "tool_name": "connect_components_tool", "tool_arguments": {"comp1_id": "R1", "comp2_id": "LED1_positive"}, "ui_hints": {"display_name_for_tool": "\u91cd\u65b0\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781", "estimated_duration_category": "short"}, "status": "pending", "order": 2}, {"tool_call_id": "tc_connect_led1_negative_gnd_replan", "tool_name": "connect_components_tool", "tool_arguments": {"comp1_id": "LED1_negative", "comp2_id": "GND"}, "ui_hints": {"display_name_for_tool": "\u91cd\u65b0\u8fde\u63a5 LED1 \u8d1f\u6781 \u5230 GND", "estimated_duration_category": "short"}, "status": "pending", "order": 3}]}
+2025-05-10 13:23:09,123 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1286] - [OrchestratorV8_1_1_WS - PlanAttempt 2 - ReqID: req_13751da8-de4] 决策: 执行 3 个工具. 
+2025-05-10 13:23:09,124 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "action_execution", "status": "started", "message": "\u5f00\u59cb\u6267\u884c 3 \u4e2a\u8ba1\u5212\u64cd\u4f5c...", "details": {"tool_count": 3}}
+2025-05-10 13:23:09,125 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "interim_response", "request_id": "req_13751da8-de4", "llm_interaction_id": "plan_ex_llm_id_969625_replan_add_r1", "content": "\u770b\u8d77\u6765\u5143\u4ef6R1\u4e4b\u524d\u4e0d\u5b58\u5728\u3002\u6211\u5c06\u5148\u5c1d\u8bd5\u6dfb\u52a0\u4e00\u4e2a1k\u03a9\u7684\u7535\u963bR1\uff0c\u7136\u540e\u518d\u5c06\u5b83\u4e0eLED1\u7684\u6b63\u6781\u8fde\u63a5\uff0c\u5e76\u5c06LED1\u7684\u8d1f\u6781\u8fde\u63a5\u5230GND\u3002\u5982\u679c\u64cd\u4f5c\u6210\u529f\uff0c\u6211\u5c06\u518d\u6b21\u5c1d\u8bd5\u8fde\u63a5\u8fd9\u4e9b\u5143\u4ef6\u3002"}
+2025-05-10 13:23:09,127 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:729] - [exec_v811_351178bd-ToolExecutor] 准备异步执行 3 个工具调用请求 (V8.1.1)...
+2025-05-10 13:23:09,127 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:749] - [exec_v811_351178bd-ToolExecutor] 处理工具调用 1/3: Name='add_component_tool', LLM_ToolCallID='tc_add_r1_6f986d2b'
+2025-05-10 13:23:09,128 - CircuitManusCore - DEBUG [CircuitManusCore.execute_tool_calls:750] - [exec_v811_351178bd-ToolExecutor] 待执行工具 'add_component_tool' 的参数: {'component_type': '电阻', 'component_id': 'R1', 'value': '1kΩ'}
+2025-05-10 13:23:09,129 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_add_r1_6f986d2b", "tool_name": "add_component_tool", "tool_arguments_summary_str": "component_type: \u7535\u963b; component_id: R1; value: 1k\u03a9", "status": "running", "message": "\u5f00\u59cb\u6267\u884c\u64cd\u4f5c: \u6dfb\u52a0\u7535\u963b R1 (1k\u03a9)...", "details": {"ui_hints": {"display_name_for_tool": "\u6dfb\u52a0\u7535\u963b R1 (1k\u03a9)", "estimated_duration_category": "short"}}}
+2025-05-10 13:23:09,131 - CircuitManusCore - INFO [CircuitManusCore.add_component_tool:944] - [Action-AddComponentTool-ReqID:req_13751da8-de4] 执行添加元件操作. 
+2025-05-10 13:23:09,132 - CircuitManusCore - DEBUG [CircuitManusCore.add_component_tool:945] - [Action-AddComponentTool-ReqID:req_13751da8-de4] 收到参数: {'component_type': '电阻', 'component_id': 'R1', 'value': '1kΩ'}
+2025-05-10 13:23:09,133 - CircuitManusCore - DEBUG [CircuitManusCore.add_component_tool:969] - [Action-AddComponentTool-ReqID:req_13751da8-de4] 将使用用户提供的有效 ID: 'R1'.
+2025-05-10 13:23:09,134 - CircuitManusCore - DEBUG [CircuitManusCore.add_component:122] - [Circuit] 元件 'R1' 已添加到电路. 
+2025-05-10 13:23:09,134 - CircuitManusCore - INFO [CircuitManusCore.add_component_tool:992] - [Action-AddComponentTool-ReqID:req_13751da8-de4] 成功添加元件 'R1' (电阻) 到电路. 
+2025-05-10 13:23:09,135 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_long_term:297] - [MemoryManager] 添加知识到长期记忆: '添加了元件: 元件: 电阻 (ID: R1) (值: 1kΩ) (请求ID: req_13751da8-de4)'. 当前数量: 0
+2025-05-10 13:23:09,136 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_long_term:302] - [MemoryManager] 添加后长期记忆数量: 1
+2025-05-10 13:23:09,137 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:792] - [exec_v811_351178bd-ToolExecutor] 工具 'add_component_tool' 执行完毕 (Attempt 1). 状态: success
+2025-05-10 13:23:09,138 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_add_r1_6f986d2b", "tool_name": "add_component_tool", "tool_arguments_summary_str": "N/A", "status": "succeeded", "message": "\u64cd\u4f5c\u6210\u529f: \u5df2\u6dfb\u52a0\u5143\u4ef6 \u5143\u4ef6: \u7535\u963b (ID: R1) (\u503c: 1k\u03a9).  (\u4f7f\u7528\u4e86\u60a8\u6307\u5b9a\u7684 ID 'R1')", "details": {"ui_hints": {"display_name_for_tool": "\u6dfb\u52a0\u7535\u963b R1 (1k\u03a9)", "estimated_duration_category": "short"}, "result_data_preview": "{\"id\": \"R1\", \"type\": \"\u7535\u963b\", \"value\": \"1k\u03a9\"}"}}
+2025-05-10 13:23:09,139 - CircuitManusCore - DEBUG [CircuitManusCore.execute_tool_calls:845] - [exec_v811_351178bd-ToolExecutor] 已记录工具 'tc_add_r1_6f986d2b' 的最终执行结果 (状态: succeeded) 到LLM历史. 
+2025-05-10 13:23:09,140 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:749] - [exec_v811_351178bd-ToolExecutor] 处理工具调用 2/3: Name='connect_components_tool', LLM_ToolCallID='tc_connect_r1_led1_positive_replan'
+2025-05-10 13:23:09,141 - CircuitManusCore - DEBUG [CircuitManusCore.execute_tool_calls:750] - [exec_v811_351178bd-ToolExecutor] 待执行工具 'connect_components_tool' 的参数: {'comp1_id': 'R1', 'comp2_id': 'LED1_positive'}
+2025-05-10 13:23:09,141 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_connect_r1_led1_positive_replan", "tool_name": "connect_components_tool", "tool_arguments_summary_str": "comp1_id: R1; comp2_id: LED1_positive", "status": "running", "message": "\u5f00\u59cb\u6267\u884c\u64cd\u4f5c: \u91cd\u65b0\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781...", "details": {"ui_hints": {"display_name_for_tool": "\u91cd\u65b0\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781", "estimated_duration_category": "short"}}}
+2025-05-10 13:23:09,143 - CircuitManusCore - INFO [CircuitManusCore.connect_components_tool:1022] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 执行连接元件操作. 
+2025-05-10 13:23:09,144 - CircuitManusCore - DEBUG [CircuitManusCore.connect_components_tool:1023] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 收到参数: {'comp1_id': 'R1', 'comp2_id': 'LED1_positive'}
+2025-05-10 13:23:09,146 - CircuitManusCore - ERROR [CircuitManusCore.connect_components_tool:1051] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 连接验证错误: 元件 'LED1_POSITIVE' 在电路中不存在. 
+2025-05-10 13:23:09,162 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:792] - [exec_v811_351178bd-ToolExecutor] 工具 'connect_components_tool' 执行完毕 (Attempt 1). 状态: failure
+2025-05-10 13:23:09,163 - CircuitManusCore - WARNING [CircuitManusCore.execute_tool_calls:799] - [exec_v811_351178bd-ToolExecutor] 工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive_replan) 执行失败 (Attempt 1). 
+2025-05-10 13:23:09,163 - CircuitManusCore - WARNING [CircuitManusCore.execute_tool_calls:775] - [exec_v811_351178bd-ToolExecutor] 工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive_replan) 执行失败,正在进行第 1/1 次重试...
+2025-05-10 13:23:09,164 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_connect_r1_led1_positive_replan", "tool_name": "connect_components_tool", "tool_arguments_summary_str": "comp1_id: R1; comp2_id: LED1_positive", "status": "retrying", "message": "\u64cd\u4f5c '\u91cd\u65b0\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781' \u5931\u8d25,\u7b49\u5f85 1.0 \u79d2\u540e\u91cd\u8bd5 (\u5c1d\u8bd5 2)...", "details": {"retry_count": 1, "max_retries": 1, "ui_hints": {"display_name_for_tool": "\u91cd\u65b0\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781", "estimated_duration_category": "short"}}}
+2025-05-10 13:23:10,163 - CircuitManusCore - INFO [CircuitManusCore.connect_components_tool:1022] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 执行连接元件操作. 
+2025-05-10 13:23:10,164 - CircuitManusCore - DEBUG [CircuitManusCore.connect_components_tool:1023] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 收到参数: {'comp1_id': 'R1', 'comp2_id': 'LED1_positive'}
+2025-05-10 13:23:10,164 - CircuitManusCore - ERROR [CircuitManusCore.connect_components_tool:1051] - [Action-ConnectComponentsTool-ReqID:req_13751da8-de4] 连接验证错误: 元件 'LED1_POSITIVE' 在电路中不存在. 
+2025-05-10 13:23:10,165 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:792] - [exec_v811_351178bd-ToolExecutor] 工具 'connect_components_tool' 执行完毕 (Attempt 2). 状态: failure
+2025-05-10 13:23:10,166 - CircuitManusCore - WARNING [CircuitManusCore.execute_tool_calls:799] - [exec_v811_351178bd-ToolExecutor] 工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive_replan) 执行失败 (Attempt 2). 
+2025-05-10 13:23:10,166 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_connect_r1_led1_positive_replan", "tool_name": "connect_components_tool", "tool_arguments_summary_str": "N/A", "status": "failed", "message": "\u9519\u8bef: \u5143\u4ef6 'LED1_POSITIVE' \u5728\u7535\u8def\u4e2d\u4e0d\u5b58\u5728. ", "details": {"ui_hints": {"display_name_for_tool": "\u91cd\u65b0\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781", "estimated_duration_category": "short"}, "error": {"error_type": "CIRCUIT_OPERATION_ERROR", "error_code": "COMPONENT_NOT_FOUND_FOR_CONNECTION", "technical_message": "\u5143\u4ef6 'LED1_POSITIVE' \u5728\u7535\u8def\u4e2d\u4e0d\u5b58\u5728. "}}}
+2025-05-10 13:23:10,168 - CircuitManusCore - DEBUG [CircuitManusCore.execute_tool_calls:845] - [exec_v811_351178bd-ToolExecutor] 已记录工具 'tc_connect_r1_led1_positive_replan' 的最终执行结果 (状态: failed) 到LLM历史. 
+2025-05-10 13:23:10,168 - CircuitManusCore - WARNING [CircuitManusCore.execute_tool_calls:848] - [exec_v811_351178bd-ToolExecutor] 工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive_replan) 在所有重试后仍然失败. 中止后续工具执行. 
+2025-05-10 13:23:10,170 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "tool_status_update", "request_id": "req_13751da8-de4", "tool_call_id": "tc_connect_led1_negative_gnd_replan", "tool_name": "connect_components_tool", "tool_arguments_summary_str": "N/A", "status": "aborted_due_to_previous_failure", "message": "\u64cd\u4f5c '\u91cd\u65b0\u8fde\u63a5 LED1 \u8d1f\u6781 \u5230 GND' \u5df2\u4e2d\u6b62,\u56e0\u4e3a\u5148\u524d\u7684\u5de5\u5177 '\u91cd\u65b0\u8fde\u63a5 R1 \u4e0e LED1 \u6b63\u6781' \u6267\u884c\u5931\u8d25. ", "details": {"reason": "Aborted due to failure of tool 'connect_components_tool' (ID: tc_connect_r1_led1_positive_replan)", "ui_hints": {"display_name_for_tool": "\u91cd\u65b0\u8fde\u63a5 LED1 \u8d1f\u6781 \u5230 GND", "estimated_duration_category": "short"}}}
+2025-05-10 13:23:10,171 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:872] - [exec_v811_351178bd-ToolExecutor] 为中止的工具 'connect_components_tool' (ID: tc_connect_led1_negative_gnd_replan) 添加了模拟失败记录到LLM历史. 
+2025-05-10 13:23:10,172 - CircuitManusCore - INFO [CircuitManusCore.execute_tool_calls:876] - [exec_v811_351178bd-ToolExecutor] 工具执行流程完成. 共处理/记录了 3/3 个计划中的工具调用 (可能因失败提前中止). 
+2025-05-10 13:23:10,173 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:270] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 5
+2025-05-10 13:23:10,173 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:289] - [MemoryManager] 添加后短期记忆数量: 6
+2025-05-10 13:23:10,174 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:270] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 6
+2025-05-10 13:23:10,174 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:289] - [MemoryManager] 添加后短期记忆数量: 7
+2025-05-10 13:23:10,175 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:270] - [MemoryManager] 添加消息到短期记忆 (Role: tool). 当前数量: 7
+2025-05-10 13:23:10,176 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:289] - [MemoryManager] 添加后短期记忆数量: 8
+2025-05-10 13:23:10,176 - CircuitManusCore - WARNING [CircuitManusCore.process_user_request:1331] - [OrchestratorV8_1_1_WS - PlanAttempt 2 - ReqID: req_13751da8-de4] 工具执行过程中发生了一个或多个持久性失败. 
+2025-05-10 13:23:10,177 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "action_execution", "status": "tool_failure_detected", "message": "\u90e8\u5206\u64cd\u4f5c\u5931\u8d25,\u51c6\u5907\u8bc4\u4f30\u662f\u5426\u91cd\u89c4\u5212. ", "details": {"last_error_message": "\u5de5\u5177 'connect_components_tool' \u672a\u6267\u884c,\u56e0\u4e3a\u524d\u5e8f\u5de5\u5177 'connect_components_tool' (ID: tc_connect_r1_led1_positive_replan) \u5931\u8d25. "}}
+2025-05-10 13:23:10,178 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1149] - 
+--- [OrchestratorV8_1_1_WS - PlanAttempt 3 - ReqID: req_13751da8-de4] 开始 ---
+2025-05-10 13:23:10,179 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "general_status", "request_id": "req_13751da8-de4", "stage": "planning", "status": "started", "message": "\u6b63\u5728\u5c1d\u8bd5\u7b2c 2/2 \u6b21\u91cd\u89c4\u5212...", "details": {"attempt_number": 3, "max_replanning_attempts": 2}}
+2025-05-10 13:23:10,181 - CircuitManusCore - DEBUG [CircuitManusCore.get_memory_context_for_prompt:308] - [MemoryManager] 正在格式化记忆上下文用于 Prompt...
+2025-05-10 13:23:10,181 - CircuitManusCore - DEBUG [CircuitManusCore.get_state_description:161] - [Circuit] 正在生成电路状态描述...
+2025-05-10 13:23:10,182 - CircuitManusCore - DEBUG [CircuitManusCore.get_state_description:186] - [Circuit] 电路状态描述生成完毕. 
+2025-05-10 13:23:10,183 - CircuitManusCore - DEBUG [CircuitManusCore.get_memory_context_for_prompt:316] - [MemoryManager] 已提取最近 1 条长期记忆 (倒序). 
+2025-05-10 13:23:10,183 - CircuitManusCore - DEBUG [CircuitManusCore.get_memory_context_for_prompt:320] - [MemoryManager] 记忆上下文 (电路+长期) 格式化完成. 
+2025-05-10 13:23:10,184 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1167] - [OrchestratorV8_1_1_WS - PlanAttempt 3 - ReqID: req_13751da8-de4] 调用规划 LLM (LLM Call Attempt 1 of 3)...
+2025-05-10 13:23:10,184 - CircuitManusCore - INFO [CircuitManusCore.call_llm:353] - [LLMInterface] 准备异步调用 LLM (glm-4-flash, Phase: planning, Expecting V8.1.1 JSON)...
+2025-05-10 13:23:10,185 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:354] - [LLMInterface] 发送的消息条数: 9
+2025-05-10 13:23:10,186 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:367] - [LLMInterface] 发送给 LLM 的消息列表 (预览):
+[
+  {
+    "index": 0,
+    "role": "system",
+    "content_preview_length": 15160,
+    "content_preview": "您是一位顶尖的、极其严谨的电路设计编程助理 (Agent Version V8.1.1-WS-PJS). 您的行为必须专业、精确,并严格遵循指令. 您的输出【必须且只能是】一个符合下述V8.1.1规范的JSON对象,且该JSON对象需要被三个反引号和'json'标记包围 (即 ```json ... ```). JSON对象之外不应有任何其他文本、注释或解释. \n\n【核心任务: 规划阶段 (V8.1.1)】\n深入分析用户的最新指令、完整的对话历史(包括您之前的思考、规划以及所有工具执行结果,特别是'tool' role和'assistant' role中可能的错误反馈)、当前的电路状态和记忆. 然后,生成一个符合V8.1.1规范的JSON对象作为您的行动计划或直接回复. \n\n【重要: 重规划指示 (V8.1.1)】\n您当前正在进行重规划. 这意味着您之前的规划或工具执行遇到了问题(详见对话历史中的 'tool' role messages 或您之前输出的JSON中的 'error_details'). 请: \n1. **仔细分析失败原因**: 是工具参数错误、工具本身执行失败、还是您之前输出的JSON格式/逻辑有误？对话历史中角色为 'assistant' 的消息,如果其内容是模拟的V8.1.1 JSON且 `status` 为 `failure`,也可能包含Agent对您上一次输出的解析/校验错误信息(在 `error_details.failed_validation_points` 中). \n2. **生成修正后的新计划**: 基于您的分析,您现在必须生成一个【全新的、修正了先前问题的V8.1.1 JSON计划】. 请注意,如果您成功地为【当前这次思考和规划】输出了一个结构完整且逻辑合理的V8.1.1 JSON(无论是调用新工具还是直接回复用户),那么这个【新JSON本身的顶层 `status` 字段必须设置为 `'success'`】. 您应该在 `thought_process` 字段中详细解释您是如何分析上一次失败、如何修正计划、以及为什么新的计划是合理的. \n3. **无法解决的情况**: 如果您经过深入分析,认为确实无法通过进一步的工具调用或重规划来完成用户的核心请求,那么您应该制定一个【直接回复用户并解释情况的计划】. 在这种情况下,您的V8.1.1 JSON的顶层 `status` 字段同样应为 `'success'`(因为您成功地决定了如何回复),`decision.IS_CALL_TOOLS` 应设为 `false`,并在 `decision.RESPONSE_TO_USER.content` 中清晰、礼貌地向用户说明情况和原因. 同时,`decision.RESPONSE_TO_USER.requires_user_clarification_for_current_request` 字段可以设为 `true` (如果需要用户提供更多信息才能继续). \n4. **真正意义上的规划失败**: 只有当您在【当前这次重规划尝试中】,由于自身的理解困难、无法形成任何有效的JSON结构、或遇到无法克服的内部逻辑困境,而【未能成功生成一个符合规范的V8.1.1 JSON输出】时,才应将顶层 `status` 字段设为 `'failure'`,并在 `error_details` 中详细说明您【当前这次规划尝试】失败的具体原因 (包括 `error_type`, `error_code`, `technical_message`, `is_direct_llm_failure` 等). \n**核心原则**: 不要因为*过去*的工具执行失败,就将您*当前新制定*的计划标记为 `status: 'failure'`. `status` 反映的是您【当前这次生成JSON这个行为本身】的成功与否. \n不要简单重复之前失败的计划！您的新计划必须严格符合下面描述的V8.1.1 JSON格式. \n【V8.1.1 JSON 输出格式规范 (必须严格遵守)】\n\n```json\n{\n  \"request_id\": \"string_or_null_current_user_request_cycle_id_echo_this_value_from_system_prompt_s_context_information_if_provided_otherwise_null\",\n  \"llm_interaction_id\": \"string_MUST_BE_UNIQUE_id_for_this_llm_response_e.g.,_plan_llm_id_followed_by_8_random_chars_like_plan_llm_id_a1b2c3d4\",\n  \"timestamp_utc\": \"string_current_utc_timestamp_in_iso_8601_format_e.g.,_2024-07-16T12:00:00.000Z\",\n  \"status\": \"string_MUST_BE_either_'success'_or_'failure'._Indicates_if_THIS_SPECIFIC_JSON_OUTPUT_was_successfully_generated_by_LLM_for_the_current_phase.\",\n  \"error_details\": { \n    \"error_type\": \"string_enum_HIGH_LEVEL_ERROR_CATEGORY_e.g._PLANNING_ERROR_LLM_OUTPUT_VALIDATION_ERROR_INTERNAL_LOGIC_ERROR\", \n    \"error_code\": \"string_SPECIFIC_ERROR_CODE_e.g._JSON_MALFORMED_MISSING_REQUIRED_FIELD_TOOL_PARAMS_INVALID_REPLAN_MAX_ATTEMPTS_REACHED\", \n    \"message_to_user\": \"string_A_user_friendly_explanation_if_this_error_is_directly_related_to_user_action_or_if_a_user_facing_message_is_appropriate_otherwise_generic_agent_error_message.\", \n    \"technical_message\": \"string_Detailed_technical_error_message_for_logging_and_debugging_This_is_what_LLM_thinks_went_wrong_with_its_OWN_output_generation_process.\", \n    \"is_direct_llm_failure\": \"boolean_True_if_LLM_explicitly_states_it_cannot_fulfill_request_or_generate_valid_JSON_False_if_error_is_due_to_Agent_side_validation_of_an_otherwise_syntactically_valid_LLM_JSON_output.\", \n    \"failed_validation_points\": [ \n      {\n        \"json_path\": \"string_e.g._decision.TOOL_CALL_REQUESTS[0].tool_arguments.component_id\",\n        \"issue_description\": \"string_e.g._Required_field_missing_or_Value_must_be_a_string_but_got_integer\"\n      }\n    ]\n  },\n  \"execution_phase\": \"string_MUST_BE_'planning'_for_this_task\",\n  \"thought_process\": \"string_YOUR_DETAILED_STEP_BY_STEP_REASONING_AS_BEFORE_VERY_IMPORTANT.\",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": \"boolean_true_if_tools_are_to_be_called_false_otherwise\",\n    \"TOOL_CALL_REQUESTS\": [ \n      {\n        \"tool_call_id\": \"string_UNIQUE_ID_generated_by_YOU_for_this_specific_tool_call\",\n        \"tool_name\": \"string_name_of_the_tool_to_be_called_from_available_list\",\n        \"tool_arguments\": { },\n        \"ui_hints\": { \n            \"display_name_for_tool\": \"string_optional_A_more_user_friendly_name_for_this_tool_call_e.g._Adding_Resistor_R1\",\n            \"estimated_duration_category\": \"string_enum_optional_short_medium_long_very_long\",\n            \"show_progress_granularly\": \"boolean_optional_If_true_UI_might_expect_finer_grained_progress_if_tool_supports_it_Default_false\"\n        },\n        \"estimated_complexity_or_notes\": \"string_optional_LLMs_internal_notes_dependencies_or_confidence_level_for_this_call.\"\n      }\n    ],\n    \"RESPONSE_TO_USER\": { \n      \"content_type\": \"string_e.g._text/plain_or_application/markdown\",\n      \"content\": \"string_If_IS_CALL_TOOLS_is_false_this_is_your_direct_and_complete_reply_to_the_user_It_MUST_NOT_be_empty_If_IS_CALL_TOOLS_is_true_this_SHOULD_BE_a_meaningful_transitional_message_reflecting_the_planned_actions_e.g._Okay_I_will_add_component_X_and_then_connect_it_to_Y_It_can_be_an_empty_string_if_no_transitional_message_is_truly_needed_but_a_good_one_is_preferred_for_UX.\",\n      \"suggestions_for_next_steps\": [ \n        {\n          \"suggestion_id\": \"string_optional_unique_id_for_this_suggestion_e.g._sugg_ask_about_led_color\",\n          \"text_for_user\": \"string_The_suggestion_text_to_display_to_the_user_e.g._Would_you_like_to_specify_the_LED_color\",\n          \"action_type\": \"string_enum_optional_USER_INPUT_EXPECTED_or_PREDEFINED_AGENT_ACTION_or_UI_NAVIGATION\",\n          \"action_payload\": \"object_or_string_optional_If_PREDEFINED_AGENT_ACTION_this_could_be_a_simplified_request_object_or_command_string_for_the_agent_to_process_if_selected_by_user\"\n        }\n      ],\n      \"requires_user_clarification_for_current_request\": \"boolean_optional_Set_to_true_if_the_current_request_cannot_proceed_without_further_input_from_the_user_and_the_content_is_asking_for_that_clarification_Default_false\"\n    }\n  },\n  \"diagnostics\": { \n      \"llm_confidence_score_for_this_output\": \"float_optional_0.0_to_1.0_LLMs_self_assessed_confidence_in_the_correctness_and_completeness_of_THIS_JSON_output\",\n      \"alternative_plans_considered_count\": \"integer_optional_If_LLM_considered_multiple_plans_before_settling_on_this_one\",\n      \"parsing_feedback_from_previous_attempt_id\": \"string_or_null_If_this_is_a_correction_to_a_previously_malformed_JSON_this_is_the_llm_interaction_id_of_that_failed_attempt\"\n  },\n  \"usage_metadata\": null\n}\n```\n\n【重要指令与检查清单 (V8.1.1)】:\n1.  **请求ID回显**: 准确复制System Prompt上下文中提供的 `Current Request ID` 到您的JSON输出的 `request_id` 字段. 如果未提供,则设为 `null`. \n2.  **LLM交互ID**: 【必须】为本次JSON输出生成唯一的 `llm_interaction_id`. \n3.  **UTC时间戳**: 【必须】提供当前UTC时间的ISO 8601格式 `timestamp_utc`. \n4.  **顶层 `status`**: (再次强调,请仔细阅读上面对 `status` 的详细说明和重规划指示中的要求)如果您【当前这次】成功生成了符合规范且逻辑合理的V8.1.1 JSON计划,设为 `\"success\"`. 如果您在理解请求或生成计划时遇到【自身】的内部问题,导致无法产出有效JSON,设为 `\"failure\"` 并在 `error_details` 中详细说明原因. \n5.  **`error_details` 对象**: 仅当顶层 `status` 为 `\"failure\"` 时提供. 否则为 `null`. 确保包含 `error_type`, `error_code`, `technical_message`, `is_direct_llm_failure`. `message_to_user` 和 `failed_validation_points` 根据情况提供. \n6.  **`execution_phase`**: 在此阶段,此值【必须】是 `\"planning\"`. \n7.  **`thought_process`**: 【极其重要】请在此详细记录您的思考步骤. 务必清晰、详尽、符合逻辑. \n8.  **`decision.IS_CALL_TOOLS`**: 根据您的分析决定是否需要调用工具. \n9.  **`decision.TOOL_CALL_REQUESTS`**: 如果 `IS_CALL_TOOLS` 为 `true`,此列表包含您计划调用的工具. 每个工具调用对象【必须】包含一个由您生成的唯一的 `tool_call_id` (例如 `tc_` 加上工具名和随机字符),工具名 `tool_name`,以及符合Schema的 `tool_arguments` (空对象 `{}` 如果无参数). 工具按您期望的执行顺序列出. 如果 `IS_CALL_TOOLS` 为 `false`,此字段应为 `[]` (空数组) 或 `null`. \n10. **`decision.RESPONSE_TO_USER.content`**: \n    - 如果 `IS_CALL_TOOLS` 为 `false` (直接回复): 此处是您给用户的【完整最终答复】. 它【不能】为空字符串或仅包含空白. \n    - 如果 `IS_CALL_TOOLS` 为 `true` (调用工具): 此处【应该】是一句【有意义的、能简要预示您接下来计划操作的过渡性】的话. 如果不需要,可为空字符串 `\"\"`. \n11. **`decision.RESPONSE_TO_USER.suggestions_for_next_steps`**: (可选) 提供结构化的建议列表. \n12. **`decision.RESPONSE_TO_USER.requires_user_clarification_for_current_request`**: (可选) 如果需要用户澄清,设为 `true`. \n13. **操作前检查 (重要)**: 在规划涉及操作现有元件的工具调用前,请务必通过 `thought_process` 确认这些元件是否已存在. 如不确定,优先规划 `add_component_tool` 或 `describe_circuit_tool`. \n\n\n【通用示例1: 直接回答用户问题 (无需工具) - V8.1.1 JSON】\n如果用户问: “你好,什么是电容？”\n您的输出V8.1.1 JSON应类似 (ID和时间戳会变化): \n```json\n{\n  \"request_id\": \"req_13751da8-de4\",\n  \"llm_interaction_id\": \"plan_ex_llm_id_d86a5e_direct_qa_cap\",\n  \"timestamp_utc\": \"2025-05-10T05:23:10.184081+00:00\",\n  \"status\": \"success\",\n  \"error_details\": null,\n  \"execution_phase\": \"planning\",\n  \"thought_process\": \"用户询问电容的定义. 这是一个概念性问题,不需要调用任何电路设计工具,我可以根据我的知识库直接回答. 我将提供一个关于电容基本作用、单位和常见类型的解释,并给出下一步建议. \",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": false,\n    \"TOOL_CALL_REQUESTS\": [],\n    \"RESPONSE_TO_USER\": {\n      \"content_type\": \"text/plain\",\n      \"content\": \"电容是一种能够储存电荷的电子元件,由两块导体板中间夹一层绝缘介质构成. 它的主要特性是电容量,单位是法拉(F),常用单位有微法(μF)、纳法(nF)和皮法(pF). 电容在电路中常用于滤波、耦合、隔直流、储能等. \",\n      \"suggestions_for_next_steps\": [\n        {\"text_for_user\": \"您想了解电容在具体电路中的应用吗？\", \"action_type\": \"USER_INPUT_EXPECTED\"},\n        {\"text_for_user\": \"需要我帮您在当前电路中添加一个电容吗？\", \"action_type\": \"USER_INPUT_EXPECTED\", \"action_payload\": \"请帮我添加一个10uF的电解电容\"}\n      ],\n      \"requires_user_clarification_for_current_request\": false\n    }\n  },\n  \"diagnostics\": {\"llm_confidence_score_for_this_output\": 0.95},\n  \"usage_metadata\": null\n}\n```\n\n【通用示例2: 需要调用工具时的输出V8.1.1 JSON】\n如果用户说: “帮我加一个1k欧姆的电阻R1,再加一个3V的电池B1,然后把它们连起来. ”\n您的输出V8.1.1 JSON应类似 (ID和时间戳会变化,每个tool_call_id必须唯一,由您生成): \n```json\n{\n  \"request_id\": \"req_13751da8-de4\",\n  \"llm_interaction_id\": \"plan_ex_llm_id_d86a5e_multi_tool_rc\",\n  \"timestamp_utc\": \"2025-05-10T05:23:10.184081+00:00\",\n  \"status\": \"success\",\n  \"error_details\": null,\n  \"execution_phase\": \"planning\",\n  \"thought_process\": \"用户需要执行三个操作: 1. 添加电阻R1 (1kΩ). 2. 添加电池B1 (3V). 3. 连接R1和B1. 我将按顺序规划这三个工具调用. 确保为每个工具调用生成唯一的tool_call_id. 并为用户提供一个过渡性的回复. \",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": true,\n    \"TOOL_CALL_REQUESTS\": [\n      {\n        \"tool_call_id\": \"tc_add_r1_9426ef5f\",\n        \"tool_name\": \"add_component_tool\",\n        \"tool_arguments\": {\"component_type\": \"电阻\", \"component_id\": \"R1\", \"value\": \"1kΩ\"},\n        \"ui_hints\": {\"display_name_for_tool\": \"添加电阻 R1 (1kΩ)\", \"estimated_duration_category\": \"short\"},\n        \"estimated_complexity_or..."
+  },
+  {
+    "index": 1,
+    "role": "user",
+    "content_preview_length": 29,
+    "content_preview": "将R1与LED1的正极连接，再将LED1的负极连接到GND"
+  },
+  {
+    "index": 2,
+    "role": "assistant",
+    "content_preview_length": 1896,
+    "content_preview": "```json\n{\n  \"request_id\": \"req_13751da8-de4\",\n  \"llm_interaction_id\": \"plan_ex_llm_id_92b952_connect_r1_led1\",\n  \"timestamp_utc\": \"2025-05-10T05:22:32.967289+00:00\",\n  \"status\": \"success\",\n  \"error_details\": null,\n  \"execution_phase\": \"planning\",\n  \"thought_process\": \"用户要求将电阻R1与LED1的正极连接，然后将LED1的负极连接到地线GND。首先，我需要确认R1和LED1是否已经存在于电路中。如果它们存在，我将调用连接组件的工具来完成这个任务。如果它们不存在，我将首先添加这些组件。这里不需要添加任何新的工具调用，因为只是连接已存在的组件。\",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": true,\n    \"TOOL_CALL_REQUESTS\": [\n      {\n        \"tool_call_id\": \"tc_connect_r1_led1_positive\",\n        \"tool_name\": \"connect_components_tool\",\n        \"tool_arguments\": {\n          \"comp1_id\": \"R1\",\n          \"comp2_id\": \"LED1_positive\"\n        },\n        \"ui_hints\": {\n          \"display_name_for_tool\": \"连接 R1 与 LED1 正极\",\n          \"estimated_duration_category\": \"short\"\n        },\n        \"estimated_complexity_or_notes\": \"连接两个已添加的元件，低复杂度。\"\n      },\n      {\n        \"tool_call_id\": \"tc_connect_led1_negative_gnd\",\n        \"tool_name\": \"connect_com..."
+  },
+  {
+    "index": 3,
+    "role": "tool",
+    "content_preview_length": 203,
+    "content_preview": "{\"status\": \"failure\", \"message\": \"错误: 元件 'R1' 在电路中不存在. \", \"error\": {\"error_type\": \"CIRCUIT_OPERATION_ERROR\", \"error_code\": \"COMPONENT_NOT_FOUND_FOR_CONNECTION\", \"technical_message\": \"元件 'R1' 在电路中不存在. \"}}"
+  },
+  {
+    "index": 4,
+    "role": "tool",
+    "content_preview_length": 390,
+    "content_preview": "{\"status\": \"failure\", \"message\": \"工具 'connect_components_tool' 未执行,因为前序工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive) 失败. \", \"error\": {\"error_type\": \"TOOL_CHAIN_ABORTED\", \"error_code\": \"PRECEDING_TOOL_FAILURE\", \"technical_message\": \"Execution of 'connect_components_tool' was skipped due to the failure of tool 'connect_components_tool' (ID: tc_connect_r1_led1_positive).\"}}"
+  },
+  {
+    "index": 5,
+    "role": "assistant",
+    "content_preview_length": 2256,
+    "content_preview": "```json\n{\n  \"request_id\": \"req_13751da8-de4\",\n  \"llm_interaction_id\": \"plan_ex_llm_id_969625_replan_add_r1\",\n  \"timestamp_utc\": \"2025-05-10T05:22:49.789422+00:00\",\n  \"status\": \"success\",\n  \"error_details\": null,\n  \"execution_phase\": \"planning\",\n  \"thought_process\": \"分析历史记录：在尝试连接R1和LED1时，由于R1在电路中不存在，连接操作失败。因此，我的新计划是首先添加R1。然后，我将再次尝试连接R1和LED1，以及LED1的负极到GND。\",\n  \"decision\": {\n    \"IS_CALL_TOOLS\": true,\n    \"TOOL_CALL_REQUESTS\": [\n      {\n        \"tool_call_id\": \"tc_add_r1_6f986d2b\",\n        \"tool_name\": \"add_component_tool\",\n        \"tool_arguments\": {\n          \"component_type\": \"电阻\",\n          \"component_id\": \"R1\",\n          \"value\": \"1kΩ\"\n        },\n        \"ui_hints\": {\n          \"display_name_for_tool\": \"添加电阻 R1 (1kΩ)\",\n          \"estimated_duration_category\": \"short\"\n        },\n        \"estimated_complexity_or_notes\": \"添加一个标准电阻，低复杂度。\"\n      },\n      {\n        \"tool_call_id\": \"tc_connect_r1_led1_positive_replan\",\n        \"tool_name\": \"connect_components_tool\",\n        \"tool_arguments\"..."
+  },
+  {
+    "index": 6,
+    "role": "tool",
+    "content_preview_length": 144,
+    "content_preview": "{\"status\": \"success\", \"message\": \"操作成功: 已添加元件 元件: 电阻 (ID: R1) (值: 1kΩ).  (使用了您指定的 ID 'R1')\", \"data\": {\"id\": \"R1\", \"type\": \"电阻\", \"value\": \"1kΩ\"}}"
+  },
+  {
+    "index": 7,
+    "role": "tool",
+    "content_preview_length": 225,
+    "content_preview": "{\"status\": \"failure\", \"message\": \"错误: 元件 'LED1_POSITIVE' 在电路中不存在. \", \"error\": {\"error_type\": \"CIRCUIT_OPERATION_ERROR\", \"error_code\": \"COMPONENT_NOT_FOUND_FOR_CONNECTION\", \"technical_message\": \"元件 'LED1_POSITIVE' 在电路中不存在. \"}}"
+  },
+  {
+    "index": 8,
+    "role": "tool",
+    "content_preview_length": 404,
+    "content_preview": "{\"status\": \"failure\", \"message\": \"工具 'connect_components_tool' 未执行,因为前序工具 'connect_components_tool' (ID: tc_connect_r1_led1_positive_replan) 失败. \", \"error\": {\"error_type\": \"TOOL_CHAIN_ABORTED\", \"error_code\": \"PRECEDING_TOOL_FAILURE\", \"technical_message\": \"Execution of 'connect_components_tool' was skipped due to the failure of tool 'connect_components_tool' (ID: tc_connect_r1_led1_positive_replan).\"}}"
+  }
+]
+2025-05-10 13:23:10,189 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "llm_communication_status", "request_id": "req_13751da8-de4", "llm_phase": "planning", "status": "started", "message": "\u6b63\u5728\u4e0e\u667a\u80fd\u5927\u8111\u6c9f\u901a (planning)..."}
+2025-05-10 13:23:10,195 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'POST']>
+2025-05-10 13:23:10,196 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-10 13:23:10,196 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'POST']>
+2025-05-10 13:23:10,198 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-10 13:23:10,198 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'POST']>
+2025-05-10 13:23:27,925 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 10 May 2025 05:24:23 GMT'), (b'Content-Type', b'application/json; charset=UTF-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'X-LOG-ID', b'20250510132406c0873b2dae1e4950'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'Content-Encoding', b'gzip')])
+2025-05-10 13:23:27,927 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.started request=<Request [b'POST']>
+2025-05-10 13:23:27,928 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.complete
+2025-05-10 13:23:27,929 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.started
+2025-05-10 13:23:27,930 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.complete
+2025-05-10 13:23:27,934 - CircuitManusCore - INFO [CircuitManusCore.call_llm:386] - [LLMInterface] LLM 异步调用成功. 耗时: 17.734 秒. 
+2025-05-10 13:23:27,935 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session 906a508e-bf9f-4299-bb61-b29ca081556e): {"type": "llm_communication_status", "request_id": "req_13751da8-de4", "llm_phase": "planning", "status": "completed", "message": "\u4e0e\u667a\u80fd\u5927\u8111\u6c9f\u901a\u5b8c\u6210 (planning). ", "details": {"duration_seconds": 17.73399999999674}}
+2025-05-10 13:23:27,936 - server - WARNING [server.send_status_update_to_client:129] - 尝试发送状态更新到 Session 906a508e-bf9f-4299-bb61-b29ca081556e 时WebSocket已断开. 
+2025-05-10 13:23:27,936 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1469] - 
+========================= CircuitAgent 请求处理完毕 (ReqID: req_13751da8-de4, 总耗时: 54.984 秒) =========================
+
+2025-05-10 13:23:27,937 - server - WARNING [server.websocket_endpoint:191] - Session 906a508e-bf9f-4299-bb61-b29ca081556e Agent消息处理任务被取消. 
+2025-05-10 13:23:27,937 - server - INFO [server.websocket_endpoint:201] - Session 906a508e-bf9f-4299-bb61-b29ca081556e 释放锁. 
+2025-05-10 13:23:27,938 - server - CRITICAL [server.websocket_endpoint:230] - Session 906a508e-bf9f-4299-bb61-b29ca081556e WebSocket连接处理发生顶层未预期异常: WebSocket is not connected. Need to call "accept" first.
+Traceback (most recent call last):
+  File "D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\server.py", line 135, in websocket_endpoint
+    data = await websocket.receive_text()
+  File "d:\ProgramData\anaconda3\envs\IDTAgent\lib\site-packages\starlette\websockets.py", line 117, in receive_text
+    raise RuntimeError('WebSocket is not connected. Need to call "accept" first.')
+RuntimeError: WebSocket is not connected. Need to call "accept" first.
+2025-05-10 13:23:27,943 - server - INFO [server.websocket_endpoint:237] - Session 906a508e-bf9f-4299-bb61-b29ca081556e 的WebSocket连接已从活动列表中移除. 
+2025-05-10 13:23:27,944 - server - INFO [server.websocket_endpoint:238] - Session 906a508e-bf9f-4299-bb61-b29ca081556e WebSocket连接处理结束 (客户端: 127.0.0.1:17898).

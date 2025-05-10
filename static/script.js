@@ -289,12 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (status === 'ignored') logIconClass = 'fas fa-eye-slash log-muted';
 
         let fullLogMessage = msgText;
-        if (details && Object.keys(details).length > 0) {
-            // Append some key details for better log readability
-            if (details.attempt_number) fullLogMessage += ` (Attempt ${details.attempt_number})`;
-            if (details.parser_error) fullLogMessage += ` - Parser: ${details.parser_error.substring(0, 100)}`;
-            if (details.last_error_message) fullLogMessage += ` - Last Error: ${details.last_error_message.substring(0, 100)}`;
-        }
+        // Details will be formatted by appendLogItem, so no need to manually append to fullLogMessage here
+        // if (details && Object.keys(details).length > 0) { ... }
 
         appendLogItem(fullLogMessage, logIconClass, logItemClasses, details);
         if (state.isProcessLogVisible) showProcessLog(false); // Ensure log is visible if not already
@@ -350,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `Plan item #${toolCall.order}: ${displayName} (ID: ${toolCall.tool_call_id}) - Status: Pending`,
                 'fas fa-list-check log-info',
                 `type-plan_details tool-${toolCall.tool_name} status-pending`,
-                { arguments: toolCall.tool_arguments, tool_call_id: toolCall.tool_call_id }
+                { arguments: toolCall.tool_arguments, tool_call_id: toolCall.tool_call_id } // Pass full details for formatting
             );
         });
         if (state.isProcessLogVisible) showProcessLog(true); // Expand if collapsed, ensure visible
@@ -458,8 +454,132 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Helper to parse itemClasses string into type, stage, status
+    function parseItemClasses(itemClassesStr) {
+        const classes = itemClassesStr ? itemClassesStr.split(' ') : [];
+        const parsed = { type: null, stage: null, status: null };
+        classes.forEach(cls => {
+            if (cls.startsWith('type-')) parsed.type = cls.substring(5);
+            else if (cls.startsWith('stage-')) parsed.stage = cls.substring(6);
+            else if (cls.startsWith('status-')) parsed.status = cls.substring(7);
+            else if (cls.startsWith('phase-')) parsed.stage = cls.substring(6); // llm_comm uses phase (treat as stage)
+        });
+        return parsed;
+    }
+
+
+    // Enhanced formatter for log item details
+    function formatLogDetails(details, type, stage, status) {
+        let html = '';
+
+        // Helper to add a key-value pair to the HTML output
+        const addDetailKeyValue = (key, value, indentLevel = 0) => {
+            const sanitizedValue = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const paddingLeftStyle = `padding-left: ${indentLevel * 10}px;`;
+            // Uppercase first letter of each word in key, replace underscores with spaces
+            const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+            return `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>${formattedKey}:</strong> <span>${sanitizedValue}</span></div>`;
+        };
+
+        // Recursive helper to format complex objects
+        const formatRecursive = (obj, currentType, currentStage, currentStatus, indentLevel = 0) => {
+            let partHtml = '';
+            for (const key in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                    const value = obj[key];
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+                    const paddingLeftStyle = `padding-left: ${indentLevel * 10}px;`;
+
+                    // Skip tool_call_id for plan_details as it's usually in the main message
+                    if (currentType === 'plan_details' && key === 'tool_call_id') {
+                        continue;
+                    }
+
+                    // Specific key handling (these are common patterns within details)
+                    if (key === 'ui_hints' && typeof value === 'object' && value !== null) {
+                        const dn = String(value.display_name_for_tool || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        const ed = String(value.estimated_duration_category || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>UI Hints:</strong> <span>Display Name: ${dn}, Estimated Duration: ${ed}</span></div>`;
+                    } else if (key === 'result_data_preview' && typeof value === 'string') {
+                        let previewContent = '';
+                        try {
+                            const parsedResult = JSON.parse(value);
+                            let resultItems = [];
+                            for (const resKey in parsedResult) {
+                                resultItems.push(`${resKey}: ${String(parsedResult[resKey]).replace(/</g, "&lt;").replace(/>/g, "&gt;")}`);
+                            }
+                            previewContent = resultItems.join('; ');
+                        } catch (e) {
+                            previewContent = `(Raw Text) ${String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
+                        }
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>Result Preview:</strong> <span>${previewContent}</span></div>`;
+                    } else if (currentType === 'plan_details' && key === 'arguments' && typeof value === 'object' && value !== null) {
+                        let argItems = [];
+                        for (const argKey in value) {
+                            const formattedArgKey = argKey.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+                            argItems.push(`<em>${formattedArgKey}</em>: ${String(value[argKey]).replace(/</g, "&lt;").replace(/>/g, "&gt;")}`);
+                        }
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>Arguments:</strong> <span>${argItems.join('; ')}</span></div>`;
+                    }
+                    // Generic handling for other objects, arrays, or primitives
+                    else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>${displayKey}:</strong></div>`;
+                        partHtml += formatRecursive(value, currentType, currentStage, currentStatus, indentLevel + 1); // Recurse
+                    } else if (Array.isArray(value)) {
+                        const arrayItems = value.map(item => {
+                            if (typeof item === 'object' && item !== null) return '(Object)'; // Simplified for arrays of objects
+                            return String(item).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        });
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>${displayKey}:</strong> <span>[${arrayItems.join(', ')}]</span></div>`;
+                    } else { // Simple key-value primitive
+                        partHtml += addDetailKeyValue(key, value, indentLevel);
+                    }
+                }
+            }
+            return partHtml;
+        };
+
+        // Top-level specific handlers based on type, stage, and status
+        if (type === 'general_status') {
+            if (stage === 'user_instruction_received' && details.user_request_preview) {
+                html += addDetailKeyValue('User Request Preview', details.user_request_preview);
+            } else if (stage === 'planning_and_analysis' && status === 'started' && typeof details.attempt_number !== 'undefined') {
+                html += addDetailKeyValue('Attempt', details.attempt_number);
+                if (typeof details.max_replanning_attempts !== 'undefined') {
+                    html += addDetailKeyValue('Max Replanning Attempts', details.max_replanning_attempts);
+                }
+            } else if (stage === 'planning_and_analysis' && status === 'completed_and_validated' && details.plan_llm_id) {
+                html += addDetailKeyValue('Plan LLM ID', details.plan_llm_id);
+            } else if (stage === 'tool_execution_phase' && status === 'started' && typeof details.tool_count !== 'undefined') {
+                html += addDetailKeyValue('Tool Count', details.tool_count);
+            } else if (stage === 'response_generation_phase' && status === 'started' && details.reason) {
+                html += addDetailKeyValue('Reason', details.reason);
+            } else {
+                // Fallback to recursive formatter for other general_status details if no specific handler matched
+                html = formatRecursive(details, type, stage, status, 0);
+            }
+        } else if (type === 'llm_communication_status') {
+            if (typeof details.duration_seconds !== 'undefined') {
+                html += addDetailKeyValue('Duration', `${parseFloat(details.duration_seconds).toFixed(2)}s`);
+                const otherDetails = { ...details };
+                delete otherDetails.duration_seconds;
+                if (Object.keys(otherDetails).length > 0) {
+                    html += formatRecursive(otherDetails, type, stage, status, 0);
+                }
+            } else {
+                html = formatRecursive(details, type, stage, status, 0);
+            }
+        } else {
+            // Default for plan_details, tool_status_update, and any other types: use the recursive formatter
+            html = formatRecursive(details, type, stage, status, 0);
+        }
+
+        return html || null; // Return null if html is empty, to allow fallback to raw JSON
+    }
+
+
     // Appends a log item to the process log area.
-    // details can be an object that will be stringified for display.
+    // details can be an object that will be stringified or formatted for display.
     function appendLogItem(messageText, iconClass, itemClasses = '', details = null) {
         const logItemDiv = document.createElement('div');
         logItemDiv.className = 'log-item animate__animated animate__fadeInUp';
@@ -480,19 +600,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (details && Object.keys(details).length > 0) {
             const detailsEl = document.createElement('div');
             detailsEl.className = 'log-item-details';
-            try {
-                // Attempt to pretty-print if it's an object, otherwise just stringify
-                let detailsText;
-                if (typeof details === 'object') {
-                    detailsText = JSON.stringify(details, null, 2);
-                    // If it's JSON, wrap in pre for better formatting
-                    detailsEl.innerHTML = `<pre><code>${detailsText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
-                } else {
-                    detailsText = String(details);
-                    detailsEl.textContent = detailsText;
+
+            const { type, stage, status } = parseItemClasses(itemClasses);
+            const formattedDetailsHtml = formatLogDetails(details, type, stage, status);
+
+            if (formattedDetailsHtml) {
+                detailsEl.innerHTML = formattedDetailsHtml;
+            } else { // Fallback to raw JSON for unhandled or explicitly skipped cases
+                try {
+                    let detailsText;
+                    if (typeof details === 'object') {
+                        detailsText = JSON.stringify(details, null, 2);
+                        // Ensure pre/code doesn't mess up flex layout of .log-item-details
+                        detailsEl.innerHTML = `<pre><code>${detailsText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
+                    } else {
+                        detailsText = String(details);
+                        detailsEl.textContent = detailsText; // Plain text if not object
+                    }
+                } catch (e) {
+                    detailsEl.textContent = String(details); // Ultimate fallback
                 }
-            } catch (e) {
-                detailsEl.textContent = String(details); // Fallback
             }
             textWrapperEl.appendChild(detailsEl);
         }
@@ -502,6 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.processLogContent.appendChild(logItemDiv);
         scrollToProcessLogBottom();
     }
+
 
     // Appends a log item that specifically includes a "thought process" bubble.
     function appendLogItemWithThink(headerText, headerIconClass, itemClasses, thinkContent, thinkBubbleLabel = "Thought Process") {

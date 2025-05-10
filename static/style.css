@@ -955,15 +955,86 @@ button:focus-visible,
 }
 
 .log-item-details {
-    /* For sub-details like tool arguments, error specifics */
     font-size: 0.9em;
+    /* Base for details */
     color: var(--text-muted);
-    margin-top: calc(var(--spacing-unit) * 0.25);
-    padding-left: calc(var(--spacing-unit) * 0.5);
+    margin-top: calc(var(--spacing-unit) * 0.5);
+    /* Increased top margin */
+    padding-left: calc(var(--spacing-unit) * 1);
+    /* Indent content of details block */
     border-left: 2px solid var(--border-color-soft);
-    white-space: pre-wrap;
-    /* Allow breaking long detail strings */
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing-unit) * 0.25);
+    /* Gap between detail items */
 }
+
+.log-detail-item {
+    display: flex;
+    /* Aligns <strong> and <span> on the same line */
+    gap: calc(var(--spacing-unit) * 0.5);
+    line-height: 1.4;
+    /* font-size is inherited or can be explicitly set if needed */
+}
+
+.log-detail-item strong {
+    font-weight: 500;
+    color: var(--text-secondary);
+    /* Make keys slightly more prominent */
+    flex-shrink: 0;
+    /* Prevent keys from shrinking excessively */
+}
+
+.dark-theme .log-detail-item strong {
+    color: var(--gray-600);
+    /* Adjust for dark theme */
+}
+
+.log-detail-item span {
+    /* color is var(--text-muted) from parent .log-item-details */
+    word-break: break-all;
+    /* Allow long values to break */
+}
+
+.dark-theme .log-detail-item span {
+    color: var(--gray-500);
+}
+
+
+.log-detail-item em {
+    /* For argument keys like in plan_details */
+    font-style: normal;
+    /* Override browser default em */
+    font-weight: 500;
+    color: var(--text-secondary);
+    /* Or a distinct color if preferred */
+}
+
+
+.log-item-details pre {
+    /* Styling for the fallback JSON view */
+    margin: 0;
+    /* Reset margin */
+    padding: calc(var(--spacing-unit) * 0.5);
+    background-color: hsla(0, 0%, 0%, 0.03);
+    border-radius: var(--border-radius-sm);
+    overflow-x: auto;
+    width: calc(100% - var(--spacing-unit));
+    /* Account for its own padding */
+}
+
+.dark-theme .log-item-details pre {
+    background-color: hsla(0, 0%, 100%, 0.05);
+}
+
+.log-item-details pre code {
+    font-family: monospace;
+    font-size: 0.95em;
+    /* Relative to .log-item-details font-size */
+    color: var(--text-muted);
+    /* Or a specific code color */
+}
+
 
 .log-item.status-started .log-item-message,
 .log-item .log-info {
