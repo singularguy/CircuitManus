@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sendLoadingIcon: document.querySelector('.send-loading-icon'),
 
         // 头部与主题
-        appHeader: document.getElementById('app-header'), // Added for glass effect
+        appHeader: document.getElementById('app-header'),
         themeToggleButton: document.getElementById('theme-toggle'),
         themeToggleIcon: document.querySelector('#theme-toggle i'),
         clearChatButton: document.getElementById('clear-chat'),
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editSessionNameButton: document.getElementById('edit-session-name-btn'),
 
         // 输入区域与文件上传
-        inputArea: document.getElementById('input-area'), // Added for glass effect
+        inputArea: document.getElementById('input-area'),
         attachButton: document.getElementById('attach-button'),
         micButton: document.getElementById('mic-button'),
         charCounter: document.getElementById('char-counter'),
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ======== 应用状态与配置 ========
-    const APP_PREFIX = 'IDTAgentPro_v8.2.1_GlassUI_'; // Updated prefix
+    const APP_PREFIX = 'IDTAgentPro_v8.2.1_GlassUI_';
     let state = {
         sessions: {},
         currentSessionId: null,
@@ -95,6 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
         isProcessLogCollapsed: true,
         maxInputChars: 4000,
         currentClientRequestId: null,
+        // state.lastResponseThinking is NO LONGER the primary source for chat bubble thinking.
+        // We will directly use the thinking from the final_v8_1_json_if_success.
+        // lastResponseThinking will still be populated by handleThinkingLog for potential use in the process log if needed,
+        // but the chat bubble will rely on the 'thought_process' field from the final JSON.
         lastResponseThinking: null,
         autoSubmitQuickActions: true,
         pendingToolCalls: {}
@@ -255,11 +259,11 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'tool_status_update':
                 handleToolStatusUpdate(message);
                 break;
-            case 'interim_response': // CRITICAL CHANGE HERE
-                handleInterimResponse(message); // Now logs to process log, not chat
+            case 'interim_response':
+                handleInterimResponse(message);
                 break;
             case 'final_response':
-                handleFinalResponse(message);
+                handleFinalResponse(message); // This function will now handle showing thought_process from the final JSON
                 break;
 
             default:
@@ -297,16 +301,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleThinkingLog(msg) {
-        const { stage, content } = msg;
-        if (stage === 'response_generation' || stage === 'final_summary') {
-            state.lastResponseThinking = content;
+        const { stage, content, llm_interaction_id } = msg; // Added llm_interaction_id
+        // Store the thinking log, regardless of stage, if it's needed elsewhere (e.g. process log)
+        // This particular `state.lastResponseThinking` is now mostly for the process log.
+        // The chat bubble will get its thinking directly from the `final_v8_1_json_if_success.thought_process`.
+        if (content) { // Only update if content is non-empty
+            state.lastResponseThinking = content; // Store it for process log if needed
         }
+
 
         if (state.showLogBubblesThink) {
             const thinkLabel = `Agent Thinking (${stage.replace(/_/g, ' ')})`;
-            appendLogItemWithThink(thinkLabel, 'fas fa-comment-dots log-think', `type-thinking_log stage-${stage}`, content, "Detailed Thought Process:");
+            appendLogItemWithThink(thinkLabel, 'fas fa-comment-dots log-think', `type-thinking_log stage-${stage} llm-id-${llm_interaction_id}`, content, "Detailed Thought Process:");
         } else {
-            appendLogItem(`Thinking log received (${stage}) - ${content.substring(0, 70)}...`, 'fas fa-comment-dots log-muted', `type-thinking_log stage-${stage} muted`);
+            appendLogItem(`Thinking log received (${stage}, LLM_ID: ${llm_interaction_id}) - ${content.substring(0, 70)}...`, 'fas fa-comment-dots log-muted', `type-thinking_log stage-${stage} muted`);
         }
         if (state.isProcessLogVisible) showProcessLog(false);
     }
@@ -334,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleToolStatusUpdate(msg) {
         const { tool_call_id, tool_name, status, message: msgText, details } = msg;
-        let logIconClass = 'fas fa-cog log-info'; // Default for 'running' or generic
+        let logIconClass = 'fas fa-cog log-info';
         let itemStatusClass = `status-${status}`;
 
         if (status === 'running') {
@@ -347,19 +355,17 @@ document.addEventListener('DOMContentLoaded', () => {
             logIconClass = 'fas fa-times-circle log-error';
         } else if (status === 'aborted_due_to_previous_failure') {
             logIconClass = 'fas fa-ban log-warning';
-            itemStatusClass = 'status-aborted'; // Simplified class for styling
+            itemStatusClass = 'status-aborted';
         }
 
         const pendingToolInfo = state.pendingToolCalls[tool_call_id];
         const displayName = pendingToolInfo?.ui_hints?.display_name_for_tool || tool_name;
         let fullLogMessage = `Tool: ${displayName} (ID: ${tool_call_id}) - ${status.replace(/_/g, ' ').toUpperCase()}: ${msgText}`;
 
-        // Find existing log item for this tool_call_id to update it, or append new if not found
         let existingLogItem = dom.processLogContent.querySelector(`.log-item[data-tool-call-id="${tool_call_id}"]`);
 
         if (existingLogItem) {
-            // Update existing log item
-            existingLogItem.className = `log-item animate__animated type-tool_status_update tool-${tool_name} ${itemStatusClass}`; // Reset classes
+            existingLogItem.className = `log-item animate__animated type-tool_status_update tool-${tool_name} ${itemStatusClass}`;
             const iconEl = existingLogItem.querySelector('i:first-child');
             if (iconEl) iconEl.className = logIconClass;
             const messageEl = existingLogItem.querySelector('.log-item-message');
@@ -373,22 +379,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     existingLogItem.querySelector('.log-item-text-wrapper').appendChild(detailsEl);
                 }
                 const formattedDetailsHtml = formatLogDetails(details, 'tool_status_update', null, status);
-                detailsEl.innerHTML = formattedDetailsHtml || ''; // Clear if no details
+                detailsEl.innerHTML = formattedDetailsHtml || '';
             } else if (detailsEl) {
-                detailsEl.innerHTML = ''; // Clear if no new details
+                detailsEl.innerHTML = '';
             }
-            // Re-trigger a subtle animation if desired for update
-            existingLogItem.classList.remove('animate__flash', 'animate__headShake'); // remove previous animation
+            existingLogItem.classList.remove('animate__flash', 'animate__headShake');
             if (status === 'failed') existingLogItem.classList.add('animate__headShake');
             else existingLogItem.classList.add('animate__flash');
             existingLogItem.style.setProperty('--animate-duration', '0.5s');
 
         } else {
-            // Append as new log item if it doesn't exist (should ideally be planned first)
             const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass}`, details);
-            if (logItemDiv) logItemDiv.dataset.toolCallId = tool_call_id; // Set data attribute for future updates
+            if (logItemDiv) logItemDiv.dataset.toolCallId = tool_call_id;
         }
-
 
         if (state.isProcessLogVisible) showProcessLog(false);
 
@@ -399,21 +402,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // MODIFIED: This now logs to process log instead of main chat
     function handleInterimResponse(msg) {
         const { content, llm_interaction_id } = msg;
-
-        // Log the interim response (LLM's intention/transitional message) to the process log
         appendLogItem(
             `Agent Intention: "${content.substring(0, 150)}${content.length > 150 ? '...' : ''}"`,
-            'fas fa-bullhorn log-info', // Using a different icon for intention
+            'fas fa-bullhorn log-info',
             'type-agent_intention',
             { llm_interaction_id: llm_interaction_id, full_content: content }
         );
         if (state.isProcessLogVisible) showProcessLog(false);
     }
 
-
+    // ==========================================================================================
+    // KEY CHANGE: handleFinalResponse now extracts thought_process from final_v8_1_json_if_success
+    // ==========================================================================================
     function handleFinalResponse(msg) {
         hideTypingIndicator();
         setLoadingState(false);
@@ -422,17 +424,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { content, llm_interaction_id, final_v8_1_json_if_success } = msg;
 
-        appendMessage(content, 'agent', false, state.lastResponseThinking, false, [], final_v8_1_json_if_success ? null : "ErrorResponse");
+        let thinkingForBubble = null;
+        let actualContentForBubble = content; // Default to the 'content' field from WebSocket message
+
+        if (final_v8_1_json_if_success && final_v8_1_json_if_success.status === 'success') {
+            // Prioritize thought_process and content from the structured JSON
+            if (final_v8_1_json_if_success.thought_process) {
+                thinkingForBubble = final_v8_1_json_if_success.thought_process;
+            }
+            if (final_v8_1_json_if_success.decision &&
+                final_v8_1_json_if_success.decision.RESPONSE_TO_USER &&
+                final_v8_1_json_if_success.decision.RESPONSE_TO_USER.content) {
+                actualContentForBubble = final_v8_1_json_if_success.decision.RESPONSE_TO_USER.content;
+
+                // Append suggestions if any
+                const suggestions = final_v8_1_json_if_success.decision.RESPONSE_TO_USER.suggestions_for_next_steps;
+                if (suggestions && Array.isArray(suggestions) && suggestions.length > 0) {
+                    let suggestionsText = "\n\n<div class=\"final-response-suggestions\"><strong>Next steps you might consider:</strong><ul>";
+                    suggestions.forEach(sugg => {
+                        if (sugg.text_for_user) {
+                             // Make suggestions clickable, similar to quick actions
+                            suggestionsText += `<li><a href="#" class="quick-action-btn" data-message="${sugg.text_for_user.replace(/"/g, '&quot;')}">${sugg.text_for_user}</a></li>`;
+                        }
+                    });
+                    suggestionsText += "</ul></div>";
+                    actualContentForBubble += suggestionsText; // Append HTML for suggestions
+                     // Pass true for isHTML because we added HTML for suggestions
+                    appendMessage(actualContentForBubble, 'agent', true, thinkingForBubble, false, [], null);
+
+                } else {
+                     // No suggestions, append as plain text (or Markdown if content implies it)
+                    appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], null);
+                }
+
+            } else {
+                 // Fallback if RESPONSE_TO_USER.content is missing, but should not happen with V8.1.1
+                appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], "ContentMissingInJSON");
+            }
+        } else {
+            // Handle cases where final_v8_1_json_if_success is not available or indicates failure
+            // The 'content' from the WebSocket message is the fallback from the server.
+            // Thinking might still be available from state.lastResponseThinking if a prior 'thinking_log' came for this.
+            thinkingForBubble = state.lastResponseThinking; // Use cached thinking if any
+            appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], "ErrorResponseOrNoJSON");
+        }
+
 
         addMessageToCurrentSession({
-            content: content,
+            content: actualContentForBubble, // Store the content that was actually displayed
             sender: 'agent',
             timestamp: Date.now(),
-            isHTML: false,
+            isHTML: (final_v8_1_json_if_success?.decision?.RESPONSE_TO_USER?.suggestions_for_next_steps?.length > 0), // True if suggestions were added
             rawResponseV8_1: final_v8_1_json_if_success,
-            thinking: state.lastResponseThinking,
+            thinking: thinkingForBubble, // Store the thinking that was displayed
         });
-        state.lastResponseThinking = null;
+        state.lastResponseThinking = null; // Clear cached thinking after use in chat bubble or if unused
 
         if (state.sessions[state.currentSessionId]) {
             state.sessions[state.currentSessionId].lastActivity = Date.now();
@@ -440,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSessions();
         renderSessionList();
 
-        appendLogItem(`Agent final response delivered (LLM_ID: ${llm_interaction_id || 'N/A'})`, 'fas fa-flag-checkered log-success', 'type-final_response', final_v8_1_json_if_success ? { summary: content.substring(0, 100) + "..." } : { error_details: "Response generation indicated failure or missing JSON." });
+        appendLogItem(`Agent final response delivered (LLM_ID: ${llm_interaction_id || 'N/A'})`, 'fas fa-flag-checkered log-success', 'type-final_response', final_v8_1_json_if_success ? { summary: actualContentForBubble.substring(0,100)+"..." } : { error_details: "Response generation indicated failure or missing JSON." });
         if (state.isProcessLogVisible) showProcessLog(true);
     }
 
@@ -543,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function appendLogItem(messageText, iconClass, itemClasses = '', details = null) {
         const logItemDiv = document.createElement('div');
         logItemDiv.className = 'log-item animate__animated animate__fadeInUp';
-        logItemDiv.style.setProperty('--animate-duration', '0.3s'); // Smoother animation
+        logItemDiv.style.setProperty('--animate-duration', '0.3s');
         if (itemClasses) logItemDiv.classList.add(...itemClasses.split(' '));
 
         const iconEl = document.createElement('i');
@@ -580,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logItemDiv.appendChild(textWrapperEl);
         dom.processLogContent.appendChild(logItemDiv);
         scrollToProcessLogBottom();
-        return logItemDiv; // Return the created element
+        return logItemDiv;
     }
 
 
@@ -645,12 +691,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.animationLevel !== 'none' && !dom.processLogContainer.classList.contains('animate__fadeInDown')) {
             dom.processLogContainer.classList.remove('animate__fadeOutUp');
             dom.processLogContainer.classList.add('animate__animated', 'animate__fadeInDown');
-            dom.processLogContainer.style.setProperty('--animate-duration', '0.4s'); // Slightly longer for a smoother feel
+            dom.processLogContainer.style.setProperty('--animate-duration', '0.4s');
         }
         if (ensureExpanded && state.isProcessLogCollapsed) {
-            toggleProcessLogCollapse(false); // Pass false for animated expand
+            toggleProcessLogCollapse(false);
         }
-        localStorage.setItem(APP_PREFIX + 'isProcessLogVisible', state.isProcessLogVisible.toString());
+         localStorage.setItem(APP_PREFIX + 'isProcessLogVisible', state.isProcessLogVisible.toString());
     }
 
     function hideProcessLog() {
@@ -681,11 +727,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem(APP_PREFIX + 'processLogCollapsed', state.isProcessLogCollapsed.toString());
 
-        // Apply smooth transition for max-height and padding if not instant and animations are enabled
         if (!instant && state.animationLevel !== 'none') {
-            dom.processLogContainer.style.transition = 'max-height var(--transition-duration-long) var(--transition-timing-function), padding var(--transition-duration-long) var(--transition-timing-function)';
+            dom.processLogContainer.style.transition = 'max-height var(--transition-duration-long) var(--transition-timing-function-smooth), padding var(--transition-duration-long) var(--transition-timing-function-smooth)';
         } else {
-            dom.processLogContainer.style.transition = 'none'; // Remove transition for instant changes
+            dom.processLogContainer.style.transition = 'none';
         }
     }
 
@@ -871,7 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sessionCount = Object.keys(state.sessions).length + 1;
         state.sessions[newId] = {
             id: newId,
-            name: `Nebula Session ${sessionCount}`, // Themed name
+            name: `Nebula Session ${sessionCount}`,
             messages: [],
             createdAt: now,
             lastActivity: now,
@@ -933,8 +978,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSessionList();
         dom.userInput.focus();
 
-        dom.processLogContent.innerHTML = ''; // Clear log for new session view
-        if (!state.isProcessLogVisible) hideProcessLog(); // Ensure it's hidden if not globally set to visible
+        dom.processLogContent.innerHTML = '';
+        if (!state.isProcessLogVisible) hideProcessLog();
 
         console.log(`Switched to session: ${state.sessions[sessionId]?.name} (ID: ${sessionId})`);
     }
@@ -1011,7 +1056,7 @@ document.addEventListener('DOMContentLoaded', () => {
             listItem.classList.add('session-list-item');
             if (state.animationLevel === 'full' && !listItem.classList.contains('active-session')) {
                 listItem.classList.add('animate__animated', 'animate__fadeInRight');
-                listItem.style.setProperty('--animate-duration', '0.35s'); // Slightly smoother
+                listItem.style.setProperty('--animate-duration', '0.35s');
             }
             if (session.id === state.currentSessionId) {
                 listItem.classList.add('active-session');
@@ -1094,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 timestamp: m.timestamp || Date.now(),
                                 isHTML: m.isHTML || false,
                                 attachments: m.attachments || [],
-                                thinking: m.thinking || null,
+                                thinking: m.thinking || null, // This will be correctly populated or null
                                 rawResponseV8_1: m.rawResponseV8_1,
                                 errorType: m.errorType,
                             })),
@@ -1167,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setLoadingState(true);
         state.currentClientRequestId = generateClientRequestId();
-        state.lastResponseThinking = null;
+        state.lastResponseThinking = null; // Clear any cached thinking from previous turn
 
         const currentUserMessage = {
             content: messageText,
@@ -1211,12 +1256,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addMessageToCurrentSession(messageObject) {
         if (state.sessions[state.currentSessionId]) {
+            // Ensure only agent messages store rawResponseV8_1 and thinking
             if (messageObject.sender !== 'agent') {
                 delete messageObject.rawResponseV8_1;
+                delete messageObject.thinking; // User messages don't have agent thinking
+            } else {
+                 // For agent messages, ensure thinking is present if it should be.
+                 // If messageObject.thinking is undefined but should have been there, it might be an issue.
+                 // However, if it's intentionally null (e.g. error response without thinking), that's fine.
             }
-            if (messageObject.sender !== 'agent' || !messageObject.thinking) {
-                delete messageObject.thinking;
-            }
+
             if (!messageObject.errorType) {
                 delete messageObject.errorType;
             }
@@ -1234,6 +1283,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ==========================================================================================
+    // KEY CHANGE: appendMessage now correctly handles rendering of thinking content
+    // The `thinkContent` parameter should be the actual thought_process string.
+    // The `isHTML` parameter is now more crucial if the main `content` includes HTML (like for suggestions).
+    // ==========================================================================================
     function appendMessage(content, sender, isHTML = false, thinkContent = null, isSwitchingSession = false, attachments = [], errorType = null) {
         const messageDiv = document.createElement('div');
         const messageSenderClass = `message-${sender}`;
@@ -1252,7 +1306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const animationClass = state.animationLevel === 'full' ? 'animate__fadeInUp' : (state.animationLevel === 'basic' ? 'animate__fadeIn' : '');
             if (animationClass) {
                 messageDiv.classList.add('animate__animated', animationClass);
-                messageDiv.style.setProperty('--animate-duration', state.animationLevel === 'full' ? '0.45s' : '0.3s'); // Slightly smoother
+                messageDiv.style.setProperty('--animate-duration', state.animationLevel === 'full' ? '0.45s' : '0.3s');
             }
         }
 
@@ -1261,7 +1315,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let avatarIcon = 'fas fa-info-circle';
         if (sender === 'user') avatarIcon = 'fas fa-user-astronaut';
         else if (sender === 'agent') avatarIcon = 'fas fa-robot';
-        // Removed agent-interim, as interim messages now go to process log
         else if (sender === 'error-system') avatarIcon = 'fas fa-shield-virus';
 
         avatarDiv.innerHTML = `<i class="${avatarIcon}"></i>`;
@@ -1276,34 +1329,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageContentWrapper = document.createElement('div');
         messageContentWrapper.classList.add('message-content-wrapper');
 
+        // Render thinking content if it exists and user wants to see it in chat bubbles
         if (sender === 'agent' && thinkContent && state.showChatBubblesThink) {
             const thinkPrefixDiv = document.createElement('div');
             thinkPrefixDiv.classList.add('message-thought-prefix');
-            let formattedThink = thinkContent.replace(/\n/g, '<br>');
+            // Ensure thinkContent is treated as pre-formatted text, converting newlines
+            // And handling potential JSON blocks for better readability
+            let formattedThink = String(thinkContent).replace(/\n/g, '<br>'); // Ensure it's a string first
             const jsonBlockRegex = /```json([\s\S]*?)```/gi;
             formattedThink = formattedThink.replace(jsonBlockRegex, (match, jsonContentStr) => {
                 const trimmedJson = jsonContentStr.trim();
                 try {
                     const parsedJson = JSON.parse(trimmedJson);
-                    const escapedJsonString = JSON.stringify(parsedJson, null, 2).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    // Escape HTML within the stringified JSON
+                    const escapedJsonString = JSON.stringify(parsedJson, null, 2)
+                        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     return `<pre class="embedded-json"><code>${escapedJsonString}</code></pre>`;
                 } catch (e) {
-                    const escapedOriginalJson = trimmedJson.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    return `<pre class="embedded-json error"><code>${escapedOriginalJson}<br>(Invalid JSON)</code></pre>`;
+                    console.warn("Chat bubble: JSON parsing for pretty print failed within thought:", e);
+                    const escapedOriginalJson = trimmedJson
+                        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    return `<pre class="embedded-json error"><code>${escapedOriginalJson}<br>(Invalid JSON structure)</code></pre>`;
                 }
             });
-            thinkPrefixDiv.innerHTML = `<strong>Agent's Reasoning:</strong> ${formattedThink}`;
+            thinkPrefixDiv.innerHTML = `<strong>Agent's Reasoning:</strong><div class="think-bubble-content">${formattedThink}</div>`;
             messageContentWrapper.appendChild(thinkPrefixDiv);
         }
 
         const textContentDiv = document.createElement('div');
         textContentDiv.classList.add('message-text-content');
 
-        if (isHTML) {
+        if (isHTML) { // If content includes HTML (e.g., for suggestions with <a> tags)
             textContentDiv.innerHTML = content;
         } else {
             const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-            const linkedContent = content
+            const linkedContent = String(content) // Ensure content is a string
                 .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;").replace(/'/g, "&#039;")
                 .replace(/\n/g, '<br>')
@@ -1334,6 +1394,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         dom.chatBox.appendChild(messageDiv);
+        // Ensure quick actions within the new message (like from suggestions) get listeners
+        attachQuickActionButtonListeners(messageDiv);
+
 
         if (!isSwitchingSession) {
             scrollToBottom();
@@ -1377,7 +1440,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         const welcomeDiv = document.createElement('div');
         welcomeDiv.className = 'message system-message system-message-initial animate__animated animate__fadeInUp';
-        welcomeDiv.style.setProperty('--animate-duration', '0.6s'); // Smoother welcome
+        welcomeDiv.style.setProperty('--animate-duration', '0.6s');
         welcomeDiv.innerHTML = welcomeHTML;
         dom.chatBox.appendChild(welcomeDiv);
         attachQuickActionButtonListeners(welcomeDiv);
@@ -1439,7 +1502,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const animationOutClass = state.animationLevel === 'full' ? 'animate__fadeOutDown' : 'animate__fadeOut';
                 typingElement.classList.remove('animate__fadeInUp', 'animate__fadeIn');
                 typingElement.classList.add('animate__animated', animationOutClass);
-                typingElement.style.setProperty('--animate-duration', '0.3s'); // Control out-animation speed
+                typingElement.style.setProperty('--animate-duration', '0.3s');
                 typingElement.addEventListener('animationend', () => typingElement.remove(), { once: true });
             } else {
                 typingElement.remove();
@@ -1653,7 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const animIn = state.animationLevel !== 'none' ? (state.animationLevel === 'full' ? 'animate__fadeInUp' : 'animate__fadeIn') : '';
         if (animIn) {
             modalContent.classList.add('animate__animated', animIn);
-            modalContent.style.setProperty('--animate-duration', '0.4s'); // Smoother modal open
+            modalContent.style.setProperty('--animate-duration', '0.4s');
         }
     }
 
@@ -1685,7 +1748,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (state.animationLevel !== 'none' && animOut) {
             modalContent.classList.add('animate__animated', animOut);
-            modalContent.style.setProperty('--animate-duration', '0.3s'); // Smoother modal close
+            modalContent.style.setProperty('--animate-duration', '0.3s');
             modalContent.addEventListener('animationend', animationEndHandler, { once: true });
         } else {
             animationEndHandler();
@@ -1799,13 +1862,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showToast(message, type = 'info', duration = 3500) {
         const toast = document.createElement('div');
-        toast.classList.add('toast', type);
+        toast.classList.add('toast', type, 'glass-effect'); // Added glass-effect
         const animIn = state.animationLevel !== 'none' ? 'animate__fadeInRight' : '';
         const animOut = state.animationLevel !== 'none' ? 'animate__fadeOutRight' : '';
 
         if (state.animationLevel !== 'none' && animIn) {
             toast.classList.add('animate__animated', animIn);
-            toast.style.setProperty('--animate-duration', '0.45s'); // Smoother toast
+            toast.style.setProperty('--animate-duration', '0.45s');
         }
 
         const icons = { 'info': 'fa-info-circle', 'success': 'fa-check-circle', 'warning': 'fa-exclamation-triangle', 'error': 'fa-times-circle' };
@@ -1857,4 +1920,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeApp();
     attachQuickActionButtonListeners(dom.chatBox);
+
+    // Apply glass effect to specified elements after DOM is ready
+    [dom.appHeader, dom.sidebar, dom.inputArea, dom.processLogContainer, dom.settingsModal.querySelector('.modal-content'), dom.filePreviewArea]
+    .forEach(el => {
+        if (el) el.classList.add('glass-effect');
+    });
 });
+
+

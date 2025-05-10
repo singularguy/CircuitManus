@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IDT Agent Pro - 智能交互终端 (V8.2.1 GlassUI)</title>
+    <title>IDT Agent Pro - 智能交互终端 (V8.2.2 ThoughtfulUI)</title> <!-- Version Updated -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="/static/style.css">
@@ -24,14 +26,15 @@
         <div class="loader-progress-bar">
             <div class="loader-progress"></div>
         </div>
-        <p class="loading-text">核心模块校准中 (V8.2.1 GlassUI)...</p>
+        <p class="loading-text">核心模块校准中 (V8.2.2 ThoughtfulUI)...</p> <!-- Version Updated -->
     </div>
 
     <div class="main-container" id="main-container">
-        <header class="header" id="app-header">
+        <header class="header glass-effect" id="app-header"> <!-- Added glass-effect -->
             <div class="logo">
                 <div class="logo-icon"><i class="fas fa-brain fa-fade" style="--fa-animation-duration: 2s;"></i></div>
-                <h1>IDT Agent <span class="version-pro">Pro <span class="version-number">v8.2.1</span></span></h1>
+                <h1>IDT Agent <span class="version-pro">Pro <span class="version-number">v8.2.2</span></span></h1>
+                <!-- Version Updated -->
             </div>
             <div class="header-buttons">
                 <button id="theme-toggle" class="header-btn icon-btn" title="切换主题">
@@ -50,7 +53,7 @@
         </header>
 
         <div class="chat-container">
-            <aside class="sidebar" id="sidebar">
+            <aside class="sidebar glass-effect" id="sidebar"> <!-- Added glass-effect -->
                 <div class="sidebar-content-wrapper">
                     <div class="sidebar-main-actions">
                         <button class="sidebar-button active" data-mode="chat" title="对话模式">
@@ -90,14 +93,15 @@
             </aside>
 
             <main class="chat-area" id="chat-area">
-                <div class="chat-area-content">
+                <div class="chat-area-content glass-effect"> <!-- Added glass-effect -->
                     <div class="chat-header" id="chat-header">
                         <h2 id="current-session-name">默认会话</h2>
                         <button id="edit-session-name-btn" class="icon-btn" title="编辑会话名称"><i
                                 class="fas fa-pencil-alt"></i></button>
                     </div>
 
-                    <div class="process-log-container" id="process-log-container" style="display: none;">
+                    <div class="process-log-container glass-effect" id="process-log-container" style="display: none;">
+                        <!-- Added glass-effect -->
                         <div class="process-log-header">
                             <span><i class="fas fa-tasks"></i> Agent 处理日志</span>
                             <button class="icon-btn" id="toggle-process-log-collapse" title="折叠/展开日志"><i
@@ -112,17 +116,18 @@
                         <!-- Welcome message will be appended by JS -->
                     </div>
 
-                    <div class="file-preview" id="file-preview">
+                    <div class="file-preview glass-effect" id="file-preview"> <!-- Added glass-effect -->
                         <div class="file-preview-header">
                             <h3><i class="fas fa-paperclip"></i> 待上传文件 (概念演示)</h3>
-                            <button id="close-preview" class="icon-btn" title="关闭预览"><i class="fas fa-times"></i></button>
+                            <button id="close-preview" class="icon-btn" title="关闭预览"><i
+                                    class="fas fa-times"></i></button>
                         </div>
                         <div class="file-preview-content" id="file-preview-content">
                             <!-- File preview items will be populated here -->
                         </div>
                     </div>
 
-                    <div class="input-area" id="input-area">
+                    <div class="input-area glass-effect" id="input-area"> <!-- Added glass-effect -->
                         <button id="attach-button" class="input-action-btn icon-btn" title="添加附件 (概念)">
                             <i class="fas fa-paperclip"></i>
                         </button>
@@ -152,7 +157,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <div class="modal" id="settings-modal">
-        <div class="modal-content animate__animated">
+        <div class="modal-content animate__animated glass-effect"> <!-- Added glass-effect -->
             <div class="modal-header">
                 <h2><i class="fas fa-cog fa-spin-pulse" style="--fa-animation-duration: 3.5s;"></i> 个性化设置</h2>
                 <button id="close-settings" class="icon-btn" title="关闭设置"><i class="fas fa-times"></i></button>
