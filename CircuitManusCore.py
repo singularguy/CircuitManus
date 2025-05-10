@@ -1985,9 +1985,9 @@ class CircuitAgent:
         "toolCallId": "string_UNIQUE_ID_generated_by_YOU_for_this_specific_tool_call_e.g._tc_add_resistor_xyz123",
         "toolName": "string_name_of_the_tool_to_be_called_from_available_list (e.g., add_component_tool)",
         "toolArguments": { 
-            // Content of this object is tool-specific, keys here (e.g. component_type, value)
-            // should match the snake_case names from the '可用工具列表与参数规范' section.
-            // Example: "component_type": "电阻", "value": "1k"
+            Content of this object is tool-specific, keys here (e.g. component_type, value)
+            should match the snake_case names from the '可用工具列表与参数规范' section.
+            Example: "component_type": "电阻", "value": "1k"
         },
         "uiHints": { // Optional
             "displayNameForTool": "string_optional_A_more_user_friendly_name_for_this_tool_call_e.g._Adding_Resistor_R1",
