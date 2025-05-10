@@ -1,0 +1,197 @@
+2025-05-10 10:30:35,229 - CircuitManusCore - INFO [CircuitManusCore.<module>:81] - Successfully configured file logging. Log messages will also be saved to: D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\WebUIAgentLogs\agent_log_20250510_103035_227_P19672.log
+2025-05-10 10:30:35,234 - __mp_main__ - INFO [server.<module>:21] - CircuitAgent 模块导入成功。
+2025-05-10 10:30:35,238 - __mp_main__ - INFO [server.<module>:45] - 静态文件目录 '/static' 挂载成功。
+2025-05-10 10:30:35,239 - __mp_main__ - INFO [server.<module>:60] - 成功获取 ZHIPUAI_API_KEY 环境变量。
+2025-05-10 10:30:35,367 - asyncio - DEBUG [selector_events.__init__:54] - Using selector: SelectSelector
+2025-05-10 10:30:35,480 - server - INFO [server.<module>:21] - CircuitAgent 模块导入成功。
+2025-05-10 10:30:35,480 - server - INFO [server.<module>:45] - 静态文件目录 '/static' 挂载成功。
+2025-05-10 10:30:35,482 - server - INFO [server.<module>:60] - 成功获取 ZHIPUAI_API_KEY 环境变量。
+2025-05-10 10:30:37,026 - server - INFO [server.read_root:96] - 请求根路径 '/'，尝试提供 static/index.html。
+2025-05-10 10:30:37,487 - server - INFO [server.websocket_endpoint:117] - WebSocket 连接已接受 (来自: 127.0.0.1:12142).
+2025-05-10 10:30:37,556 - server - INFO [server.websocket_endpoint:144] - 收到WebSocket初始化消息，未提供session_id，生成新的: b10724e8-f0d5-42d8-a5d6-3efebf3c1169
+2025-05-10 10:30:37,557 - server - INFO [server.get_agent_instance:67] - 为 Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169 创建新的 Agent 实例...
+2025-05-10 10:30:37,557 - CircuitManusCore - INFO [CircuitManusCore.__init__:591] - 
+============================== CircuitAgent V7.2.3 初始化开始 (WebSocket 集成) ==============================
+2025-05-10 10:30:37,558 - CircuitManusCore - INFO [CircuitManusCore.__init__:597] - [Agent Init] 控制台日志级别设置为: DEBUG (Verbose=True)
+2025-05-10 10:30:37,558 - CircuitManusCore - INFO [CircuitManusCore.__init__:237] - [MemoryManager] 初始化记忆模块...
+2025-05-10 10:30:37,558 - CircuitManusCore - INFO [CircuitManusCore.__init__:115] - [Circuit] 初始化电路实体。
+2025-05-10 10:30:37,559 - CircuitManusCore - INFO [CircuitManusCore.__init__:122] - [Circuit] 电路实体初始化完成。
+2025-05-10 10:30:37,560 - CircuitManusCore - INFO [CircuitManusCore.__init__:244] - [MemoryManager] 记忆模块初始化完成。短期上限: 25 条, 长期上限: 50 条。
+2025-05-10 10:30:37,560 - CircuitManusCore - INFO [CircuitManusCore.__init__:293] - [LLMInterface] 初始化 LLM 接口，目标模型: glm-4-flash-250414
+2025-05-10 10:30:37,747 - CircuitManusCore - INFO [CircuitManusCore.__init__:301] - [LLMInterface] 智谱 AI 客户端初始化成功。
+2025-05-10 10:30:37,749 - CircuitManusCore - INFO [CircuitManusCore.__init__:308] - [LLMInterface] LLM 接口初始化完成 (Model: glm-4-flash-250414, Temp: 0.1, MaxTokens: 4095)。
+2025-05-10 10:30:37,749 - CircuitManusCore - INFO [CircuitManusCore.__init__:348] - [OutputParser] 初始化输出解析器 (用于自定义 JSON 和文本解析)。
+2025-05-10 10:30:37,750 - CircuitManusCore - INFO [CircuitManusCore.__init__:476] - [ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止)。
+2025-05-10 10:30:37,750 - CircuitManusCore - INFO [CircuitManusCore.__init__:484] - [ToolExecutor] 工具执行配置: 每个工具最多重试 10 次，重试间隔 1.0 秒。Verbose Mode: True
+2025-05-10 10:30:37,751 - CircuitManusCore - INFO [CircuitManusCore.__init__:609] - [Agent Init] 规划 LLM 调用失败时将重试 5 次。
+2025-05-10 10:30:37,752 - CircuitManusCore - INFO [CircuitManusCore.__init__:610] - [Agent Init] 工具执行失败后，最多允许重规划 5 次。
+2025-05-10 10:30:37,753 - CircuitManusCore - INFO [CircuitManusCore.__init__:612] - [Agent Init] 正在动态发现并注册已标记的工具...
+2025-05-10 10:30:37,754 - CircuitManusCore - INFO [CircuitManusCore.__init__:617] - [Agent Init] ✓ 已注册工具: 'add_component_tool'
+2025-05-10 10:30:37,755 - CircuitManusCore - INFO [CircuitManusCore.__init__:617] - [Agent Init] ✓ 已注册工具: 'clear_circuit_tool'
+2025-05-10 10:30:37,756 - CircuitManusCore - INFO [CircuitManusCore.__init__:617] - [Agent Init] ✓ 已注册工具: 'connect_components_tool'
+2025-05-10 10:30:37,756 - CircuitManusCore - INFO [CircuitManusCore.__init__:617] - [Agent Init] ✓ 已注册工具: 'describe_circuit_tool'
+2025-05-10 10:30:37,757 - CircuitManusCore - INFO [CircuitManusCore.__init__:621] - [Agent Init] 共发现并注册了 4 个工具。
+2025-05-10 10:30:37,760 - CircuitManusCore - DEBUG [CircuitManusCore.__init__:623] - [Agent Init] 工具注册表详情:
+{
+  "add_component_tool": {
+    "description": "添加一个新的电路元件 (如电阻, 电容, 电池, LED, 开关, 芯片, 地线等)。如果用户未指定 ID，会自动生成。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "component_type": {
+          "type": "string",
+          "description": "元件的类型 (例如: '电阻', 'LED')."
+        },
+        "component_id": {
+          "type": "string",
+          "description": "可选的用户指定 ID。"
+        },
+        "value": {
+          "type": "string",
+          "description": "可选的元件值 (例如: '1k', '10uF')."
+        }
+      },
+      "required": [
+        "component_type"
+      ]
+    }
+  },
+  "clear_circuit_tool": {
+    "description": "彻底清空当前的电路设计。",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "connect_components_tool": {
+    "description": "使用两个已存在元件的 ID 将它们连接起来。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "comp1_id": {
+          "type": "string",
+          "description": "第一个元件的 ID。"
+        },
+        "comp2_id": {
+          "type": "string",
+          "description": "第二个元件的 ID。"
+        }
+      },
+      "required": [
+        "comp1_id",
+        "comp2_id"
+      ]
+    }
+  },
+  "describe_circuit_tool": {
+    "description": "获取当前电路的详细描述。",
+    "parameters": {
+      "type": "object",
+      "properties": {}
+    }
+  }
+}
+2025-05-10 10:30:37,763 - CircuitManusCore - INFO [CircuitManusCore.__init__:625] - 
+============================== CircuitAgent V7.2.3 初始化成功 ==============================
+
+2025-05-10 10:30:37,765 - server - INFO [server.get_agent_instance:74] - Agent 实例为 Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169 创建成功。
+2025-05-10 10:30:37,768 - server - INFO [server.websocket_endpoint:160] - Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169 WebSocket初始化成功并发送确认。
+2025-05-10 10:30:41,137 - server - INFO [server.websocket_endpoint:179] - Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169 收到用户消息: '晚上好...'
+2025-05-10 10:30:41,138 - server - INFO [server.websocket_endpoint:183] - Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169 获取到锁，开始处理消息...
+2025-05-10 10:30:41,138 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:751] - 
+========================= CircuitAgent V7.2.3 开始处理用户请求 =========================
+2025-05-10 10:30:41,140 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:752] - [Orchestrator] 收到用户指令: "晚上好"
+2025-05-10 10:30:41,140 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:247] - [MemoryManager] 添加消息到短期记忆 (Role: user). 当前数量: 0
+2025-05-10 10:30:41,141 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:263] - [MemoryManager] 添加后短期记忆数量: 1
+2025-05-10 10:30:41,142 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:762] - [Orchestrator] 用户指令已记录并添加到短期记忆。
+2025-05-10 10:30:41,143 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:769] - 
+--- [规划/重规划阶段] 尝试第 1/6 次规划 ---
+2025-05-10 10:30:41,143 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169): {"type": "status", "stage": "planning", "status": "started", "message": "\u5f00\u59cb\u89c4\u5212\u4efb\u52a1...", "details": {"attempt": 1}}
+2025-05-10 10:30:41,144 - CircuitManusCore - DEBUG [CircuitManusCore.get_memory_context_for_prompt:276] - [MemoryManager] 正在格式化记忆上下文用于 Prompt...
+2025-05-10 10:30:41,145 - CircuitManusCore - DEBUG [CircuitManusCore.get_state_description:167] - [Circuit] 正在生成电路状态描述...
+2025-05-10 10:30:41,147 - CircuitManusCore - DEBUG [CircuitManusCore.get_memory_context_for_prompt:287] - [MemoryManager] 记忆上下文 (电路+长期) 格式化完成。
+2025-05-10 10:30:41,148 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:783] - [Orchestrator - Planning Attempt 1] 调用规划 LLM (LLM Call Attempt 1/6)...
+2025-05-10 10:30:41,149 - CircuitManusCore - INFO [CircuitManusCore.call_llm:315] - [LLMInterface] 准备异步调用 LLM (glm-4-flash-250414，自定义 JSON/无内置工具模式)...
+2025-05-10 10:30:41,150 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:316] - [LLMInterface] 发送的消息条数: 2
+2025-05-10 10:30:41,151 - CircuitManusCore - DEBUG [CircuitManusCore.call_llm:320] - [LLMInterface] 最新消息列表 (预览): 
+[
+  {
+    "role": "system",
+    "content_preview": "你是一位顶尖的、极其严谨的电路设计编程助理。你的行为必须专业、精确，并严格遵循指令。\n你的核心任务是：深入分析用户的最新指令、完整的对话历史（包括你之前的思考、规划以及所有工具执行结果），以及当前的电..."
+  },
+  {
+    "role": "user",
+    "content_preview": "晚上好"
+  }
+]
+2025-05-10 10:30:41,211 - httpcore.connection - DEBUG [_trace.trace:47] - connect_tcp.started host='127.0.0.1' port=11334 local_address=None timeout=8.0 socket_options=None
+2025-05-10 10:30:41,233 - httpcore.connection - DEBUG [_trace.trace:47] - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000028584DD68F0>
+2025-05-10 10:30:41,235 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'CONNECT']>
+2025-05-10 10:30:41,236 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-10 10:30:41,237 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'CONNECT']>
+2025-05-10 10:30:41,238 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-10 10:30:41,238 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-05-10 10:30:41,240 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-05-10 10:30:41,241 - httpcore.proxy - DEBUG [_trace.trace:47] - start_tls.started ssl_context=<ssl.SSLContext object at 0x0000028584DDC5C0> server_hostname='open.bigmodel.cn' timeout=8.0
+2025-05-10 10:30:43,886 - httpcore.proxy - DEBUG [_trace.trace:47] - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000028583C8DC30>
+2025-05-10 10:30:43,887 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.started request=<Request [b'POST']>
+2025-05-10 10:30:43,889 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_headers.complete
+2025-05-10 10:30:43,890 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.started request=<Request [b'POST']>
+2025-05-10 10:30:43,892 - httpcore.http11 - DEBUG [_trace.trace:47] - send_request_body.complete
+2025-05-10 10:30:43,892 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.started request=<Request [b'POST']>
+2025-05-10 10:30:46,428 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 10 May 2025 02:31:42 GMT'), (b'Content-Type', b'application/json; charset=UTF-8'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Set-Cookie', b'acw_tc=ac11000117468443001757395e005cab8643d63ed0857371d7b0bc9b89565e;path=/;HttpOnly;Max-Age=1800'), (b'Vary', b'Accept-Encoding'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'X-LOG-ID', b'20250510103140613f64e8f93040c0'), (b'Vary', b'Origin'), (b'Vary', b'Access-Control-Request-Method'), (b'Vary', b'Access-Control-Request-Headers'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'Content-Encoding', b'gzip')])
+2025-05-10 10:30:46,433 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.started request=<Request [b'POST']>
+2025-05-10 10:30:46,435 - httpcore.http11 - DEBUG [_trace.trace:47] - receive_response_body.complete
+2025-05-10 10:30:46,436 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.started
+2025-05-10 10:30:46,438 - httpcore.http11 - DEBUG [_trace.trace:47] - response_closed.complete
+2025-05-10 10:30:46,445 - CircuitManusCore - INFO [CircuitManusCore.call_llm:330] - [LLMInterface] LLM 异步调用成功。耗时: 5.297 秒。
+2025-05-10 10:30:46,445 - CircuitManusCore - INFO [CircuitManusCore.call_llm:332] - [LLMInterface] Token 统计: Prompt=1367, Completion=63, Total=1430
+2025-05-10 10:30:46,446 - CircuitManusCore - INFO [CircuitManusCore.call_llm:335] - [LLMInterface] 完成原因: stop
+2025-05-10 10:30:46,446 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:786] - [Orchestrator - Planning Attempt 1] LLM 调用完成 (LLM Call Attempt 1).
+2025-05-10 10:30:46,447 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:789] - [Orchestrator - Planning Attempt 1] 解析 LLM 的规划响应...
+2025-05-10 10:30:46,448 - CircuitManusCore - DEBUG [CircuitManusCore.parse_planning_response:351] - [OutputParser] 开始解析规划响应 (自定义 JSON 模式)...
+2025-05-10 10:30:46,449 - CircuitManusCore - DEBUG [CircuitManusCore.parse_planning_response:368] - [OutputParser] 成功提取 <think> 内容。
+2025-05-10 10:30:46,450 - CircuitManusCore - DEBUG [CircuitManusCore.parse_planning_response:373] - [OutputParser] 提取出的待解析 JSON 字符串 (前 500 字符): >>>
+{
+  "is_tool_calls": false,
+  "tool_list": null,
+  "direct_reply": "晚上好！很高兴为您服务，有什么可以帮您的吗？"
+}
+<<<
+2025-05-10 10:30:46,451 - CircuitManusCore - DEBUG [CircuitManusCore.parse_planning_response:408] - [OutputParser] 精准提取的 JSON 字符串: >>>
+{
+  "is_tool_calls": false,
+  "tool_list": null,
+  "direct_reply": "晚上好！很高兴为您服务，有什么可以帮您的吗？"
+}
+<<<
+2025-05-10 10:30:46,453 - CircuitManusCore - DEBUG [CircuitManusCore.parse_planning_response:410] - [OutputParser] JSON 字符串解析成功。
+2025-05-10 10:30:46,453 - CircuitManusCore - INFO [CircuitManusCore.parse_planning_response:440] - [OutputParser] 自定义 JSON 计划解析和验证成功！
+2025-05-10 10:30:46,454 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:794] - [Orchestrator - Planning Attempt 1] 成功解析并验证自定义 JSON 计划！
+2025-05-10 10:30:46,455 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169): {"type": "status", "stage": "planning", "status": "thinking_log", "message": "LLM\u601d\u8003\u8fc7\u7a0b (\u89c4\u5212\u9636\u6bb5)", "details": {"thinking": "\u7528\u6237\u6b63\u5728\u8fdb\u884c\u65e5\u5e38\u95ee\u5019\uff0c\u8fd9\u662f\u4e00\u4e2a\u53ef\u4ee5\u76f4\u63a5\u56de\u7b54\u7684\u95ee\u9898\uff0c\u4e0d\u9700\u8981\u5de5\u5177\u3002\u6211\u5c06\u793c\u8c8c\u5730\u56de\u590d\u3002"}}
+2025-05-10 10:30:46,461 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:247] - [MemoryManager] 添加消息到短期记忆 (Role: assistant). 当前数量: 1
+2025-05-10 10:30:46,462 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:263] - [MemoryManager] 添加后短期记忆数量: 2
+2025-05-10 10:30:46,462 - CircuitManusCore - DEBUG [CircuitManusCore.process_user_request:798] - [Orchestrator - Planning Attempt 1] LLM 的原始规划响应已添加至短期记忆。
+2025-05-10 10:30:46,463 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169): {"type": "status", "stage": "planning", "status": "completed", "message": "\u89c4\u5212\u5b8c\u6210\u3002", "details": {"plan_summary": "\u5de5\u5177\u8c03\u7528: False", "thinking": null}}
+2025-05-10 10:30:46,464 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:819] - [Orchestrator - Planning Attempt 1] 成功获取并验证自定义 JSON 计划。
+2025-05-10 10:30:46,464 - CircuitManusCore - DEBUG [CircuitManusCore.process_user_request:821] - [Orchestrator - Planning Attempt 1] 解析出的计划详情: {
+  "is_tool_calls": false,
+  "tool_list": null,
+  "direct_reply": "晚上好！很高兴为您服务，有什么可以帮您的吗？"
+}
+2025-05-10 10:30:46,465 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:894] - [Orchestrator - Planning Attempt 1] 决策：根据 JSON 计划直接回复，不执行工具。
+2025-05-10 10:30:46,465 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169): {"type": "status", "stage": "response", "status": "direct_reply_planned", "message": "\u5927\u8111\u8ba4\u4e3a\u65e0\u9700\u6267\u884c\u64cd\u4f5c\uff0c\u5c06\u76f4\u63a5\u56de\u590d\u3002", "details": {"thinking": "\u7528\u6237\u6b63\u5728\u8fdb\u884c\u65e5\u5e38\u95ee\u5019\uff0c\u8fd9\u662f\u4e00\u4e2a\u53ef\u4ee5\u76f4\u63a5\u56de\u7b54\u7684\u95ee\u9898\uff0c\u4e0d\u9700\u8981\u5de5\u5177\u3002\u6211\u5c06\u793c\u8c8c\u5730\u56de\u590d\u3002"}}
+2025-05-10 10:30:46,467 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:897] - [Orchestrator - Planning Attempt 1] 使用计划中提供的 'direct_reply' 作为最终回复。
+2025-05-10 10:30:46,469 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169): {"type": "status", "stage": "response", "status": "started", "message": "\u6b63\u5728\u751f\u6210\u6700\u7ec8\u56de\u590d..."}
+2025-05-10 10:30:46,471 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:959] - [Orchestrator] 流程成功完成。准备生成最终报告。
+2025-05-10 10:30:46,473 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169): {"type": "status", "stage": "response", "status": "thinking_log", "message": "LLM\u601d\u8003\u8fc7\u7a0b (\u6700\u7ec8\u56de\u590d-\u76f4\u63a5)", "details": {"thinking": "\u7528\u6237\u6b63\u5728\u8fdb\u884c\u65e5\u5e38\u95ee\u5019\uff0c\u8fd9\u662f\u4e00\u4e2a\u53ef\u4ee5\u76f4\u63a5\u56de\u7b54\u7684\u95ee\u9898\uff0c\u4e0d\u9700\u8981\u5de5\u5177\u3002\u6211\u5c06\u793c\u8c8c\u5730\u56de\u590d\u3002"}}
+2025-05-10 10:30:46,475 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:991] - [Orchestrator] 流程通过直接回复成功完成。
+2025-05-10 10:30:46,476 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169): {"type": "status", "stage": "response", "status": "completed", "message": "\u6700\u7ec8\u56de\u590d\u751f\u6210\u5b8c\u6210\u3002"}
+2025-05-10 10:30:46,478 - server - DEBUG [server.send_status_update_to_client:126] - SERVER SENDING TO CLIENT (Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169): {"type": "final_response", "content": "\u665a\u4e0a\u597d\uff01\u5f88\u9ad8\u5174\u4e3a\u60a8\u670d\u52a1\uff0c\u6709\u4ec0\u4e48\u53ef\u4ee5\u5e2e\u60a8\u7684\u5417\uff1f"}
+2025-05-10 10:30:46,480 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:247] - [MemoryManager] 添加消息到短期记忆 (Role: assistant). 当前数量: 2
+2025-05-10 10:30:46,480 - CircuitManusCore - DEBUG [CircuitManusCore.add_to_short_term:263] - [MemoryManager] 添加后短期记忆数量: 3
+2025-05-10 10:30:46,481 - CircuitManusCore - INFO [CircuitManusCore.process_user_request:1010] - 
+========================= CircuitAgent V7.2.3 请求处理完毕 (总耗时: 5.344 秒) =========================
+
+2025-05-10 10:30:46,482 - server - INFO [server.websocket_endpoint:189] - Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169 消息处理流程调用完成，耗时: 5.344 秒。
+2025-05-10 10:30:46,482 - server - INFO [server.websocket_endpoint:201] - Session b10724e8-f0d5-42d8-a5d6-3efebf3c1169 释放锁。

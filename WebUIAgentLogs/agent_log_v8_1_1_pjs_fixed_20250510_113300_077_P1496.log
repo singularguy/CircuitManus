@@ -1,0 +1,13 @@
+2025-05-10 11:33:00,079 - CircuitManusCore - INFO [CircuitManusCore.<module>:78] - Successfully configured file logging. Log messages will also be saved to: D:\资料\ALL IN AI\IDTAgent\IDT_Agent_Native\WebUIAgentLogs\agent_log_v8_1_1_pjs_fixed_20250510_113300_077_P1496.log
+2025-05-10 11:33:00,084 - __mp_main__ - INFO [server.<module>:21] - CircuitAgent 模块导入成功. 
+2025-05-10 11:33:00,087 - __mp_main__ - INFO [server.<module>:45] - 静态文件目录 '/static' 挂载成功. 
+2025-05-10 11:33:00,088 - __mp_main__ - INFO [server.<module>:60] - 成功获取 ZHIPUAI_API_KEY 环境变量. 
+2025-05-10 11:33:00,156 - asyncio - DEBUG [selector_events.__init__:54] - Using selector: SelectSelector
+2025-05-10 11:33:00,266 - server - INFO [server.<module>:21] - CircuitAgent 模块导入成功. 
+2025-05-10 11:33:00,267 - server - INFO [server.<module>:45] - 静态文件目录 '/static' 挂载成功. 
+2025-05-10 11:33:00,267 - server - INFO [server.<module>:60] - 成功获取 ZHIPUAI_API_KEY 环境变量. 
+2025-05-10 11:33:00,739 - server - INFO [server.read_root:96] - 请求根路径 '/',尝试提供 static/index.html. 
+2025-05-10 11:33:01,566 - server - INFO [server.read_root:96] - 请求根路径 '/',尝试提供 static/index.html. 
+2025-05-10 11:33:02,155 - server - INFO [server.read_root:96] - 请求根路径 '/',尝试提供 static/index.html. 
+2025-05-10 11:33:02,842 - server - INFO [server.read_root:96] - 请求根路径 '/',尝试提供 static/index.html. 
+2025-05-10 11:33:03,460 - server - INFO [server.read_root:96] - 请求根路径 '/',尝试提供 static/index.html. 
