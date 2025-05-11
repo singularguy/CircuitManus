@@ -2,12 +2,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ======== DOM 元素获取 (集中管理，方便维护) ========
     const dom = {
-        // Page background
-        pageBackgroundGradient: document.querySelector('.page-background-gradient'),
+        // 动态背景相关 (如果需要JS交互的话，目前纯CSS)
+        dynamicBackground: document.querySelector('.dynamic-background'),
 
         // 加载动画相关
         loader: document.getElementById('loader'),
-        loaderProgress: document.querySelector('.loader-progress'),
+        loaderCore: document.querySelector('.loader-core'), // For enhanced loader animation
         mainContainer: document.getElementById('main-container'),
 
         // 聊天核心区域
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 头部与主题
         appHeader: document.getElementById('app-header'),
         themeToggleButton: document.getElementById('theme-toggle'),
-        themeToggleIcon: document.querySelector('#theme-toggle i'),
+        themeToggleIcon: document.querySelector('#theme-toggle i'), // Kept for direct icon manipulation if needed
         clearChatButton: document.getElementById('clear-chat'),
         manageSessionsToggle: document.getElementById('manage-sessions-toggle'),
         toggleProcessLogVisibilityButton: document.getElementById('toggle-process-log-visibility'),
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 设置模态框相关
         settingsModal: document.getElementById('settings-modal'),
-        openSettingsButton: document.querySelector('.sidebar-button[data-mode="settings"]'),
+        openSettingsButton: document.querySelector('.sidebar-button[data-mode="settings"]'), // Still relevant
         closeSettingsButton: document.getElementById('close-settings'),
         themeSelect: document.getElementById('theme-select'),
         fontSizeInput: document.getElementById('font-size'),
@@ -67,21 +67,21 @@ document.addEventListener('DOMContentLoaded', () => {
         showChatBubblesThinkToggle: document.getElementById('show-chat-bubbles-think'),
         showLogBubblesThinkToggle: document.getElementById('show-log-bubbles-think'),
         autoSubmitQuickActionsToggle: document.getElementById('auto-submit-quick-actions'),
+        componentVisibilityToggle: document.getElementById('component-visibility-toggle'), // Settings for 3D component
         resetSettingsButton: document.getElementById('reset-settings'),
         saveSettingsButton: document.getElementById('save-settings'),
 
-        // 3d組件显示开关
-        idtComponentToggleBtn: document.getElementById('toggleIdtComponentBtn'), // 3D组件的控制按钮
-        idtComponentWrapper: document.getElementById('idtTechComponentWrapper')  // 3D组件的包装器
+        // 3D组件显示开关与包装器
+        idtComponentToggleBtn: document.getElementById('toggleIdtComponentBtn'),
+        idtComponentWrapper: document.getElementById('idtTechComponentWrapper')
     };
 
     // ======== 应用状态与配置 ========
-    // VERSION UPDATE: APP_PREFIX changed to reflect V8.3.2 CamelCase Reasoning
-    const APP_PREFIX = 'IDTAgentPro_v8.3.2_CamelCaseReasoning_';
+    const APP_PREFIX = 'CircuitManusPro_SciFiEnhanced_'; // Updated prefix
     let state = {
         sessions: {},
         currentSessionId: null,
-        currentTheme: 'auto',
+        currentTheme: 'auto', // Default to auto, will be loaded
         autoScroll: true,
         soundEnabled: false,
         showChatBubblesThink: true,
@@ -91,22 +91,22 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadedFiles: [],
         isAgentTyping: false,
         isLoading: false,
-        isSidebarExpanded: window.innerWidth > 768,
+        isSidebarExpanded: window.innerWidth > 768, // Initial state based on window width
         isSessionManagerCollapsed: false,
         isProcessLogVisible: false,
         isProcessLogCollapsed: true,
-        maxInputChars: 4000,
+        maxInputChars: 8000, // Default from HTML
         currentClientRequestId: null,
-        lastResponseThinking: null, // This will store thinking log content for process log if needed
+        lastResponseThinking: null,
         autoSubmitQuickActions: true,
-        pendingToolCalls: {}, // Keyed by toolCallId (camelCase)
+        isIdtComponentVisible: true, // Default from HTML class 'is-visible'
 
-        // 新增：拖动状态
+        // 3D Component Dragging State
         isDraggingComponent: false,
         componentDragStartX: 0,
         componentDragStartY: 0,
-        componentInitialTop: 0, // 将存储初始的百分比值
-        componentInitialLeft: 0 // 将存储初始的百分比值
+        componentInitialTopPx: 0, // Store initial pixel values for smoother drag
+        componentInitialLeftPx: 0,
     };
 
     // ======== WebSocket 相关 ========
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const websocketUrl = `ws://${window.location.host}/ws/chat`;
     let wsReconnectAttempts = 0;
     const MAX_WS_RECONNECT_ATTEMPTS = 5;
-    const WS_RECONNECT_INTERVAL = 3000;
+    const WS_RECONNECT_INTERVAL = 3000; // milliseconds
 
     function connectWebSocket() {
         if (websocket && (websocket.readyState === WebSocket.OPEN || websocket.readyState === WebSocket.CONNECTING)) {
@@ -124,8 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Attempting to connect WebSocket (Attempt ${wsReconnectAttempts + 1}): ${websocketUrl}`);
         if (dom.loader && wsReconnectAttempts === 0) {
             const loadingText = dom.loader.querySelector('.loading-text');
-            // VERSION UPDATE: Loading text reflects V8.3.2
-            if (loadingText) loadingText.textContent = "Establishing secure link (V8.3.2 CamelCase Reasoning)...";
+            if (loadingText) loadingText.textContent = "INITIATING HYPERLOOP CONNECTION (V8.3.2 Sci-Fi)...";
         }
 
         websocket = new WebSocket(websocketUrl);
@@ -133,12 +132,14 @@ document.addEventListener('DOMContentLoaded', () => {
         websocket.onopen = (event) => {
             console.log("WebSocket connection established", event);
             wsReconnectAttempts = 0;
-            // VERSION UPDATE: Toast message reflects V8.3.2
-            showToast("Communication link active (V8.3.2 CamelCase Reasoning).", "success", 3000);
+            showToast("Quantum Entanglement Link ACTIVE (V8.3.2 Sci-Fi).", "success", 4000);
             sendWebSocketMessage({
                 type: 'init',
-                session_id: state.currentSessionId // Backend will expect session_id
+                session_id: state.currentSessionId
             });
+            // Hide loader after successful connection and init message sent
+            if (dom.loader) dom.loader.classList.add('hidden');
+            if (dom.mainContainer) dom.mainContainer.classList.add('loaded');
         };
 
         websocket.onmessage = (event) => {
@@ -148,55 +149,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleWebSocketMessage(message);
             } catch (e) {
                 console.error("Failed to parse WebSocket message:", e, "Raw data:", event.data);
-                showToast("Received invalid data format from server.", "error");
+                showToast("Received corrupted data stream from server.", "error");
             }
         };
 
         websocket.onerror = (event) => {
             console.error("WebSocket error:", event);
+            // Potentially show a more persistent error if it's a connection-refused type error
+            // showToast("Critical error in communication link.", "error", 7000);
         };
 
         websocket.onclose = (event) => {
             console.log("WebSocket connection closed:", event);
             hideTypingIndicator();
             setLoadingState(false);
-            websocket = null;
+            websocket = null; // Important to allow reconnection
 
-            const reason = event.reason ? `Reason: ${event.reason}` : (event.wasClean ? 'Connection closed cleanly.' : 'Connection lost unexpectedly.');
+            const reason = event.reason ? `Reason: ${event.reason}` : (event.wasClean ? 'Connection closed cleanly.' : 'Connection anomaly detected.');
             const codeMsg = `(Code: ${event.code})`;
 
             if (!event.wasClean && wsReconnectAttempts < MAX_WS_RECONNECT_ATTEMPTS) {
                 wsReconnectAttempts++;
-                showToast(`Link lost. Attempting to re-establish (${wsReconnectAttempts}/${MAX_WS_RECONNECT_ATTEMPTS})... ${codeMsg}`, "warning", WS_RECONNECT_INTERVAL);
+                showToast(`Subspace link unstable. Re-calibrating (${wsReconnectAttempts}/${MAX_WS_RECONNECT_ATTEMPTS})... ${codeMsg}`, "warning", WS_RECONNECT_INTERVAL + 500);
                 setTimeout(connectWebSocket, WS_RECONNECT_INTERVAL);
             } else if (!event.wasClean) {
-                showToast(`Communication link permanently lost after ${MAX_WS_RECONNECT_ATTEMPTS} attempts. Please refresh. ${codeMsg} ${reason}`, "error", 10000);
+                showToast(`Communication link SEVERED after ${MAX_WS_RECONNECT_ATTEMPTS} attempts. Manual system refresh required. ${codeMsg} ${reason}`, "error", 0); // 0 for persistent
                 if (dom.loader) {
                     const loadingText = dom.loader.querySelector('.loading-text');
-                    if (loadingText) loadingText.textContent = "Connection Error. Please refresh.";
-                    dom.loaderProgress.style.width = '0%';
-                    dom.loader.classList.remove('hidden');
+                    if (loadingText) loadingText.textContent = "CONNECTION CORE FAILURE. REFRESH REQUIRED.";
+                    // Optional: Animate loader to an error state
+                    if (dom.loaderCore) dom.loaderCore.classList.add('error-state');
+                    dom.loader.classList.remove('hidden'); // Show loader again
                 }
             } else {
-                showToast(`Communication link closed. ${codeMsg} ${reason}`, "info", 5000);
+                showToast(`Communication link terminated. ${codeMsg} ${reason}`, "info", 6000);
             }
         };
     }
 
     function sendWebSocketMessage(message) {
         if (websocket && websocket.readyState === WebSocket.OPEN) {
-            // Assuming backend expects snake_case keys for incoming messages like 'session_id', 'request_id'
-            // If backend also expects camelCase for *incoming* messages, this would need adjustment.
-            // For now, we assume the structure sent to backend remains with snake_case keys as per original.
             const messageStr = JSON.stringify(message);
-            console.log("WS TX:", message); // Log the exact object being sent
+            console.log("WS TX:", message);
             websocket.send(messageStr);
         } else {
             console.error("WebSocket connection not open. Cannot send message:", message);
-            showToast("Communication link not active. Please wait or try reconnecting.", "warning");
+            showToast("Communication link inactive. Attempting to re-establish link...", "warning");
             if (!websocket || websocket.readyState === WebSocket.CLOSED || websocket.readyState === WebSocket.CLOSING) {
                 if (wsReconnectAttempts < MAX_WS_RECONNECT_ATTEMPTS) {
-                    connectWebSocket();
+                    connectWebSocket(); // Try to reconnect if fully closed and retries available
                 } else {
                     showToast("Cannot send: Max reconnection attempts reached. Please refresh.", "error");
                 }
@@ -205,200 +206,152 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleWebSocketMessage(message) {
-        // Assuming backend will send session_id, agent_available with snake_case keys for 'init_success'
-        // and 'type', 'message', 'details' also with snake_case.
-        // The primary change is for the 'final_response' and 'plan_details' type messages
-        // where the nested JSON payload (e.g., final_v8_3_2_camelcase_json_if_success) uses camelCase.
-
+        // Assuming backend sends snake_case, client-side uses camelCase for state and DOM logic.
+        // Conversion logic for specific complex nested objects (like final_response content) happens in dedicated handlers.
         switch (message.type) {
             case 'init_success':
-                // Assuming message.session_id and message.agent_available are sent as snake_case by backend
-                state.currentSessionId = message.session_id;
+                state.currentSessionId = message.session_id; // Backend confirms/sends session_id
                 localStorage.setItem(APP_PREFIX + 'lastSessionId', state.currentSessionId);
 
-                // VERSION UPDATE: Agent status message reflects V8.3.2
                 const agentStatusMessage = message.agent_available === false
-                    ? 'Agent core module not loaded. Functionality limited. (V8.3.2)'
-                    : 'Communication link established. Agent (V8.3.2 CamelCase Reasoning) ready!';
+                    ? 'AI Core Module OFFLINE. Functionality severely limited. (V8.3.2 Sci-Fi)'
+                    : 'Hyperion Core (V8.3.2 Sci-Fi) online and synchronized!';
                 const agentStatusType = message.agent_available === false ? 'warning' : 'success';
-                showToast(agentStatusMessage, agentStatusType, message.agent_available ? 4000 : 7000);
+                showToast(agentStatusMessage, agentStatusType, message.agent_available ? 4500 : 8000);
 
                 if (!state.sessions[state.currentSessionId]) {
                     const now = Date.now();
                     state.sessions[state.currentSessionId] = {
                         id: state.currentSessionId,
-                        name: `Session ${Object.keys(state.sessions).length + 1}`,
+                        name: `Quantum Entanglement ${Object.keys(state.sessions).length + 1}`, // Sci-fi session name
                         messages: [],
                         createdAt: now,
                         lastActivity: now,
                     };
                     saveSessions();
                 }
-                initializeCurrentSessionUI(true);
-
-                if (dom.loader) dom.loader.classList.add('hidden');
-                if (dom.mainContainer) dom.mainContainer.classList.add('loaded');
-                updateSidebarState(state.isSidebarExpanded, true);
-                updateSessionManagerState(state.isSessionManagerCollapsed, true);
+                initializeCurrentSessionUI(true); // true for initial load/connect
+                // Loader hidden in onopen now for faster perceived load
                 break;
 
             case 'init_error':
-                showToast(`Agent initialization failed: ${message.message}`, 'error', 10000);
-                if (dom.loader) dom.loader.classList.add('hidden');
+                showToast(`AI Core synchronization failed: ${message.message}`, 'error', 10000);
+                if (dom.loader) dom.loader.classList.add('hidden'); // Still hide loader on error
                 if (dom.mainContainer) dom.mainContainer.classList.add('loaded');
                 if (message.agent_available === false) {
-                     // VERSION UPDATE
-                    appendMessage("Apologies, the Agent's core module failed to load. I am unable to process your requests at this time. (V8.3.2)", 'error-system', false, null, false, [], "System Error");
+                    appendMessage("CRITICAL SYSTEM ALERT: Hyperion AI core failed to initialize. Subsystems non-responsive. (V8.3.2 Sci-Fi)", 'error-system', false, null, false, [], "System Error");
                 }
                 setLoadingState(false);
                 break;
 
             case 'error': // General server-side errors
                 console.error("Server-reported error:", message);
-                showToast(`Server error: ${message.message}`, 'error', 6000);
-                if (message.details) { // Assuming message.details is still snake_case or simple structure
-                    appendMessage(`Server error (${message.message}): ${message.details}`, 'error-system', false, null, false, [], "Server Error");
+                showToast(`Server Uplink Anomaly: ${message.message}`, 'error', 7000);
+                if (message.details) {
+                    appendMessage(`SERVER ERROR (${message.message}): ${message.details}`, 'error-system', false, null, false, [], "Server Error");
                 }
                 setLoadingState(false);
                 break;
 
-            case 'general_status': // Assuming keys like stage, status, message, details remain snake_case from backend
-                handleGeneralStatus(message);
-                break;
-            case 'llm_communication_status': // Assuming keys like llm_phase, status, message, details remain snake_case
-                handleLlmCommStatus(message);
-                break;
-            case 'thinking_log': // Assuming keys like stage, content, llm_interaction_id remain snake_case
-                handleThinkingLog(message);
-                break;
-            case 'plan_details': // This message's 'plan' array will contain objects with camelCase keys
-                handlePlanDetails(message);
-                break;
-            case 'tool_status_update': // Assuming tool_call_id, tool_name, status, message, details remain snake_case
-                                     // for the top-level keys of this message type. The *content* of 'details' might
-                                     // need camelCase if it mirrors parts of the LLM's JSON output.
-                handleToolStatusUpdate(message);
-                break;
-            case 'interim_response': // Assuming content, llm_interaction_id remain snake_case
-                handleInterimResponse(message);
-                break;
-            case 'final_response':
-                // KEY CHANGE: This function will now look for a key like `final_v8_3_2_camelcase_json_if_success`
-                // (or whatever the backend confirms) which contains the camelCased JSON.
-                // The top-level keys `content` and `llm_interaction_id` in the 'final_response' message itself
-                // are assumed to remain snake_case as sent by the Python WebSocket handler.
-                handleFinalResponse(message);
-                break;
+            // Assuming backend sends snake_case keys for these status messages
+            case 'general_status': handleGeneralStatus(message); break;
+            case 'llm_communication_status': handleLlmCommStatus(message); break;
+            case 'thinking_log': handleThinkingLog(message); break;
+            case 'plan_details': handlePlanDetails(message); break;
+            case 'tool_status_update': handleToolStatusUpdate(message); break;
+            case 'interim_response': handleInterimResponse(message); break;
+            case 'final_response': handleFinalResponse(message); break;
 
             default:
-                console.warn("Received unknown WebSocket message type:", message.type, message);
+                console.warn("Received unknown data packet from server:", message.type, message);
+                showToast(`Unknown data packet type: ${message.type}`, 'warning');
         }
     }
 
     function handleGeneralStatus(msg) {
-        // Assuming msg.stage, msg.status, msg.message, msg.details are snake_case from backend
         const { stage, status, message: msgText, details } = msg;
         let logIconClass = 'fas fa-info-circle log-info';
-        // Keep snake_case for CSS class consistency if these are directly used
         let logItemClasses = `type-general_status stage-${stage} status-${status}`;
 
-        if (status === 'started' || status === 'llm_retry_needed' || status === 'llm_error_retrying') logIconClass = 'fas fa-spinner fa-spin log-info';
+        if (status === 'started' || status === 'llm_retry_needed' || status === 'llm_error_retrying') logIconClass = 'fas fa-sync-alt fa-spin log-info';
         else if (status === 'completed' || status === 'received' || status === 'completed_and_validated') logIconClass = 'fas fa-check-circle log-success';
         else if (status === 'error' || status === 'failed' || status === 'failed_after_llm_retries' || status === 'tool_failure_detected') {
-            logIconClass = 'fas fa-times-circle log-error';
+            logIconClass = 'fas fa-exclamation-triangle log-error'; // Changed icon
         }
         else if (status === 'ignored') logIconClass = 'fas fa-eye-slash log-muted';
 
-        appendLogItem(msgText, logIconClass, logItemClasses, details); // details here are top-level, might be snake_case
+        appendLogItem(msgText, logIconClass, logItemClasses, details);
         if (state.isProcessLogVisible) showProcessLog(false);
     }
 
     function handleLlmCommStatus(msg) {
-        // Assuming msg.llm_phase, msg.status, msg.message, msg.details are snake_case
         const { llm_phase, status, message: msgText, details } = msg;
-        let logIconClass = 'fas fa-brain log-info';
+        let logIconClass = 'fas fa-brain log-info'; // Retained brain icon
         let logItemClasses = `type-llm_communication_status phase-${llm_phase} status-${status}`;
 
-        if (status === 'started') logIconClass = 'fas fa-brain fa-fade log-info';
+        if (status === 'started') logIconClass = 'fas fa-brain fa-beat-fade log-info'; // Using fa-beat-fade for active thinking
         else if (status === 'completed') logIconClass = 'fas fa-check log-success';
-        else if (status === 'error') logIconClass = 'fas fa-exclamation-triangle log-error';
+        else if (status === 'error') logIconClass = 'fas fa-bolt log-error'; // Changed to bolt for error
 
-        appendLogItem(msgText, logIconClass, logItemClasses, details); // details here top-level, might be snake_case
+        appendLogItem(msgText, logIconClass, logItemClasses, details);
         if (state.isProcessLogVisible) showProcessLog(false);
     }
 
     function handleThinkingLog(msg) {
-        // Assuming msg.stage, msg.content, msg.llm_interaction_id are snake_case
-        const { stage, content, llm_interaction_id } = msg; // Renaming for clarity if backend sends llmInteractionId
+        const { stage, content, llm_interaction_id } = msg;
         if (content) {
-            state.lastResponseThinking = content;
+            state.lastResponseThinking = content; // Cache for potential use in final message bubble
         }
 
         if (state.showLogBubblesThink) {
-            const thinkLabel = `Agent Thinking (${stage.replace(/_/g, ' ')})`;
+            const thinkLabel = `AI COGNITIVE TRACE (${stage.replace(/_/g, ' ').toUpperCase()})`;
             appendLogItemWithThink(thinkLabel, 'fas fa-comment-dots log-think', `type-thinking_log stage-${stage} llm-id-${llm_interaction_id}`, content, "Detailed Thought Process:");
         } else {
-            appendLogItem(`Thinking log received (${stage}, LLM_ID: ${llm_interaction_id}) - ${content.substring(0, 70)}...`, 'fas fa-comment-dots log-muted', `type-thinking_log stage-${stage} muted`);
+            appendLogItem(`Cognitive log received (${stage}, LLM_ID: ${llm_interaction_id}) - ${content.substring(0, 80)}...`, 'fas fa-comment-dots log-muted', `type-thinking_log stage-${stage} muted`);
         }
         if (state.isProcessLogVisible) showProcessLog(false);
     }
 
     function handlePlanDetails(msg) {
-        // CORE CHANGE: The `plan` array items are now expected to have camelCase keys
-        // e.g., toolCallId, toolName, toolArguments, uiHints, order.
-        const { plan } = msg; // `plan` is an array of objects
-        state.pendingToolCalls = {}; // Reset pending calls
-        plan.forEach(toolCall => { // toolCall is an object from the plan array
-            // Access using camelCase keys
-            const toolCallId = toolCall.toolCallId;
-            const toolName = toolCall.toolName;
-            const toolArguments = toolCall.toolArguments; // This is an object
-            const uiHints = toolCall.uiHints || {};     // This is an object
-            const order = toolCall.order;
-
-            state.pendingToolCalls[toolCallId] = { // Store with camelCase toolCallId as key
+        const { plan } = msg; // plan is an array of objects with camelCase keys
+        state.pendingToolCalls = {};
+        plan.forEach(toolCall => {
+            const { toolCallId, toolName, toolArguments, uiHints = {}, order } = toolCall;
+            state.pendingToolCalls[toolCallId] = {
                 name: toolName,
-                args_summary: summarizeArguments(toolArguments), // summarizeArguments can handle any object
+                args_summary: summarizeArguments(toolArguments),
                 ui_hints: uiHints,
                 order: order
             };
-            const displayName = uiHints.displayNameForTool || toolName;
+            const displayName = uiHints.displayNameForTool || toolName.replace(/_tool$/, "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
             appendLogItem(
-                `Plan item #${order}: ${displayName} (ID: ${toolCallId}) - Status: Pending`,
-                'fas fa-list-check log-info',
+                `STRATEGIC NODE #${order}: ${displayName} (ID: ${toolCallId}) - Status: QUEUED`,
+                'fas fa-list-check log-info', // Using fa-list-check for plan items
                 `type-plan_details tool-${toolName} status-pending`,
-                { arguments: toolArguments, tool_call_id: toolCallId } // For log details, use camelCase if it mirrors LLM
+                { arguments: toolArguments, tool_call_id: toolCallId } // Log details might use camelCase if from LLM
             );
         });
         if (state.isProcessLogVisible) showProcessLog(true);
     }
 
     function handleToolStatusUpdate(msg) {
-        // Assuming top-level keys here (tool_call_id, tool_name, status, message, details) are snake_case
-        // If backend changes these to camelCase, update here.
+        // Backend sends snake_case top-level keys.
         const { tool_call_id, tool_name, status, message: msgText, details } = msg;
         let logIconClass = 'fas fa-cog log-info';
         let itemStatusClass = `status-${status}`;
 
-        if (status === 'running') {
-            logIconClass = 'fas fa-cog fa-spin log-info';
-        } else if (status === 'retrying') {
-            logIconClass = 'fas fa-history log-info';
-        } else if (status === 'succeeded') {
-            logIconClass = 'fas fa-check-circle log-success';
-        } else if (status === 'failed') {
-            logIconClass = 'fas fa-times-circle log-error';
-        } else if (status === 'aborted_due_to_previous_failure') {
+        if (status === 'running') logIconClass = 'fas fa-cogs fa-spin log-info'; // Changed to cogs for multiple
+        else if (status === 'retrying') logIconClass = 'fas fa-history fa-spin log-info'; // Added spin
+        else if (status === 'succeeded') logIconClass = 'fas fa-check-double log-success'; // Changed to double-check
+        else if (status === 'failed') logIconClass = 'fas fa-bomb log-error'; // Changed to bomb for failure
+        else if (status === 'aborted_due_to_previous_failure') {
             logIconClass = 'fas fa-ban log-warning';
             itemStatusClass = 'status-aborted';
         }
 
-        // IMPORTANT: `state.pendingToolCalls` is keyed by `toolCallId` (camelCase) from `handlePlanDetails`.
-        // So, if `tool_call_id` from this message is snake_case, we need to be careful.
-        // Assuming backend sends `tool_call_id` matching the `toolCallId` in the plan.
-        const pendingToolInfo = state.pendingToolCalls[tool_call_id]; // Use as is, assuming consistency
-        const displayName = pendingToolInfo?.ui_hints?.displayNameForTool || tool_name;
-        let fullLogMessage = `Tool: ${displayName} (ID: ${tool_call_id}) - ${status.replace(/_/g, ' ').toUpperCase()}: ${msgText}`;
+        const pendingToolInfo = state.pendingToolCalls[tool_call_id];
+        const displayName = pendingToolInfo?.ui_hints?.displayNameForTool || tool_name.replace(/_tool$/, "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+        let fullLogMessage = `TOOL: ${displayName} (ID: ${tool_call_id}) - ${status.replace(/_/g, ' ').toUpperCase()}: ${msgText}`;
 
         let existingLogItem = dom.processLogContent.querySelector(`.log-item[data-tool-call-id="${tool_call_id}"]`);
 
@@ -410,45 +363,43 @@ document.addEventListener('DOMContentLoaded', () => {
             if (messageEl) messageEl.textContent = fullLogMessage;
 
             let detailsEl = existingLogItem.querySelector('.log-item-details');
-            // The 'details' object from this message might also need camelCase parsing if it mirrors LLM JSON structure.
             if (details && Object.keys(details).length > 0) {
                 if (!detailsEl) {
                     detailsEl = document.createElement('div');
                     detailsEl.className = 'log-item-details';
                     existingLogItem.querySelector('.log-item-text-wrapper').appendChild(detailsEl);
                 }
-                const formattedDetailsHtml = formatLogDetails(details, 'tool_status_update', null, status); // formatLogDetails needs to handle camelCase if 'details' uses it
+                const formattedDetailsHtml = formatLogDetails(details, 'tool_status_update', null, status);
                 detailsEl.innerHTML = formattedDetailsHtml || '';
             } else if (detailsEl) {
                 detailsEl.innerHTML = '';
             }
-            existingLogItem.classList.remove('animate__flash', 'animate__headShake');
+            existingLogItem.classList.remove('animate__flash', 'animate__headShake', 'animate__pulse');
             if (status === 'failed') existingLogItem.classList.add('animate__headShake');
+            else if (status === 'succeeded') existingLogItem.classList.add('animate__pulse'); // Pulse on success
             else existingLogItem.classList.add('animate__flash');
-            existingLogItem.style.setProperty('--animate-duration', '0.5s');
+            existingLogItem.style.setProperty('--animate-duration', '0.6s');
 
         } else {
-            const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass}`, details); // details to formatLogDetails
+            const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass}`, details);
             if (logItemDiv) logItemDiv.dataset.toolCallId = tool_call_id;
         }
 
         if (state.isProcessLogVisible) showProcessLog(false);
 
         if (status === 'succeeded' || status === 'failed' || status === 'aborted_due_to_previous_failure') {
-            if (state.pendingToolCalls[tool_call_id]) { // Assuming tool_call_id matches key
+            if (state.pendingToolCalls[tool_call_id]) {
                 delete state.pendingToolCalls[tool_call_id];
             }
         }
     }
 
     function handleInterimResponse(msg) {
-        // Assuming msg.content, msg.llm_interaction_id are snake_case
-        const { content, llm_interaction_id } = msg;
+        const { content, llm_interaction_id } = msg; // snake_case from backend
         appendLogItem(
-            `Agent Intention: "${content.substring(0, 150)}${content.length > 150 ? '...' : ''}"`,
-            'fas fa-bullhorn log-info',
+            `AI INTENT: "${content.substring(0, 180)}${content.length > 180 ? '...' : ''}"`,
+            'fas fa-bullhorn log-info', // Bullhorn for intent
             'type-agent_intention',
-            // Details here are simple, can remain snake_case for internal logging
             { llm_interaction_id: llm_interaction_id, full_content: content }
         );
         if (state.isProcessLogVisible) showProcessLog(false);
@@ -458,36 +409,29 @@ document.addEventListener('DOMContentLoaded', () => {
         hideTypingIndicator();
         setLoadingState(false);
         state.currentClientRequestId = null;
-        state.pendingToolCalls = {}; // Clear pending calls on final response
+        state.pendingToolCalls = {};
 
-        // Top-level keys from WebSocket message (assumed snake_case from Python backend)
-        const { content, llm_interaction_id } = msg; // content is the fallback/raw text. llm_interaction_id from the WS message.
-        
-        // CORE CHANGE: The actual structured JSON is now in a specific (camelCased) field.
-        // Let's assume backend sends it as `final_v8_3_2_camelcase_json_if_success`.
-        // If this key is different, it needs to be adjusted here.
-        const finalCamelCaseJson = msg.final_v8_3_2_camelcase_json_if_success; // Access the camelCased JSON object
+        const { content, llm_interaction_id } = msg; // snake_case from backend ws handler
+        const finalCamelCaseJson = msg.final_v8_3_2_camelcase_json_if_success; // camelCase JSON object
 
         let thinkingForBubble = null;
-        let actualContentForBubble = content; // Fallback to raw content if JSON parsing fails
+        let actualContentForBubble = content; // Fallback
 
         if (finalCamelCaseJson && finalCamelCaseJson.status === 'success') {
-            // All keys inside finalCamelCaseJson are camelCase as per V8.3.2 spec.
-            if (finalCamelCaseJson.thoughtProcess) { // This is from <think> block, placed by OutputParser
+            if (finalCamelCaseJson.thoughtProcess) { // camelCase key from parsed LLM output
                 thinkingForBubble = finalCamelCaseJson.thoughtProcess;
             }
             if (finalCamelCaseJson.decision &&
                 finalCamelCaseJson.decision.responseToUser &&
-                finalCamelCaseJson.decision.responseToUser.content) { // Accessing camelCase keys
+                finalCamelCaseJson.decision.responseToUser.content) { // camelCase keys
                 actualContentForBubble = finalCamelCaseJson.decision.responseToUser.content;
 
-                const suggestions = finalCamelCaseJson.decision.responseToUser.suggestionsForNextSteps; // camelCase key
+                const suggestions = finalCamelCaseJson.decision.responseToUser.suggestionsForNextSteps; // camelCase
                 if (suggestions && Array.isArray(suggestions) && suggestions.length > 0) {
-                    let suggestionsText = "\n\n<div class=\"final-response-suggestions\"><strong>Next steps you might consider:</strong><ul>";
-                    suggestions.forEach(sugg => { // sugg object also uses camelCase keys
-                        if (sugg.textForUser) { // camelCase key
-                            // data-message should be safe for HTML attribute if it's plain text
-                            suggestionsText += `<li><a href="#" class="quick-action-btn" data-message="${sugg.textForUser.replace(/"/g, '&quot;')}">${sugg.textForUser}</a></li>`;
+                    let suggestionsText = "\n\n<div class=\"final-response-suggestions\"><strong>NEXT TRANSMISSION OPTIONS:</strong><ul>"; // Sci-fi label
+                    suggestions.forEach(sugg => { // sugg object keys are camelCase
+                        if (sugg.textForUser) {
+                            suggestionsText += `<li><a href="#" class="quick-action-btn" data-message="${sugg.textForUser.replace(/"/g, '&quot;')}"><i class="fas fa-angle-right"></i> ${sugg.textForUser}</a></li>`; // Added icon
                         }
                     });
                     suggestionsText += "</ul></div>";
@@ -496,11 +440,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], null);
                 }
-            } else { // Content missing in the camelCase JSON structure
-                appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], "ContentMissingInV8_3_2_JSON");
+            } else {
+                appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], "ContentMissingIn_V8_3_2_JSON");
             }
         } else {
-            // Fallback if finalCamelCaseJson is not available, indicates failure, or parsing failed.
             thinkingForBubble = state.lastResponseThinking; // Use cached thinking if any
             appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], "ErrorResponseOrNo_V8_3_2_JSON");
         }
@@ -509,12 +452,11 @@ document.addEventListener('DOMContentLoaded', () => {
             content: actualContentForBubble,
             sender: 'agent',
             timestamp: Date.now(),
-            isHTML: (finalCamelCaseJson?.decision?.responseToUser?.suggestionsForNextSteps?.length > 0), // check camelCase path
-            // Store the new camelCase JSON structure
-            rawResponseV8_3_2_CamelCase: finalCamelCaseJson,
+            isHTML: (finalCamelCaseJson?.decision?.responseToUser?.suggestionsForNextSteps?.length > 0),
+            rawResponseV8_3_2_CamelCase: finalCamelCaseJson, // Store the camelCase JSON
             thinking: thinkingForBubble,
         });
-        state.lastResponseThinking = null; // Clear after use
+        state.lastResponseThinking = null;
 
         if (state.sessions[state.currentSessionId]) {
             state.sessions[state.currentSessionId].lastActivity = Date.now();
@@ -522,12 +464,10 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSessions();
         renderSessionList();
 
-        // Log details can be the summary or the raw camelCased JSON (or parts of it)
-        const llmIdForLog = finalCamelCaseJson?.llmInteractionId || llm_interaction_id || 'N/A'; // Prefer ID from JSON
-        appendLogItem(`Agent final response delivered (LLM_ID: ${llmIdForLog})`, 'fas fa-flag-checkered log-success', 'type-final_response', finalCamelCaseJson ? { summary: actualContentForBubble.substring(0,100)+"...", raw_response: finalCamelCaseJson } : { error_details: "Response generation indicated failure or missing V8.3.2 JSON." });
+        const llmIdForLog = finalCamelCaseJson?.llmInteractionId || llm_interaction_id || 'N/A';
+        appendLogItem(`AI FINAL TRANSMISSION DELIVERED (LLM_ID: ${llmIdForLog})`, 'fas fa-flag-checkered log-success', 'type-final_response', finalCamelCaseJson ? { summary: actualContentForBubble.substring(0, 120) + "...", raw_response: finalCamelCaseJson } : { error_details: "Response generation indicated failure or missing V8.3.2 JSON." });
         if (state.isProcessLogVisible) showProcessLog(true);
     }
-
 
     function setLoadingState(isLoading) {
         state.isLoading = isLoading;
@@ -535,58 +475,55 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.userInput.disabled = isLoading;
         dom.sendIcon.style.display = isLoading ? 'none' : 'inline-block';
         dom.sendLoadingIcon.style.display = isLoading ? 'inline-block' : 'none';
+        dom.sendButton.title = isLoading ? "TRANSMITTING..." : "TRANSMIT COMMAND";
+        // Enhanced visual feedback for loading
         if (isLoading) {
-            dom.sendButton.title = "Processing...";
+            dom.inputArea.classList.add('processing');
+            dom.sendButton.classList.add('processing-active');
         } else {
-            dom.sendButton.title = "Send message";
+            dom.inputArea.classList.remove('processing');
+            dom.sendButton.classList.remove('processing-active');
         }
     }
 
-    function summarizeArguments(argsObj) { // This function is generic, handles any object
+    function summarizeArguments(argsObj) {
         if (!argsObj || typeof argsObj !== 'object' || Object.keys(argsObj).length === 0) {
             return "(No args)";
         }
         try {
             return JSON.stringify(argsObj, (key, value) => {
-                if (typeof value === 'string' && value.length > 30) {
-                    return value.substring(0, 27) + "...";
+                if (typeof value === 'string' && value.length > 35) { // Slightly longer preview
+                    return value.substring(0, 32) + "...";
                 }
                 return value;
-            }).substring(0, 150);
+            }).substring(0, 180); // Slightly longer overall summary
         } catch (e) {
             return "(Error summarizing args)";
         }
     }
 
-    function parseItemClasses(itemClassesStr) { // Generic helper
+    function parseItemClasses(itemClassesStr) {
         const classes = itemClassesStr ? itemClassesStr.split(' ') : [];
         const parsed = { type: null, stage: null, status: null };
         classes.forEach(cls => {
             if (cls.startsWith('type-')) parsed.type = cls.substring(5);
             else if (cls.startsWith('stage-')) parsed.stage = cls.substring(6);
             else if (cls.startsWith('status-')) parsed.status = cls.substring(7);
-            else if (cls.startsWith('phase-')) parsed.stage = cls.substring(6); // Alias for stage
+            else if (cls.startsWith('phase-')) parsed.stage = cls.substring(6);
         });
         return parsed;
     }
 
     function formatLogDetails(details, type, stage, status) {
-        // This function now needs to be robust to keys being either snake_case (from older parts or direct Python)
-        // OR camelCase (from new LLM JSON structures or plan_details/tool_status_update if backend standardizes).
-        // For simplicity, we'll assume `details` passed here from `handlePlanDetails` or `handleToolStatusUpdate`
-        // might contain camelCased keys if they originate from the LLM's JSON.
-        // The formatting logic itself tries to make keys more readable.
+        // Handles both snake_case and camelCase keys in the details object.
         let html = '';
         const addDetailKeyValue = (key, value, indentLevel = 0) => {
             const sanitizedValue = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const paddingLeftStyle = `padding-left: ${indentLevel * 10}px;`;
-            // Convert both snake_case and camelCase to "Title Case With Spaces"
+            const paddingLeftStyle = `padding-left: ${indentLevel * 12}px;`; // Increased indent
             const formattedKey = key
-                .replace(/([A-Z])/g, " $1") // Add space before uppercase letters (for camelCase)
-                .replace(/_/g, ' ')        // Replace underscores (for snake_case)
-                .trim()
+                .replace(/([A-Z])/g, " $1").replace(/_/g, ' ').trim()
                 .replace(/\b\w/g, char => char.toUpperCase());
-            return `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>${formattedKey}:</strong> <span>${sanitizedValue}</span></div>`;
+            return `<div class="log-detail-item" style="${paddingLeftStyle}"><strong class="log-detail-key">${formattedKey}:</strong> <span class="log-detail-value">${sanitizedValue}</span></div>`;
         };
 
         const formatRecursive = (obj, currentType, currentStage, currentStatus, indentLevel = 0) => {
@@ -594,48 +531,36 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const key in obj) {
                 if (Object.prototype.hasOwnProperty.call(obj, key)) {
                     const value = obj[key];
-                    const displayKey = key // Use original key for specific checks, then format for display
-                        .replace(/([A-Z])/g, " $1")
-                        .replace(/_/g, ' ')
-                        .trim()
-                        .replace(/\b\w/g, char => char.toUpperCase());
-                    const paddingLeftStyle = `padding-left: ${indentLevel * 10}px;`;
+                    const displayKey = key.replace(/([A-Z])/g, " $1").replace(/_/g, ' ').trim().replace(/\b\w/g, char => char.toUpperCase());
+                    const paddingLeftStyle = `padding-left: ${indentLevel * 12}px;`;
 
-                    // Special handling based on original key (camelCase or snake_case)
-                    if ((type === 'plan_details' && key === 'toolCallId') || (type === 'tool_status_update' && key === 'tool_call_id')) continue; // Already in main log message
+                    if ((type === 'plan_details' && key === 'toolCallId') || (type === 'tool_status_update' && key === 'tool_call_id')) continue;
 
-                    if (key === 'uiHints' && typeof value === 'object' && value !== null) { // uiHints is camelCase
-                        const dn = String(value.displayNameForTool || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;"); // displayNameForTool is camelCase
-                        const ed = String(value.estimatedDurationCategory || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;"); // estimatedDurationCategory is camelCase
-                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>UI Hints:</strong> <span>Display: ${dn}, Duration: ${ed}</span></div>`;
-                    } else if (key === 'result_data_preview' && typeof value === 'string') { // Assuming snake_case from _send_tool_status_update
+                    if (key === 'uiHints' && typeof value === 'object' && value !== null) {
+                        const dn = String(value.displayNameForTool || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        const ed = String(value.estimatedDurationCategory || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong class="log-detail-key">UI Hints:</strong> <span class="log-detail-value">Display: ${dn}, Duration: ${ed}</span></div>`;
+                    } else if (key === 'result_data_preview' && typeof value === 'string') {
                         let previewContent = String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>Result Preview:</strong> <pre class="log-detail-preview-code"><code>${previewContent}</code></pre></div>`;
-                    } else if ((type === 'plan_details' || type === 'tool_status_update') && key === 'arguments' && typeof value === 'object' && value !== null) { // 'arguments' in log, 'toolArguments' in LLM JSON
-                        let argItems = [];
-                        for (const argKey in value) { // argKey is from tool schema (e.g., component_type)
-                            const formattedArgKey = argKey.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-                            argItems.push(`<em>${formattedArgKey}</em>: ${String(value[argKey]).replace(/</g, "&lt;").replace(/>/g, "&gt;")}`);
-                        }
-                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>Arguments:</strong> <span>${argItems.join('; ')}</span></div>`;
-                    } else if (key === 'toolArguments' && typeof value === 'object' && value !== null) { // Explicitly for toolArguments from LLM JSON
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong class="log-detail-key">Result Preview:</strong> <pre class="log-detail-preview-code"><code>${previewContent}</code></pre></div>`;
+                    } else if ((type === 'plan_details' || type === 'tool_status_update') && (key === 'arguments' || key === 'toolArguments') && typeof value === 'object' && value !== null) {
                         let argItems = [];
                         for (const argKey in value) {
                             const formattedArgKey = argKey.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-                            argItems.push(`<em>${formattedArgKey}</em>: ${String(value[argKey]).replace(/</g, "&lt;").replace(/>/g, "&gt;")}`);
+                            argItems.push(`<em class="log-arg-key">${formattedArgKey}</em>: ${String(value[argKey]).replace(/</g, "&lt;").replace(/>/g, "&gt;")}`);
                         }
-                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>Tool Arguments:</strong> <span>${argItems.join('; ')}</span></div>`;
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong class="log-detail-key">${displayKey}:</strong> <span class="log-detail-value">${argItems.join('; ')}</span></div>`;
                     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>${displayKey}:</strong></div>`;
+                        partHtml += `<div class="log-detail-item log-detail-object-header" style="${paddingLeftStyle}"><strong class="log-detail-key">${displayKey}:</strong></div>`;
                         partHtml += formatRecursive(value, currentType, currentStage, currentStatus, indentLevel + 1);
                     } else if (Array.isArray(value)) {
                         const arrayItems = value.map(item => {
                             if (typeof item === 'object' && item !== null) return JSON.stringify(item).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                             return String(item).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         });
-                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong>${displayKey}:</strong> <span>[${arrayItems.join(', ')}]</span></div>`;
+                        partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong class="log-detail-key">${displayKey}:</strong> <span class="log-detail-value log-detail-array">[${arrayItems.join(', ')}]</span></div>`;
                     } else {
-                        partHtml += addDetailKeyValue(key, value, indentLevel); // addDetailKeyValue handles formatting key
+                        partHtml += addDetailKeyValue(key, value, indentLevel);
                     }
                 }
             }
@@ -645,11 +570,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return html || null;
     }
 
-
     function appendLogItem(messageText, iconClass, itemClasses = '', details = null) {
         const logItemDiv = document.createElement('div');
         logItemDiv.className = 'log-item animate__animated animate__fadeInUp';
-        logItemDiv.style.setProperty('--animate-duration', '0.3s');
+        logItemDiv.style.setProperty('--animate-duration', '0.35s');
         if (itemClasses) logItemDiv.classList.add(...itemClasses.split(' '));
 
         const iconEl = document.createElement('i');
@@ -667,17 +591,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const detailsEl = document.createElement('div');
             detailsEl.className = 'log-item-details';
             const { type, stage, status } = parseItemClasses(itemClasses);
-            // formatLogDetails will handle potential camelCase keys in `details`
             const formattedDetailsHtml = formatLogDetails(details, type, stage, status);
 
             if (formattedDetailsHtml) {
                 detailsEl.innerHTML = formattedDetailsHtml;
-            } else { // Fallback to raw JSON string if formatting returns nothing
+            } else {
                 try {
                     let detailsText = typeof details === 'object' ? JSON.stringify(details, null, 2) : String(details);
-                    detailsEl.innerHTML = `<pre><code>${detailsText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
+                    detailsEl.innerHTML = `<pre class="log-detail-raw-json"><code>${detailsText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
                 } catch (e) {
-                    detailsEl.textContent = String(details); // Fallback for unstringifiable objects
+                    detailsEl.textContent = String(details);
                 }
             }
             textWrapperEl.appendChild(detailsEl);
@@ -690,17 +613,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return logItemDiv;
     }
 
-
-    function appendLogItemWithThink(headerText, headerIconClass, itemClasses, thinkContent, thinkBubbleLabel = "Thought Process") {
+    function appendLogItemWithThink(headerText, headerIconClass, itemClasses, thinkContent, thinkBubbleLabel = "Cognitive Matrix Output") { // Sci-fi label
         const logItemDiv = document.createElement('div');
         logItemDiv.className = 'log-item animate__animated animate__fadeInUp';
-        logItemDiv.style.setProperty('--animate-duration', '0.3s');
+        logItemDiv.style.setProperty('--animate-duration', '0.35s');
         if (itemClasses) logItemDiv.classList.add(...itemClasses.split(' '));
 
         const headerDiv = document.createElement('div');
-        headerDiv.style.display = 'flex';
-        headerDiv.style.alignItems = 'center';
-        headerDiv.style.gap = 'var(--spacing-unit)';
+        headerDiv.className = 'log-item-header-flex'; // For flex alignment
 
         const iconEl = document.createElement('i');
         iconEl.className = headerIconClass;
@@ -727,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (jsonErr) {
                     const escapedOriginalJson = trimmedJson
                         .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    return `<pre><code class="language-json error">${escapedOriginalJson}<br>(JSON Parse Error)</code></pre>`;
+                    return `<pre><code class="language-json error">${escapedOriginalJson}<br>(JSON Data Stream Corruption Detected)</code></pre>`;
                 }
             });
             thinkDiv.innerHTML = `<strong>${thinkBubbleLabel}:</strong><div class="think-bubble">${formattedThink}</div>`;
@@ -739,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function scrollToProcessLogBottom(instant = false) {
         if (!dom.processLogContent) return;
-        const container = dom.processLogContainer; // processLogContainer is the scrollable element
+        const container = dom.processLogContainer;
         const behavior = instant || state.animationLevel === 'none' ? 'auto' : 'smooth';
         container.scrollTo({ top: container.scrollHeight, behavior: behavior });
     }
@@ -747,17 +667,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function showProcessLog(ensureExpanded = false) {
         if (!dom.processLogContainer) return;
         state.isProcessLogVisible = true;
-        dom.processLogContainer.style.display = 'flex'; // It's a flex container
+        dom.processLogContainer.style.display = 'flex';
 
         if (state.animationLevel !== 'none' && !dom.processLogContainer.classList.contains('animate__fadeInDown')) {
             dom.processLogContainer.classList.remove('animate__fadeOutUp');
             dom.processLogContainer.classList.add('animate__animated', 'animate__fadeInDown');
-            dom.processLogContainer.style.setProperty('--animate-duration', '0.4s');
+            dom.processLogContainer.style.setProperty('--animate-duration', '0.45s'); // Slightly longer for visibility
         }
         if (ensureExpanded && state.isProcessLogCollapsed) {
-            toggleProcessLogCollapse(false); // false means don't use instant animation for uncollapsing
+            toggleProcessLogCollapse(false);
         }
-         localStorage.setItem(APP_PREFIX + 'isProcessLogVisible', state.isProcessLogVisible.toString());
+        localStorage.setItem(APP_PREFIX + 'isProcessLogVisible', state.isProcessLogVisible.toString());
     }
 
     function hideProcessLog() {
@@ -767,10 +687,9 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.processLogContainer.classList.remove('animate__fadeInDown');
             dom.processLogContainer.classList.add('animate__animated', 'animate__fadeOutUp');
             dom.processLogContainer.addEventListener('animationend', () => {
-                if (!state.isProcessLogVisible) { // Check again in case state changed during animation
+                if (!state.isProcessLogVisible) {
                     dom.processLogContainer.style.display = 'none';
                 }
-                // Always remove animation classes after it ends
                 dom.processLogContainer.classList.remove('animate__animated', 'animate__fadeOutUp');
             }, { once: true });
         } else {
@@ -789,10 +708,9 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(APP_PREFIX + 'processLogCollapsed', state.isProcessLogCollapsed.toString());
 
         if (!instant && state.animationLevel !== 'none') {
-            // CSS handles transition for max-height and padding
             dom.processLogContainer.style.transition = 'max-height var(--transition-duration-long) var(--transition-timing-function-smooth), padding var(--transition-duration-long) var(--transition-timing-function-smooth)';
         } else {
-            dom.processLogContainer.style.transition = 'none'; // Apply instantly
+            dom.processLogContainer.style.transition = 'none';
         }
     }
 
@@ -804,115 +722,60 @@ document.addEventListener('DOMContentLoaded', () => {
             iconElement.className = state.isProcessLogCollapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
         }
         if (instant || state.animationLevel === 'none') {
-             // Temporarily disable transition for instant update
             if (dom.processLogContainer.style.transition !== 'none') dom.processLogContainer.style.transition = 'none';
         }
-        // If not instant, rely on existing CSS transitions (or default if none was set explicitly)
     }
 
-
     function initializeApp() {
-        // VERSION UPDATE: Log message reflects V8.3.2
-        console.log("CircuitManus Pro V8.3.2 CamelCase Reasoning Initializing...");
-        updateLoaderProgress(10);
-        loadSettings(); // 加载用户设置，这可能会影响UI的初始状态
-        updateLoaderProgress(25);
-        applyCurrentTheme(); // 应用主题（可能受loadSettings影响）
-        applyFontSize(localStorage.getItem(APP_PREFIX + 'fontSize') || '16'); // 应用字体大小
-        applyAnimationLevel(state.animationLevel); // 应用动画级别（可能受loadSettings影响）
-        updateLoaderProgress(40);
-        loadSessions(); // 加载会话数据
-        updateLoaderProgress(55);
-        setupEventListeners(); // 设置所有事件监听器，包括3D组件按钮的
-        updateLoaderProgress(70);
-        adjustTextareaHeight(); // 调整输入框高度
-        updateCharCounter(); // 更新字数统计
-        updateLoaderProgress(85);
-        updateSidebarState(state.isSidebarExpanded, true); // 初始化侧边栏状态 (true for instant)
-        updateSessionManagerState(state.isSessionManagerCollapsed, true); // 初始化会话管理器状态 (true for instant)
-        updateProcessLogCollapseState(state.isProcessLogCollapsed, true); // 初始化日志面板折叠状态 (true for instant)
+        console.log("CircuitManus Pro - HYPERION CORE (V8.3.2 Sci-Fi Enhanced) Initializing...");
+        // updateLoaderProgress(10); // Removed as loader is now more visual
+        loadSettings();
+        // updateLoaderProgress(25);
+        applyCurrentTheme();
+        applyFontSize(localStorage.getItem(APP_PREFIX + 'fontSize') || '16');
+        applyAnimationLevel(state.animationLevel);
+        // updateLoaderProgress(40);
+        loadSessions();
+        // updateLoaderProgress(55);
+        setupEventListeners(); // This now includes 3D component listeners
+        // updateLoaderProgress(70);
+        adjustTextareaHeight();
+        updateCharCounter();
+        // updateLoaderProgress(85);
+        updateSidebarState(state.isSidebarExpanded, true);
+        updateSessionManagerState(state.isSessionManagerCollapsed, true);
+        updateProcessLogCollapseState(state.isProcessLogCollapsed, true);
 
-
-        // 初始化日志面板的可见性 (基于加载的设置)
-        if (state.isProcessLogVisible) { // state.isProcessLogVisible 应由 loadSettings() 设置
-            showProcessLog(true); // true to ensure expanded if visible
+        if (state.isProcessLogVisible) {
+            showProcessLog(true);
         } else {
             hideProcessLog();
         }
 
-        // 初始化3D组件控制按钮的title (基于组件初始是否可见，通常HTML中默认是is-visible)
-        // 这个逻辑在 setupEventListeners 之后，确保 dom.idtComponentToggleBtn 和 dom.idtComponentWrapper 已经被获取
-        if (dom.idtComponentToggleBtn && dom.idtComponentWrapper) {
-            if (dom.idtComponentWrapper.classList.contains('is-visible')) {
-                dom.idtComponentToggleBtn.setAttribute('title', '隐藏AI核心视效');
-                // 可选：如果需要根据初始状态设置按钮图标
-                // const icon = dom.idtComponentToggleBtn.querySelector('i');
-                // if (icon) icon.className = 'fas fa-eye-slash'; // 或者其他表示“可隐藏”的图标
-            } else {
-                dom.idtComponentToggleBtn.setAttribute('title', '显示AI核心视效');
-                // 可选：设置表示“可显示”的图标
-                // const icon = dom.idtComponentToggleBtn.querySelector('i');
-                // if (icon) icon.className = 'fas fa-atom';
-            }
-            console.log("IDT Component button title initialized.");
-        } else {
-            // 这个console.warn应该在dom元素获取时就触发了，但再次检查无妨
-            if (!dom.idtComponentToggleBtn) {
-                console.warn("initializeApp: IDT Component Control Button (toggleIdtComponentBtn) not found. Cannot set initial title.");
-            }
-            if (!dom.idtComponentWrapper) {
-                console.warn("initializeApp: IDT Component Wrapper (idtTechComponentWrapper) not found. Cannot determine initial visibility for button title.");
-            }
-        }
+        // Initialize 3D component visibility based on settings
+        dom.idtComponentWrapper.classList.toggle('is-visible', state.isIdtComponentVisible);
+        dom.idtComponentToggleBtn.setAttribute('title', state.isIdtComponentVisible ? 'Deactivate AI Core Visualizer' : 'Activate AI Core Visualizer');
+        // Optional: update icon based on state.isIdtComponentVisible
+        // const idtIcon = dom.idtComponentToggleBtn.querySelector('i');
+        // if (idtIcon) idtIcon.className = state.isIdtComponentVisible ? 'fas fa-eye-slash' : 'fas fa-cubes';
 
-        // 事件监听：3D组件拖动
-        if (dom.idtComponentWrapper) {
-            dom.idtComponentWrapper.addEventListener('mousedown', handleComponentMouseDown);
-        } else {
-            console.warn("IDT Component Wrapper (idtTechComponentWrapper) not found for drag setup.");
-        }
-        // 拖动事件监听器结束
 
-        connectWebSocket(); // 启动WebSocket连接
-        updateLoaderProgress(95); // WebSocket连接可能需要时间，这里先更新进度
-        setTimeout(() => {
-            // 模拟WebSocket连接和其他异步操作完成后的最终加载进度
-            if (dom.loaderProgress) dom.loaderProgress.style.width = '100%';
-            // 通常隐藏loader和显示主内容的逻辑会在WebSocket的 onopen 或 init_success 回调中执行
-            // 但如果WebSocket连接非常快，或者希望在此处确保loader隐藏，可以添加:
-            // if (dom.loader && !websocket) { // 仅当WS尚未连接时（或者作为一种后备）
-            //    dom.loader.classList.add('hidden');
-            //    if (dom.mainContainer) dom.mainContainer.classList.add('loaded');
-            // }
-        }, 200); // 短暂延迟给WebSocket一个连接的机会
-        
-        // VERSION UPDATE
-        console.log("CircuitManus Pro V8.3.2 CamelCase Reasoning initialization sequence complete, awaiting WebSocket confirmation to fully activate.");
-        
-        // 初始化当前会话UI (确保在WebSocket连接尝试之后，因为它可能会依赖WS的init_success来最终确认session_id)
-        // 或者，如果 initializeCurrentSessionUI 不依赖WS的init_success来渲染基本UI，可以早点调用。
-        // 考虑到 switchSession 会发送 init 消息，将其放在 connectWebSocket 之后是合理的。
-        initializeCurrentSessionUI(true); // true 表示是初始加载
+        connectWebSocket(); // WebSocket connection will handle final loader hide
+        // updateLoaderProgress(95); // No longer numeric progress
 
-        // 确保在页面加载完成后，如果聊天框中有内容，快速操作按钮的监听器被正确附加
-        // (因为appendWelcomeMessage和加载历史消息时会动态添加这些按钮)
+        initializeCurrentSessionUI(true);
         attachQuickActionButtonListeners(dom.chatBox);
+
+        // Ensure glass effect is applied to specified elements if not already by CSS alone
+        [dom.appHeader, dom.sidebar, dom.inputArea, dom.processLogContainer, dom.settingsModal.querySelector('.modal-content'), dom.filePreviewArea]
+            .forEach(el => { if (el && !el.classList.contains('glass-effect')) el.classList.add('glass-effect'); });
+
+        console.log("Hyperion Core Systems Nominal. Awaiting Quantum Entanglement Link.");
     }
 
-    function updateLoaderProgress(percentage) {
-        if (dom.loaderProgress) {
-            dom.loaderProgress.style.width = `${percentage}%`;
-        }
-        const loadingTextEl = dom.loader.querySelector('.loading-text');
-        // VERSION UPDATE: Loader text reflects V8.3.2 and CamelCase Reasoning where appropriate
-        if (loadingTextEl) {
-            if (percentage < 30) loadingTextEl.textContent = "Calibrating camelCase reasoning circuits...";
-            else if (percentage < 60) loadingTextEl.textContent = "Loading cognitive models (V8.3.2)...";
-            else if (percentage < 90) loadingTextEl.textContent = "Polishing interface clarity...";
-            else loadingTextEl.textContent = "Establishing ethereal link (V8.3.2)...";
-        }
-    }
-
+    // function updateLoaderProgress(percentage) { // No longer used with new loader
+    //     // ... (kept for reference, but not called)
+    // }
 
     function setupEventListeners() {
         dom.sendButton.addEventListener('click', handleSendMessage);
@@ -923,21 +786,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         dom.themeToggleButton.addEventListener('click', () => {
-            const themes = ['auto', 'light', 'dark'];
+            const themes = ['auto', 'light', 'dark']; // Ensure 'auto' is a valid option
             const currentIndex = themes.indexOf(state.currentTheme);
             const nextTheme = themes[(currentIndex + 1) % themes.length];
-            applyTheme(nextTheme);
-            showToast(`Theme set to: ${getThemeDisplayName(state.currentTheme)}`, 'info');
+            applyTheme(nextTheme); // This will also save the setting
+            showToast(`Visual Spectrum Shifted to: ${getThemeDisplayName(state.currentTheme)}`, 'info');
         });
 
         dom.clearChatButton.addEventListener('click', handleClearCurrentChat);
         dom.manageSessionsToggle.addEventListener('click', () => updateSidebarState(!state.isSidebarExpanded));
         dom.toggleProcessLogVisibilityButton.addEventListener('click', () => {
-            if (state.isProcessLogVisible) {
-                hideProcessLog();
-            } else {
-                showProcessLog(true); // true to ensure expanded if toggled on
-            }
+            if (state.isProcessLogVisible) hideProcessLog();
+            else showProcessLog(true);
         });
 
         dom.sidebarButtons.forEach(button => {
@@ -955,119 +815,102 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.attachButton.addEventListener('click', () => dom.fileInput.click());
         dom.fileInput.addEventListener('change', handleFileSelection);
         dom.closeFilePreviewButton.addEventListener('click', closeFilePreview);
+        dom.micButton.addEventListener('click', () => showToast('Voice Command Matrix: Calibration in Progress...', 'info'));
 
-        dom.micButton.addEventListener('click', () => showToast('Voice input module under calibration...', 'info'));
-
-        if (dom.openSettingsButton) dom.openSettingsButton.addEventListener('click', openSettingsModal);
-        if (dom.closeSettingsButton) dom.closeSettingsButton.addEventListener('click', () => closeSettingsModal(true)); // true to revert changes
+        // Settings Modal Listeners
+        if (dom.closeSettingsButton) dom.closeSettingsButton.addEventListener('click', () => closeSettingsModal(true));
         if (dom.saveSettingsButton) dom.saveSettingsButton.addEventListener('click', () => {
             collectAndSaveSettings();
-            closeSettingsModal(false); // false to not revert (changes were saved)
-            showToast('Personalization parameters calibrated and saved!', 'success');
+            closeSettingsModal(false);
+            showToast('Personalization Matrix Synchronized and Stored!', 'success');
         });
         if (dom.resetSettingsButton) dom.resetSettingsButton.addEventListener('click', resetToDefaultSettings);
-
         if (dom.fontSizeInput) dom.fontSizeInput.addEventListener('input', () => {
             const newSize = dom.fontSizeInput.value;
             if (dom.fontSizeValue) dom.fontSizeValue.textContent = `${newSize}px`;
-            document.body.style.fontSize = `${newSize}px`; // Apply live preview
+            document.body.style.fontSize = `${newSize}px`;
         });
-        if (dom.animationLevelSelect) dom.animationLevelSelect.addEventListener('change', (e) => {
-            applyAnimationLevel(e.target.value); // Apply live preview
-        });
-        if (dom.showChatBubblesThinkToggle) dom.showChatBubblesThinkToggle.addEventListener('change', (e) => {
-            state.showChatBubblesThink = e.target.checked; // Live update state
-        });
-        if (dom.showLogBubblesThinkToggle) dom.showLogBubblesThinkToggle.addEventListener('change', (e) => {
-            state.showLogBubblesThink = e.target.checked; // Live update state
-        });
-         if (dom.autoSubmitQuickActionsToggle) dom.autoSubmitQuickActionsToggle.addEventListener('change', (e) => {
-            state.autoSubmitQuickActions = e.target.checked; // Live update state
+        if (dom.animationLevelSelect) dom.animationLevelSelect.addEventListener('change', (e) => applyAnimationLevel(e.target.value));
+        if (dom.autoScrollToggle) dom.autoScrollToggle.addEventListener('change', (e) => { state.autoScroll = e.target.checked; });
+        if (dom.soundEnabledToggle) dom.soundEnabledToggle.addEventListener('change', (e) => { state.soundEnabled = e.target.checked; });
+        if (dom.showChatBubblesThinkToggle) dom.showChatBubblesThinkToggle.addEventListener('change', (e) => { state.showChatBubblesThink = e.target.checked; });
+        if (dom.showLogBubblesThinkToggle) dom.showLogBubblesThinkToggle.addEventListener('change', (e) => { state.showLogBubblesThink = e.target.checked; });
+        if (dom.autoSubmitQuickActionsToggle) dom.autoSubmitQuickActionsToggle.addEventListener('change', (e) => { state.autoSubmitQuickActions = e.target.checked; });
+        if (dom.componentVisibilityToggle) dom.componentVisibilityToggle.addEventListener('change', (e) => {
+            state.isIdtComponentVisible = e.target.checked;
+            dom.idtComponentWrapper.classList.toggle('is-visible', state.isIdtComponentVisible);
+            dom.idtComponentToggleBtn.setAttribute('title', state.isIdtComponentVisible ? 'Deactivate AI Core Visualizer' : 'Activate AI Core Visualizer');
         });
 
 
         if (dom.settingsModal) dom.settingsModal.addEventListener('click', (e) => {
-            if (e.target === dom.settingsModal) closeSettingsModal(true); // Close and revert if clicking outside content
+            if (e.target === dom.settingsModal) closeSettingsModal(true);
         });
-
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (state.currentTheme === 'auto') applyCurrentTheme(); // Re-apply if in auto mode
+            if (state.currentTheme === 'auto') applyCurrentTheme();
         });
-
         if (dom.toggleProcessLogCollapseButton) dom.toggleProcessLogCollapseButton.addEventListener('click', () => toggleProcessLogCollapse());
 
-        // 事件监听：3D组件显隐切换按钮
+        // 3D Component Toggle Button
         if (dom.idtComponentToggleBtn && dom.idtComponentWrapper) {
             dom.idtComponentToggleBtn.addEventListener('click', () => {
+                state.isIdtComponentVisible = !dom.idtComponentWrapper.classList.contains('is-visible'); // State before toggle
                 dom.idtComponentWrapper.classList.toggle('is-visible');
-                if (dom.idtComponentWrapper.classList.contains('is-visible')) {
-                    dom.idtComponentToggleBtn.setAttribute('title', '隐藏AI核心视效');
-                    // 可选：如果你想在切换时改变按钮图标
-                    // const icon = dom.idtComponentToggleBtn.querySelector('i');
-                    // if (icon) icon.className = 'fas fa-eye-slash'; // 假设隐藏时用这个图标
-                } else {
-                    dom.idtComponentToggleBtn.setAttribute('title', '显示AI核心视效');
-                    // 可选：恢复图标
-                    // const icon = dom.idtComponentToggleBtn.querySelector('i');
-                    // if (icon) icon.className = 'fas fa-atom';
-                }
+                state.isIdtComponentVisible = dom.idtComponentWrapper.classList.contains('is-visible'); // Update state after toggle
+
+                dom.idtComponentToggleBtn.setAttribute('title', state.isIdtComponentVisible ? 'Deactivate AI Core Visualizer' : 'Activate AI Core Visualizer');
+                // Update settings toggle if modal is open
+                if (dom.componentVisibilityToggle) dom.componentVisibilityToggle.checked = state.isIdtComponentVisible;
+                localStorage.setItem(APP_PREFIX + 'isIdtComponentVisible', state.isIdtComponentVisible.toString());
             });
         } else {
-            if (!dom.idtComponentToggleBtn) {
-                console.warn("IDT Component Control Button (toggleIdtComponentBtn) not found in DOM.");
-            }
-            if (!dom.idtComponentWrapper) {
-                console.warn("IDT Component Wrapper (idtTechComponentWrapper) not found in DOM.");
-            }
+            if (!dom.idtComponentToggleBtn) console.warn("IDT Component Control Button (toggleIdtComponentBtn) not found.");
+            if (!dom.idtComponentWrapper) console.warn("IDT Component Wrapper (idtTechComponentWrapper) not found.");
+        }
+
+        // 3D Component Drag Listeners
+        if (dom.idtComponentWrapper) {
+            dom.idtComponentWrapper.addEventListener('mousedown', handleComponentMouseDown);
+        } else {
+            console.warn("IDT Component Wrapper (idtTechComponentWrapper) not found for drag setup.");
         }
     }
 
     // ======== 3D 组件拖动处理函数 ========
-
     function handleComponentMouseDown(e) {
-        // 确保只在组件可见且鼠标左键按下时开始拖动
         if (!dom.idtComponentWrapper.classList.contains('is-visible') || e.button !== 0) {
             return;
         }
-
         state.isDraggingComponent = true;
-        dom.idtComponentWrapper.style.cursor = 'grabbing'; // 改变鼠标指针样式
-        document.body.style.userSelect = 'none'; // 防止拖动时选中页面文本
+        dom.idtComponentWrapper.style.cursor = 'grabbing';
+        document.body.style.userSelect = 'none';
 
-        // 获取当前通过CSS变量设置的百分比值
-        const styles = getComputedStyle(document.documentElement); // 获取:root的样式
-        const currentTopPercent = parseFloat(styles.getPropertyValue('--offset-top-percentage')) || 0;
-        const currentLeftPercent = parseFloat(styles.getPropertyValue('--offset-left-percentage')) || 0;
+        const styles = getComputedStyle(document.documentElement);
+        const currentTopPercent = parseFloat(styles.getPropertyValue('--idt-offset-top-percentage')) || 0;
+        const currentLeftPercent = parseFloat(styles.getPropertyValue('--idt-offset-left-percentage')) || 0;
 
-        // 将百分比转换为像素值，作为计算的基准
-        // 注意：这里我们直接使用组件当前的offsetParent的尺寸来计算像素。
-        // 如果组件是fixed定位，其offsetParent可能是null，此时应相对于视口。
-        // 由于我们是 fixed 定位，直接用视口尺寸。
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+        state.componentInitialTopPx = (currentTopPercent / 100) * window.innerHeight;
+        state.componentInitialLeftPx = (currentLeftPercent / 100) * window.innerWidth;
 
-        state.componentInitialTopPx = (currentTopPercent / 100) * viewportHeight;
-        state.componentInitialLeftPx = (currentLeftPercent / 100) * viewportWidth;
-        
-        // 如果之前通过style直接设置了top/left（例如上次拖动的结果），优先使用它们
-        // 但为了保持与百分比变量一致，我们这里强制从CSS变量读取并转换为像素
-        // 如果你希望拖动能“记住”上一次拖动的像素位置，这里的逻辑需要调整
+        // If inline styles are set (from previous drag within session before saving to CSS var), use them.
+        // This logic prioritizes current visual position if it differs from CSS var (e.g. mid-drag)
+        if (dom.idtComponentWrapper.style.top && dom.idtComponentWrapper.style.left) {
+            state.componentInitialTopPx = parseFloat(dom.idtComponentWrapper.style.top);
+            state.componentInitialLeftPx = parseFloat(dom.idtComponentWrapper.style.left);
+        }
+
 
         state.componentDragStartX = e.clientX;
         state.componentDragStartY = e.clientY;
 
-        // 绑定 mousemove 和 mouseup 到 document，以便鼠标移出组件时仍能响应
         document.addEventListener('mousemove', handleComponentMouseMove);
         document.addEventListener('mouseup', handleComponentMouseUp);
-        document.addEventListener('mouseleave', handleComponentMouseUp); // 处理鼠标移出窗口的情况
-
-        e.preventDefault(); // 防止拖动时触发其他默认行为（如图片拖拽）
+        document.addEventListener('mouseleave', handleComponentMouseUp); // Handle mouse leaving window
+        e.preventDefault();
     }
 
     function handleComponentMouseMove(e) {
-        if (!state.isDraggingComponent) {
-            return;
-        }
+        if (!state.isDraggingComponent) return;
 
         const deltaX = e.clientX - state.componentDragStartX;
         const deltaY = e.clientY - state.componentDragStartY;
@@ -1075,48 +918,27 @@ document.addEventListener('DOMContentLoaded', () => {
         let newTopPx = state.componentInitialTopPx + deltaY;
         let newLeftPx = state.componentInitialLeftPx + deltaX;
 
-        // --- 可选：边界限制 ---
         const componentRect = dom.idtComponentWrapper.getBoundingClientRect();
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        // 限制上边界
-        if (newTopPx < 0) newTopPx = 0;
-        // 限制左边界
-        if (newLeftPx < 0) newLeftPx = 0;
-        // 限制下边界 (组件底部不超出视口底部)
-        if (newTopPx + componentRect.height > viewportHeight) {
-            newTopPx = viewportHeight - componentRect.height;
-        }
-        // 限制右边界 (组件右部不超出视口右部)
-        if (newLeftPx + componentRect.width > viewportWidth) {
-            newLeftPx = viewportWidth - componentRect.width;
-        }
-        // --- 边界限制结束 ---
+        newTopPx = Math.max(0, Math.min(newTopPx, viewportHeight - componentRect.height));
+        newLeftPx = Math.max(0, Math.min(newLeftPx, viewportWidth - componentRect.width));
 
-        // 实时更新组件的内联样式 (使用像素值，拖动更平滑)
         dom.idtComponentWrapper.style.top = `${newTopPx}px`;
         dom.idtComponentWrapper.style.left = `${newLeftPx}px`;
-        
-        // 注意：此时我们暂时覆盖了CSS变量定义的百分比位置，
-        // 改为直接用像素值设置内联style。
-        // 在 mouseup 时，我们会将这些像素值转换回百分比并更新CSS变量。
     }
 
-    function handleComponentMouseUp(e) {
-        if (!state.isDraggingComponent) {
-            return;
-        }
+    function handleComponentMouseUp() {
+        if (!state.isDraggingComponent) return;
         state.isDraggingComponent = false;
-        dom.idtComponentWrapper.style.cursor = 'grab'; // 恢复鼠标指针
-        document.body.style.userSelect = ''; // 恢复文本选中
+        dom.idtComponentWrapper.style.cursor = 'grab';
+        document.body.style.userSelect = '';
 
         document.removeEventListener('mousemove', handleComponentMouseMove);
         document.removeEventListener('mouseup', handleComponentMouseUp);
         document.removeEventListener('mouseleave', handleComponentMouseUp);
 
-        // 拖动结束，将当前的像素位置转换为百分比，并更新CSS变量
-        // 这样，CSS变量始终反映最新的（或初始的）百分比位置
         const finalTopPx = parseFloat(dom.idtComponentWrapper.style.top) || 0;
         const finalLeftPx = parseFloat(dom.idtComponentWrapper.style.left) || 0;
         const viewportWidth = window.innerWidth;
@@ -1125,34 +947,25 @@ document.addEventListener('DOMContentLoaded', () => {
         let newTopPercent = (finalTopPx / viewportHeight) * 100;
         let newLeftPercent = (finalLeftPx / viewportWidth) * 100;
 
-        // 确保百分比在合理范围内 (0-100，或根据组件尺寸调整以防完全移出)
-        // 这里的边界考虑的是组件左上角的位置百分比
+        // Ensure component top-left corner percentage is within bounds that keep the component fully visible
         const componentWidthPercent = (dom.idtComponentWrapper.offsetWidth / viewportWidth) * 100;
         const componentHeightPercent = (dom.idtComponentWrapper.offsetHeight / viewportHeight) * 100;
 
         newTopPercent = Math.max(0, Math.min(newTopPercent, 100 - componentHeightPercent));
         newLeftPercent = Math.max(0, Math.min(newLeftPercent, 100 - componentWidthPercent));
-        
-        // 更新CSS自定义属性
-        document.documentElement.style.setProperty('--offset-top-percentage', `${newTopPercent.toFixed(2)}%`);
-        document.documentElement.style.setProperty('--offset-left-percentage', `${newLeftPercent.toFixed(2)}%`);
-        
-        // 清除内联样式，让CSS变量接管位置，确保一致性
-        // 这样做的好处是，如果你有响应式逻辑依赖于百分比，它能继续工作
-        // 坏处是，如果百分比转换有微小精度损失，可能会有轻微跳动。
-        // 如果希望拖动后位置绝对精确由像素决定，就不清除内联样式，也不更新CSS变量。
+
+
+        document.documentElement.style.setProperty('--idt-offset-top-percentage', `${newTopPercent.toFixed(2)}%`);
+        document.documentElement.style.setProperty('--idt-offset-left-percentage', `${newLeftPercent.toFixed(2)}%`);
+
+        // Clear inline styles to let CSS variables take over for consistency and responsiveness
         dom.idtComponentWrapper.style.top = '';
         dom.idtComponentWrapper.style.left = '';
 
-        document.documentElement.style.setProperty('--offset-left-percentage', `${newLeftPercent.toFixed(2)}%`);
-
-        // 持久化拖动后的位置
         localStorage.setItem(APP_PREFIX + 'idtComponentTopPercent', `${newTopPercent.toFixed(2)}%`);
         localStorage.setItem(APP_PREFIX + 'idtComponentLeftPercent', `${newLeftPercent.toFixed(2)}%`);
-
-        dom.idtComponentWrapper.style.top = '';
-        dom.idtComponentWrapper.style.left = '';
     }
+
 
     function updateCharCounter() {
         const currentLength = dom.userInput.value.length;
@@ -1166,18 +979,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generateSessionId() {
-        return `session_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 11)}`;
+        return `session_quantum_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 12)}`; // Sci-fi ID
     }
 
     function generateClientRequestId() {
-        return `creq_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
+        return `creq_hyperion_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 10)}`; // Sci-fi ID
     }
 
     function initializeCurrentSessionUI(isInitialLoadOrConnect = false) {
         const lastSessionId = localStorage.getItem(APP_PREFIX + 'lastSessionId');
-        let targetSessionId = state.currentSessionId;
+        let targetSessionId = state.currentSessionId; // Might be set by init_success if WS connects very fast
 
-        if (!targetSessionId) {
+        if (!targetSessionId) { // If WS hasn't set it yet, try to load from localStorage or find most recent
             if (lastSessionId && state.sessions[lastSessionId]) {
                 targetSessionId = lastSessionId;
             } else if (Object.keys(state.sessions).length > 0) {
@@ -1185,14 +998,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetSessionId = sortedSessions[0].id;
             }
         }
-        
+
         if (!targetSessionId || !state.sessions[targetSessionId]) {
-            targetSessionId = createNewSession(true);
+            targetSessionId = createNewSession(true); // true for initial creation, won't switch yet
         }
-        
+
+        // switchSession will handle the actual UI update and WS init if needed.
+        // If isInitialLoadOrConnect is true, switchSession might delay WS init if session_id is already current.
         switchSession(targetSessionId, isInitialLoadOrConnect);
     }
-
 
     function createNewSession(isInitialCreation = false) {
         const newId = generateSessionId();
@@ -1200,7 +1014,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sessionCount = Object.keys(state.sessions).length + 1;
         state.sessions[newId] = {
             id: newId,
-            name: `Nebula Session ${sessionCount}`, // Default name
+            name: `Nebula Stream ${sessionCount}`, // Sci-fi default name
             messages: [],
             createdAt: now,
             lastActivity: now,
@@ -1208,84 +1022,74 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSessions();
 
         if (!isInitialCreation) {
-            switchSession(newId, false);
-            showToast('New ethereal link established for session!', 'success');
-            if (!state.isSidebarExpanded) updateSidebarState(true);
-            if (state.isSessionManagerCollapsed) updateSessionManagerState(false);
+            switchSession(newId, false); // false means it's not the initial page load/connect
+            showToast('New Quantum Entanglement Stream Established!', 'success');
+            if (!state.isSidebarExpanded) updateSidebarState(true); // Expand sidebar to show new session
+            if (state.isSessionManagerCollapsed) updateSessionManagerState(false); // Expand session list
         }
-        return newId;
+        return newId; // Return the new ID, useful for initial creation
     }
 
     function switchSession(sessionId, isInitialLoadOrConnect = false) {
         if (!state.sessions[sessionId]) {
-            console.error(`Attempt to switch to non-existent session: ${sessionId}. Creating a new one.`);
-            const fallbackId = createNewSession(true);
-            state.currentSessionId = fallbackId;
-            if (!isInitialLoadOrConnect) {
-                 // Assuming backend expects snake_case 'session_id'
-                sendWebSocketMessage({ type: 'init', session_id: fallbackId });
-            }
-            dom.chatBox.innerHTML = '';
-            appendWelcomeMessage();
-            dom.currentSessionNameDisplay.textContent = state.sessions[fallbackId]?.name || "New Session";
-            renderSessionList();
-            return;
+            console.error(`Attempt to switch to non-existent session: ${sessionId}. Creating a fallback.`);
+            // This should ideally not happen if createNewSession was called correctly for new sessions.
+            const fallbackId = createNewSession(true); // Create a new session without immediately switching UI
+            state.currentSessionId = fallbackId; // Set current ID
+            // No WS init here, as it might be part of initial load or handled by connectWebSocket
+        } else {
+            state.currentSessionId = sessionId;
         }
 
-        if (!isInitialLoadOrConnect && state.currentSessionId !== sessionId) {
-            state.currentSessionId = sessionId;
-             // Assuming backend expects snake_case 'session_id'
-            sendWebSocketMessage({ type: 'init', session_id: sessionId });
-            dom.chatBox.innerHTML = '';
-            appendMessage("Loading conversation echoes...", 'system-info', false, null, true, [], "System Loading");
-            dom.currentSessionNameDisplay.textContent = state.sessions[sessionId]?.name || "Loading...";
-            renderSessionList();
-            return; 
+        // Only send 'init' to WebSocket if it's a deliberate switch, not part of initial page load where `connectWebSocket` handles the first init.
+        // Also, only if the new sessionId is different from what might have been set by an early `init_success`.
+        if (!isInitialLoadOrConnect && websocket && websocket.readyState === WebSocket.OPEN) {
+            sendWebSocketMessage({ type: 'init', session_id: state.currentSessionId });
         }
-        
-        state.currentSessionId = sessionId;
-        if (state.sessions[sessionId]) {
-            state.sessions[sessionId].lastActivity = Date.now();
+
+        localStorage.setItem(APP_PREFIX + 'lastSessionId', state.currentSessionId);
+        if (state.sessions[state.currentSessionId]) { // Ensure session exists after potential fallback
+            state.sessions[state.currentSessionId].lastActivity = Date.now();
         }
-        localStorage.setItem(APP_PREFIX + 'lastSessionId', sessionId);
         saveSessions();
 
-        dom.currentSessionNameDisplay.textContent = state.sessions[sessionId]?.name || "Session";
-        dom.chatBox.innerHTML = '';
+        dom.currentSessionNameDisplay.textContent = state.sessions[state.currentSessionId]?.name || "Initializing Stream...";
+        dom.chatBox.innerHTML = ''; // Clear chatbox
 
-        if (state.sessions[sessionId]?.messages.length === 0) {
+        if (state.sessions[state.currentSessionId]?.messages.length === 0) {
             appendWelcomeMessage();
         } else {
-            state.sessions[sessionId]?.messages.forEach(msg => {
-                // When loading messages, use the stored 'thinking' and 'rawResponse' (which might be V8.3.2 camelCase)
+            state.sessions[state.currentSessionId]?.messages.forEach(msg => {
                 appendMessage(msg.content, msg.sender, msg.isHTML, msg.thinking, true, msg.attachments, msg.errorType);
             });
         }
-        scrollToBottom(true);
+        scrollToBottom(true); // Instant scroll
         renderSessionList();
         dom.userInput.focus();
 
+        // Clear process log for the new session view
         dom.processLogContent.innerHTML = '';
-        if (!state.isProcessLogVisible) hideProcessLog();
+        // If process log was visible, keep it visible but clear, otherwise keep it hidden
+        if (!state.isProcessLogVisible) hideProcessLog(); else showProcessLog(false); // false to not force expand
 
-        console.log(`Switched to session: ${state.sessions[sessionId]?.name} (ID: ${sessionId})`);
+        console.log(`Switched to session: ${state.sessions[state.currentSessionId]?.name} (ID: ${state.currentSessionId})`);
     }
-
 
     function deleteSession(sessionId, event) {
         if (event) event.stopPropagation();
         if (!state.sessions[sessionId]) return;
 
         const sessionName = state.sessions[sessionId].name;
-        if (!confirm(`Are you sure you want to archive (delete) session "${sessionName}"? This action cannot be undone.`)) {
+        // Sci-fi confirm message
+        if (!confirm(`ARCHIVE CHRONO-SIGNATURE "${sessionName}" (ID: ${sessionId})? This action is irreversible across timelines.`)) {
             return;
         }
 
         const listItem = dom.sessionList.querySelector(`li[data-session-id="${sessionId}"]`);
         if (listItem) {
             if (state.animationLevel !== 'none') {
-                listItem.classList.add('animate__animated', 'animate__fadeOutLeft');
-                listItem.style.setProperty('--animate-duration', '0.4s');
+                listItem.classList.add('animate__animated', 'animate__fadeOutLeftBig'); // Enhanced animation
+                listItem.style.setProperty('--animate-duration', '0.5s');
                 listItem.addEventListener('animationend', () => listItem.remove(), { once: true });
             } else {
                 listItem.remove();
@@ -1299,28 +1103,30 @@ document.addEventListener('DOMContentLoaded', () => {
             if (remainingSessions.length > 0) {
                 switchSession(remainingSessions[0].id, false);
             } else {
-                createNewSession(false);
+                // Create a new session if all are deleted, and switch to it.
+                const newFallbackId = createNewSession(true);
+                switchSession(newFallbackId, false);
             }
         } else {
-            saveSessions();
-            renderSessionList();
+            saveSessions(); // Save after deleting, before re-rendering
+            renderSessionList(); // Re-render if current session wasn't the one deleted
         }
-        showToast(`Session "${sessionName}" has been archived.`, 'info');
-        if (Object.keys(state.sessions).length === 0 && dom.sessionList) renderSessionList();
+        showToast(`Chrono-signature "${sessionName}" archived.`, 'info');
+        if (Object.keys(state.sessions).length === 0 && dom.sessionList) renderSessionList(); // Ensure empty state is shown
     }
 
     function handleEditSessionName() {
         const currentSession = state.sessions[state.currentSessionId];
         if (!currentSession) return;
 
-        const newName = prompt("Enter new name for this session:", currentSession.name);
+        const newName = prompt(`Re-calibrate Chrono-Anchor name for "${currentSession.name}":`, currentSession.name);
         if (newName && newName.trim() !== "" && newName.trim() !== currentSession.name) {
-            currentSession.name = newName.trim().substring(0, 50);
+            currentSession.name = newName.trim().substring(0, 60); // Slightly longer name allowed
             currentSession.lastActivity = Date.now();
             dom.currentSessionNameDisplay.textContent = currentSession.name;
             saveSessions();
             renderSessionList();
-            showToast("Session name updated.", "success");
+            showToast("Chrono-Anchor name recalibrated.", "success");
         }
     }
 
@@ -1333,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sortedSessions.length === 0) {
             const emptyItem = document.createElement('li');
             emptyItem.classList.add('session-list-empty');
-            emptyItem.innerHTML = '<i class="fas fa-ghost"></i> No past echoes found';
+            emptyItem.innerHTML = '<i class="fas fa-ghost"></i> NO PAST ECHOES DETECTED'; // Sci-fi text
             dom.sessionList.appendChild(emptyItem);
             return;
         }
@@ -1341,10 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sortedSessions.forEach(session => {
             const listItem = document.createElement('li');
             listItem.classList.add('session-list-item');
-            if (state.animationLevel === 'full' && !listItem.classList.contains('active-session')) {
-                listItem.classList.add('animate__animated', 'animate__fadeInRight');
-                listItem.style.setProperty('--animate-duration', '0.35s');
-            }
+            // Animation applied on add, not re-render, to avoid constant flashing
             if (session.id === state.currentSessionId) {
                 listItem.classList.add('active-session');
             }
@@ -1354,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const createdDate = new Date(session.createdAt);
             const timeSinceLastActivity = formatTimeSince(session.lastActivity);
 
-            listItem.title = `Last active: ${timeSinceLastActivity}\n(${lastActivityDate.toLocaleString()})\nCreated: ${createdDate.toLocaleDateString()}`;
+            listItem.title = `Last Signal: ${timeSinceLastActivity} (${lastActivityDate.toLocaleString()})\nEstablished: ${createdDate.toLocaleDateString()}`;
 
             const contentWrapper = document.createElement('div');
             contentWrapper.classList.add('session-item-content');
@@ -1372,8 +1175,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const deleteBtn = document.createElement('button');
             deleteBtn.classList.add('session-delete-btn', 'icon-btn');
-            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-            deleteBtn.title = "Delete this session";
+            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>'; // Standard trash icon is fine
+            deleteBtn.title = "Archive this Chrono-Signature";
             deleteBtn.addEventListener('click', (e) => deleteSession(session.id, e));
 
             listItem.appendChild(contentWrapper);
@@ -1381,7 +1184,16 @@ document.addEventListener('DOMContentLoaded', () => {
             listItem.addEventListener('click', () => {
                 if (state.currentSessionId !== session.id) switchSession(session.id, false);
             });
+
             dom.sessionList.appendChild(listItem);
+            // Trigger animation if it's a newly added item (more complex logic needed for this, usually handled by how items are added)
+            // For simplicity, this re-render won't re-animate existing items unless classes are re-added.
+            if (state.animationLevel === 'full' && !listItem.classList.contains('animate__animated')) {
+                // This might need adjustment if items are frequently re-rendered.
+                // Typically, you'd animate on initial append or specific add operation.
+                // listItem.classList.add('animate__animated', 'animate__fadeInRight');
+                // listItem.style.setProperty('--animate-duration', '0.4s');
+            }
         });
     }
 
@@ -1389,9 +1201,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         const secondsPast = (now.getTime() - dateTimestamp) / 1000;
 
-        if (secondsPast < 60) return 'Just now';
+        if (secondsPast < 60) return 'Just Now';
         if (secondsPast < 3600) return `${Math.round(secondsPast / 60)}m ago`;
         if (secondsPast <= 86400) return `${Math.round(secondsPast / 3600)}h ago`;
+        // For older items, show date, or relative days if preferred
+        const daysPast = Math.round(secondsPast / 86400);
+        if (daysPast < 7) return `${daysPast}d ago`;
 
         const date = new Date(dateTimestamp);
         if (now.getFullYear() === date.getFullYear()) {
@@ -1404,8 +1219,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             localStorage.setItem(APP_PREFIX + 'sessions', JSON.stringify(state.sessions));
         } catch (e) {
-            console.error("Error saving sessions to localStorage (possibly full):", e);
-            showToast("Could not save session data. Storage might be full.", "error");
+            console.error("Error saving session data to localStorage (Quantum Datastore might be unstable):", e);
+            showToast("Could not persist session data. Datastore anomaly detected.", "error");
         }
     }
 
@@ -1419,7 +1234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (s && typeof s.id === 'string' && typeof s.name === 'string' && Array.isArray(s.messages)) {
                         state.sessions[id] = {
                             id: s.id,
-                            name: s.name || "Untitled Session",
+                            name: s.name || "Lost Signal Stream", // Sci-fi fallback
                             messages: s.messages.map(m => ({
                                 content: m.content || "",
                                 sender: m.sender || "system",
@@ -1427,25 +1242,23 @@ document.addEventListener('DOMContentLoaded', () => {
                                 isHTML: m.isHTML || false,
                                 attachments: m.attachments || [],
                                 thinking: m.thinking || null,
-                                // When loading, check for both old and new raw response keys
-                                rawResponseV8_1: m.rawResponseV8_1, // Old key for compatibility if loading old data
-                                rawResponseV8_3_2_CamelCase: m.rawResponseV8_3_2_CamelCase, // New key
+                                rawResponseV8_3_2_CamelCase: m.rawResponseV8_3_2_CamelCase, // Ensure new key is loaded
                                 errorType: m.errorType,
                             })),
                             createdAt: s.createdAt || Date.now(),
                             lastActivity: s.lastActivity || Date.now(),
                         };
                     } else {
-                        console.warn("Found invalid session data, skipping:", id, s);
+                        console.warn("Found corrupted chrono-signature data, bypassing:", id, s);
                     }
                 });
             } catch (e) {
-                console.error("Failed to load or parse session data:", e);
-                state.sessions = {};
-                localStorage.removeItem(APP_PREFIX + 'sessions');
+                console.error("Failed to load or parse session data (Datastore corruption suspected):", e);
+                state.sessions = {}; // Reset if corrupted
+                localStorage.removeItem(APP_PREFIX + 'sessions'); // Clear corrupted data
             }
         } else {
-            state.sessions = {};
+            state.sessions = {}; // No sessions found
         }
     }
 
@@ -1453,13 +1266,14 @@ document.addEventListener('DOMContentLoaded', () => {
         state.isSidebarExpanded = expand;
         dom.sidebar.classList.toggle('expanded', state.isSidebarExpanded);
         dom.manageSessionsToggle.setAttribute('aria-expanded', state.isSidebarExpanded.toString());
-        dom.manageSessionsToggle.querySelector('i').className = state.isSidebarExpanded ? 'fas fa-chevron-left' : 'fas fa-bars';
+        dom.manageSessionsToggle.querySelector('i').className = state.isSidebarExpanded ? 'fas fa-chevron-left' : 'fas fa-bars'; // Icons for expand/collapse
 
-        const duration = state.animationLevel === 'none' || instant ? 'none' : 'var(--transition-duration-long) var(--transition-timing-function-smooth)';
-        dom.sidebar.style.transition = `width ${duration}, background-color ${duration}`;
-        
+        const duration = state.animationLevel === 'none' || instant ? 'none' : 'width var(--transition-duration-long) var(--transition-timing-function-smooth), background-color var(--transition-duration-medium) var(--transition-timing-function-smooth)';
+        dom.sidebar.style.transition = duration;
+
         localStorage.setItem(APP_PREFIX + 'sidebarExpanded', state.isSidebarExpanded.toString());
 
+        // If sidebar collapses, and session manager was expanded, collapse session manager too.
         if (!state.isSidebarExpanded && !state.isSessionManagerCollapsed) {
             updateSessionManagerState(true, instant);
         }
@@ -1469,39 +1283,43 @@ document.addEventListener('DOMContentLoaded', () => {
         state.isSessionManagerCollapsed = collapse;
         dom.sessionManager.classList.toggle('collapsed', state.isSessionManagerCollapsed);
         dom.sessionManagerToggle.setAttribute('aria-expanded', (!state.isSessionManagerCollapsed).toString());
-        
-        const duration = state.animationLevel === 'none' || instant ? 'none' : 'var(--transition-duration-long) var(--transition-timing-function-smooth)';
-        dom.sessionListContainer.style.transition = `max-height ${duration}, padding ${duration}`;
-        
+        // Toggle icon for session manager expand/collapse (optional, if you want visual feedback here too)
+        const sessionToggleIcon = dom.sessionManagerToggle.querySelector('.toggle-icon');
+        if (sessionToggleIcon) sessionToggleIcon.className = state.isSessionManagerCollapsed ? 'fas fa-angle-double-down' : 'fas fa-angle-double-up';
+
+
+        const duration = state.animationLevel === 'none' || instant ? 'none' : 'max-height var(--transition-duration-long) var(--transition-timing-function-smooth), padding var(--transition-duration-long) var(--transition-timing-function-smooth)';
+        dom.sessionListContainer.style.transition = duration;
+
         localStorage.setItem(APP_PREFIX + 'sessionManagerCollapsed', state.isSessionManagerCollapsed.toString());
     }
 
     async function handleSendMessage() {
         if (state.isLoading) {
-            showToast("Processing previous message, please wait...", "warning");
+            showToast("AI Core is processing previous command sequence. Stand by...", "warning");
             return;
         }
         const messageText = dom.userInput.value.trim();
         const filesToSend = [...state.uploadedFiles];
 
         if (messageText === '' && filesToSend.length === 0) {
-            showToast("Please enter a message or select a file.", "warning");
+            showToast("Directive required. Input command or attach data crystal.", "warning");
             return;
         }
         if (dom.userInput.value.length > state.maxInputChars) {
-            showToast(`Input too long. Max ${state.maxInputChars} characters.`, "error");
+            showToast(`COMMAND BUFFER OVERFLOW. Max ${state.maxInputChars} characters.`, "error");
             return;
         }
 
         if (!websocket || websocket.readyState !== WebSocket.OPEN) {
-            showToast("Communication link inactive. Attempting to reconnect...", "warning");
-            connectWebSocket();
+            showToast("Quantum Link OFFLINE. Attempting re-synchronization...", "warning");
+            connectWebSocket(); // Attempt to reconnect
             return;
         }
 
         setLoadingState(true);
         state.currentClientRequestId = generateClientRequestId();
-        state.lastResponseThinking = null;
+        state.lastResponseThinking = null; // Clear previous thinking
 
         const currentUserMessage = {
             content: messageText,
@@ -1514,42 +1332,40 @@ document.addEventListener('DOMContentLoaded', () => {
         appendMessage(messageText, 'user', false, null, false, currentUserMessage.attachments);
 
         const currentSession = state.sessions[state.currentSessionId];
-        if (currentSession && currentSession.name.startsWith("Nebula Session ") && currentSession.messages.filter(m => m.sender === 'user').length === 1) {
-            const autoName = messageText.substring(0, 30).trim() || "New Chat";
-            currentSession.name = autoName + (messageText.length > 30 ? "..." : "");
+        if (currentSession && currentSession.name.startsWith("Nebula Stream ") && currentSession.messages.filter(m => m.sender === 'user').length === 1) {
+            // Auto-name session based on first user message
+            const autoName = messageText.substring(0, 35).trim() || "New Transmission"; // Slightly longer auto-name
+            currentSession.name = autoName + (messageText.length > 35 ? "..." : "");
             dom.currentSessionNameDisplay.textContent = currentSession.name;
-            renderSessionList();
+            renderSessionList(); // Update list with new name
         }
 
         dom.userInput.value = '';
         adjustTextareaHeight();
         updateCharCounter();
-        closeFilePreview();
+        closeFilePreview(); // Clear file previews after sending
 
-        dom.processLogContent.innerHTML = '';
-        showProcessLog(true);
+        dom.processLogContent.innerHTML = ''; // Clear log for new request
+        showProcessLog(true); // Show and expand log for new request
 
         let backendMessageContent = messageText;
         if (filesToSend.length > 0) {
-            backendMessageContent += `\n[User conceptually attached files: ${filesToSend.map(f => f.name).join(', ')}. Please process the text query based on these filenames.]`;
+            backendMessageContent += `\n[User attached data crystals: ${filesToSend.map(f => f.name).join(', ')}. Process text query based on these filenames.]`;
         }
 
-        // Assuming backend expects snake_case keys for 'message' type
         sendWebSocketMessage({
             type: 'message',
             session_id: state.currentSessionId,
             request_id: state.currentClientRequestId,
             content: backendMessageContent,
-            mode: state.currentMode
+            mode: state.currentMode // Send current interaction mode
         });
     }
 
     function addMessageToCurrentSession(messageObject) {
         if (state.sessions[state.currentSessionId]) {
             if (messageObject.sender !== 'agent') {
-                // For user messages, remove agent-specific raw response keys
-                delete messageObject.rawResponseV8_1;
-                delete messageObject.rawResponseV8_3_2_CamelCase; // New key
+                delete messageObject.rawResponseV8_3_2_CamelCase;
                 delete messageObject.thinking;
             }
             if (!messageObject.errorType) {
@@ -1562,14 +1378,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
     function handleUserInputKeypress(event) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             handleSendMessage();
         }
     }
-    
+
     function appendMessage(content, sender, isHTML = false, thinkContent = null, isSwitchingSession = false, attachments = [], errorType = null) {
         const messageDiv = document.createElement('div');
         const messageSenderClass = `message-${sender}`;
@@ -1588,20 +1403,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const animationClass = state.animationLevel === 'full' ? 'animate__fadeInUp' : (state.animationLevel === 'basic' ? 'animate__fadeIn' : '');
             if (animationClass) {
                 messageDiv.classList.add('animate__animated', animationClass);
-                messageDiv.style.setProperty('--animate-duration', state.animationLevel === 'full' ? '0.45s' : '0.3s');
+                messageDiv.style.setProperty('--animate-duration', state.animationLevel === 'full' ? '0.5s' : '0.35s'); // Slightly adjusted duration
             }
         }
 
         const avatarDiv = document.createElement('div');
         avatarDiv.classList.add('message-avatar');
-        let avatarIcon = 'fas fa-info-circle';
+        let avatarIcon = 'fas fa-question-circle'; // Default icon
         if (sender === 'user') avatarIcon = 'fas fa-user-astronaut';
-        else if (sender === 'agent') avatarIcon = 'fas fa-robot';
-        else if (sender === 'error-system') avatarIcon = 'fas fa-shield-virus';
+        else if (sender === 'agent') avatarIcon = 'fas fa-robot'; // Or fa-brain, fa-microchip
+        else if (sender === 'system-info') avatarIcon = 'fas fa-info-circle';
+        else if (sender === 'error-system') avatarIcon = 'fas fa-shield-virus'; // Or fa-biohazard
 
         avatarDiv.innerHTML = `<i class="${avatarIcon}"></i>`;
 
-        if (sender !== 'user' && sender !== 'system-message') {
+        if (sender !== 'user') { // Avatar on left for agent/system
             messageDiv.appendChild(avatarDiv);
         }
 
@@ -1610,7 +1426,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const messageContentWrapper = document.createElement('div');
         messageContentWrapper.classList.add('message-content-wrapper');
-        
+
         if (sender === 'agent' && thinkContent && state.showChatBubblesThink) {
             const thinkPrefixDiv = document.createElement('div');
             thinkPrefixDiv.classList.add('message-thought-prefix');
@@ -1627,10 +1443,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn("Chat bubble: JSON parsing for pretty print failed within thought:", e);
                     const escapedOriginalJson = trimmedJson
                         .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    return `<pre class="embedded-json error"><code>${escapedOriginalJson}<br>(Invalid JSON structure)</code></pre>`;
+                    return `<pre class="embedded-json error"><code>${escapedOriginalJson}<br>(Invalid JSON Sub-Routine)</code></pre>`;
                 }
             });
-            thinkPrefixDiv.innerHTML = `<strong>Agent's Reasoning:</strong><div class="think-bubble-content">${formattedThink}</div>`;
+            // Sci-fi label for thought bubble
+            thinkPrefixDiv.innerHTML = `<strong><i class="fas fa-brain"></i> AI COGNITIVE MATRIX:</strong><div class="think-bubble-content">${formattedThink}</div>`;
             messageContentWrapper.appendChild(thinkPrefixDiv);
         }
 
@@ -1645,7 +1462,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;").replace(/'/g, "&#039;")
                 .replace(/\n/g, '<br>')
-                .replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+                .replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="external-link"><i class="fas fa-external-link-alt"></i> ${url}</a>`); // Added icon to links
             textContentDiv.innerHTML = linkedContent;
         }
         messageContentWrapper.appendChild(textContentDiv);
@@ -1653,12 +1470,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (attachments && attachments.length > 0) {
             const attachmentsDiv = document.createElement('div');
             attachmentsDiv.classList.add('message-attachments-summary');
-            attachmentsDiv.innerHTML = `<i class="fas fa-paperclip"></i> Attachments (${attachments.length}): `;
+            attachmentsDiv.innerHTML = `<i class="fas fa-paperclip"></i> Data Crystals Attached (${attachments.length}): `;
             attachments.forEach(file => {
                 const fileChip = document.createElement('span');
                 fileChip.classList.add('filename-chip');
                 fileChip.textContent = file.name;
-                fileChip.title = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                fileChip.title = `${file.name} (${(file.size / 1024).toFixed(1)} KB, Type: ${file.type || 'Unknown'})`;
                 attachmentsDiv.appendChild(fileChip);
             });
             messageContentWrapper.appendChild(attachmentsDiv);
@@ -1667,12 +1484,12 @@ document.addEventListener('DOMContentLoaded', () => {
         messageBubbleDiv.appendChild(messageContentWrapper);
         messageDiv.appendChild(messageBubbleDiv);
 
-        if (sender === 'user') {
+        if (sender === 'user') { // Avatar on right for user
             messageDiv.appendChild(avatarDiv);
         }
 
         dom.chatBox.appendChild(messageDiv);
-        attachQuickActionButtonListeners(messageDiv);
+        attachQuickActionButtonListeners(messageDiv); // Attach listeners for quick actions in this message
 
         if (!isSwitchingSession) {
             scrollToBottom();
@@ -1682,47 +1499,57 @@ document.addEventListener('DOMContentLoaded', () => {
     function appendWelcomeMessage() {
         const lastMessage = dom.chatBox.lastElementChild;
         if (lastMessage && lastMessage.classList.contains('message-system-initial')) {
-            return;
+            return; // Welcome message already exists
         }
+        // Clear "Loading echoes..." if present
         if (lastMessage && lastMessage.classList.contains('message-system-info') && lastMessage.textContent.includes("Loading conversation echoes...")) {
             lastMessage.remove();
         }
 
-        // VERSION UPDATE: Welcome message reflects V8.3.2
         const welcomeHTML = `
             <div class="message-content">
                 <div class="welcome-header">
-                    <i class="fas fa-atom robot-icon animate__animated animate__pulse animate__infinite" style="--animate-duration: 2.5s;"></i>
-                    <h2>CircuitManus <span class="version-pro">Pro <span class="version-number">v8.3.2</span></span></h2>
+                    <i class="fas fa-atom robot-icon animate__animated animate__pulse animate__infinite" style="--animate-duration: 2.8s;"></i>
+                    <h2>CircuitManus <span class="version-pro">Hyperion <span class="version-number">v8.3.2</span></span></h2>
                 </div>
-                <p class="welcome-subtitle">Your advanced assistant for circuit design and programming, now with enhanced CamelCase Reasoning. Ready to materialize your ideas.</p>
+                <p class="welcome-subtitle">Your Advanced Tactical AI for Circuit Schematics & Quantum Programming. Hyperion Core online. Transmit your directives.</p>
                 <div class="capabilities">
-                    <div class="capability"><i class="fas fa-bolt-lightning"></i><span>Rapid Analysis</span></div>
-                    <div class="capability"><i class="fas fa-lightbulb"></i><span>Insightful Solutions</span></div>
-                    <div class="capability"><i class="fas fa-tools"></i><span>Tool Integration</span></div>
-                    <div class="capability"><i class="fas fa-infinity"></i><span>Iterative Refinement</span></div>
+                    <div class="capability"><i class="fas fa-bolt-lightning"></i><span>RAPID ANALYSIS</span></div>
+                    <div class="capability"><i class="fas fa-lightbulb-on"></i><span>INSIGHTFUL SOLUTIONS</span></div>
+                    <div class="capability"><i class="fas fa-tools"></i><span>TOOL INTEGRATION</span></div>
+                    <div class="capability"><i class="fas fa-infinity"></i><span>ITERATIVE REFINEMENT</span></div>
+                    <div class="capability"><i class="fas fa-brain"></i><span>INTELLIGENT THINKING</span></div>
+                    <div class="capability"><i class="fas fa-microchip"></i><span>QUANTUM COMPUTING</span></div>
+                    <div class="capability"><i class="fas fa-code"></i><span>CODE SYNTHESIS</span></div>
+                    <div class="capability"><i class="fas fa-project-diagram"></i><span>CIRCUIT DESIGN</span></div>
+                    <div class="capability"><i class="fas fa-cogs"></i><span>SYSTEM DESIGN</span></div>
+                    <div class="capability"><i class="fas fa-user-astronaut"></i><span>USER FRIENDLY</span></div>
                 </div>
                  <div class="quick-actions">
-                    <p>Whisper your commands, or try these:</p>
+                    <p>Initiate Command Sequence or Select Pre-emptive Protocol:</p>
                     <ul>
-                        <li><a href="#" class="quick-action-btn" data-message="Add a 1k ohm resistor named R1">Add Resistor R1</a></li>
-                        <li><a href="#" class="quick-action-btn" data-message="Integrate a blue LED, call it LED_BLUE">Add Blue LED</a></li>
-                        <li><a href="#" class="quick-action-btn" data-message="Connect R1 to LED_BLUE's anode, then LED_BLUE's cathode to ground (GND1)">Link R1-LED-GND</a></li>
-                        <li><a href="#" class="quick-action-btn" data-message="Describe the current circuit schematic.">Describe Circuit</a></li>
-                        <li><a href="#" class="quick-action-btn" data-message="Clear all components and connections.">Clear Circuit</a></li>
-                        <li><a href="#" class="quick-action-btn" data-message="Explain series vs parallel circuits.">Series & Parallel?</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Add a 1k ohm resistor named R1"><i class="fas fa-plus-circle"></i> Add Resistor R1</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Integrate a blue LED, call it LED_BLUE"><i class="fas fa-plus-circle"></i> Add Blue LED</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Connect R1 to LED_BLUE's anode, then LED_BLUE's cathode to ground (GND1)"><i class="fas fa-link"></i> Link R1-LED-GND</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Describe the current circuit schematic."><i class="fas fa-eye"></i> Describe Circuit</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Clear all components and connections."><i class="fas fa-skull-crossbones"></i> Purge Circuit Matrix</a></li> 
+                        <li><a href="#" class="quick-action-btn" data-message="Explain series vs parallel circuits."><i class="fas fa-question-circle"></i> Series & Parallel?</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Generate a schematic for a simple LED circuit with a 1k ohm resistor."><i class="fas fa-cogs"></i> Generate LED Circuit</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Create a new session."><i class="fas fa-plus"></i> New Quantum Stream</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Delete current session."><i class="fas fa-trash-alt"></i> Archive Chrono-Signature</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Switch to Code Synthesis Core mode."><i class="fas fa-code"></i> Code Synthesis</a></li>
+                        <li><a href="#" class="quick-action-btn" data-message="Switch to Circuit Design Nexus mode."><i class="fas fa-project-diagram"></i> Circuit Design</a></li>
                     </ul>
                  </div>
             </div>
         `;
         const welcomeDiv = document.createElement('div');
         welcomeDiv.className = 'message system-message system-message-initial animate__animated animate__fadeInUp';
-        welcomeDiv.style.setProperty('--animate-duration', '0.6s');
+        welcomeDiv.style.setProperty('--animate-duration', '0.65s');
         welcomeDiv.innerHTML = welcomeHTML;
         dom.chatBox.appendChild(welcomeDiv);
-        attachQuickActionButtonListeners(welcomeDiv);
+        attachQuickActionButtonListeners(welcomeDiv); // Attach listeners for quick actions in welcome message
     }
-
 
     function scrollToBottom(instant = false) {
         if (state.autoScroll) {
@@ -1736,21 +1563,21 @@ document.addEventListener('DOMContentLoaded', () => {
         state.isAgentTyping = true;
 
         const typingDiv = document.createElement('div');
-        typingDiv.id = 'typing-indicator';
+        typingDiv.id = 'typing-indicator'; // Ensure ID is set for removal
         const animationClass = state.animationLevel !== 'none' ? 'animate__fadeInUp' : '';
         typingDiv.classList.add('message', 'message-agent', 'typing-indicator');
         if (animationClass) {
             typingDiv.classList.add('animate__animated', animationClass);
-            typingDiv.style.setProperty('--animate-duration', '0.35s');
+            typingDiv.style.setProperty('--animate-duration', '0.4s');
         }
 
         const avatarDiv = document.createElement('div');
         avatarDiv.classList.add('message-avatar');
-        avatarDiv.innerHTML = '<i class="fas fa-robot"></i>';
+        avatarDiv.innerHTML = '<i class="fas fa-robot fa-beat"></i>'; // fa-beat for active typing
 
         const bubbleDiv = document.createElement('div');
         bubbleDiv.classList.add('message-bubble');
-        
+
         const contentWrapper = document.createElement('div');
         contentWrapper.classList.add('message-content-wrapper');
 
@@ -1758,8 +1585,8 @@ document.addEventListener('DOMContentLoaded', () => {
         textContent.classList.add('message-text-content');
 
         let dotsHTML = Array(3).fill('<span class="typing-dot"></span>').join('');
-        textContent.innerHTML = `CircuitManus Pro is processing<span class="typing-dots">${dotsHTML}</span>`;
-        
+        textContent.innerHTML = `Hyperion Core Processing<span class="typing-dots">${dotsHTML}</span>`; // Sci-fi text
+
         contentWrapper.appendChild(textContent);
         bubbleDiv.appendChild(contentWrapper);
         typingDiv.appendChild(avatarDiv);
@@ -1777,9 +1604,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typingElement) {
             if (state.animationLevel !== 'none') {
                 const animationOutClass = state.animationLevel === 'full' ? 'animate__fadeOutDown' : 'animate__fadeOut';
-                typingElement.classList.remove('animate__fadeInUp', 'animate__fadeIn');
+                typingElement.classList.remove('animate__fadeInUp', 'animate__fadeIn'); // Remove specific in-animation
                 typingElement.classList.add('animate__animated', animationOutClass);
-                typingElement.style.setProperty('--animate-duration', '0.3s');
+                typingElement.style.setProperty('--animate-duration', '0.35s');
                 typingElement.addEventListener('animationend', () => typingElement.remove(), { once: true });
             } else {
                 typingElement.remove();
@@ -1788,13 +1615,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function adjustTextareaHeight() {
-        dom.userInput.style.height = 'auto';
+        dom.userInput.style.height = 'auto'; // Reset height to shrink if needed
         let scrollHeight = dom.userInput.scrollHeight;
-        const maxHeight = parseInt(getComputedStyle(dom.userInput).maxHeight, 10) || 200;
-        const minHeight = parseInt(getComputedStyle(dom.userInput).minHeight, 10) || 48;
+        const maxHeight = parseInt(getComputedStyle(dom.userInput).maxHeight, 10) || 250; // From CSS
+        const minHeight = parseInt(getComputedStyle(dom.userInput).minHeight, 10) || 56; // From CSS
 
-        const singleLinePadding = 5; 
-        if (dom.userInput.value.split('\n').length <= 1) {
+        // Add a little padding for single line for better aesthetics, but only if it's truly single line content
+        const singleLinePadding = 6; // Small padding
+        if (dom.userInput.value.split('\n').length <= 1 && scrollHeight < minHeight + singleLinePadding * 2) { // Check against minHeight + padding
             scrollHeight += singleLinePadding;
         }
 
@@ -1810,23 +1638,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleClearCurrentChat() {
         if (!state.currentSessionId || !state.sessions[state.currentSessionId]) return;
 
-        if (!confirm(`Are you sure you want to clear all messages in session "${state.sessions[state.currentSessionId].name}"? This will also clear the Agent's process log for this session view.`)) {
+        // Sci-fi confirm message
+        if (!confirm(`PURGE CURRENT DATA STREAM in session "${state.sessions[state.currentSessionId].name}"? This will erase all message logs and associated AI process data for this view.`)) {
             return;
         }
 
         state.sessions[state.currentSessionId].messages = [];
-        state.sessions[state.currentSessionId].lastActivity = Date.now();
-        saveSessions();
+        state.sessions[state.currentSessionId].lastActivity = Date.now(); // Update activity
+        saveSessions(); // Persist change
 
-        dom.chatBox.innerHTML = '';
-        appendWelcomeMessage();
+        dom.chatBox.innerHTML = ''; // Clear chat display
+        appendWelcomeMessage(); // Show welcome message again
 
-        dom.processLogContent.innerHTML = '';
-        if (!state.isProcessLogVisible) hideProcessLog();
+        dom.processLogContent.innerHTML = ''; // Clear process log display
+        if (!state.isProcessLogVisible) hideProcessLog(); // Keep hidden if it was
 
-
-        showToast('Current conversation cleared!', 'info');
-        renderSessionList();
+        showToast('Current Data Stream Purged!', 'info');
+        renderSessionList(); // Update session list (activity time changes)
     }
 
     function handleModeChange(newMode) {
@@ -1834,73 +1662,75 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.sidebarButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === newMode));
         state.currentMode = newMode;
         localStorage.setItem(APP_PREFIX + 'currentMode', state.currentMode);
-        console.log(`Mode switched to: ${newMode}`);
-        showToast(`Switched to ${getModeDisplayName(newMode)} mode`, 'info');
-        const sessionName = state.sessions[state.currentSessionId]?.name || 'current session';
-        dom.userInput.placeholder = `Message in ${getModeDisplayName(newMode)} mode (${sessionName})...`;
+        console.log(`Mode matrix reconfigured to: ${newMode}`);
+        showToast(`Engaged ${getModeDisplayName(newMode)} Protocol`, 'info'); // Sci-fi toast
+        const sessionName = state.sessions[state.currentSessionId]?.name || 'current stream';
+        dom.userInput.placeholder = `Transmit to Hyperion via ${getModeDisplayName(newMode)} Protocol (${sessionName})...`; // Sci-fi placeholder
     }
 
     function getModeDisplayName(mode) {
-        const names = { chat: 'Conversation', code: 'Programming', circuit: 'Circuit Design', settings: 'Settings' };
-        return names[mode] || 'Unknown';
+        const names = { chat: 'Conversation Matrix', code: 'Code Synthesis Core', circuit: 'Circuit Design Nexus', settings: 'System Calibration' };
+        return names[mode] || 'Unknown Protocol';
     }
 
     function handleFileSelection(event) {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
-        const MAX_FILES = 5, MAX_SIZE_MB = 2;
+        const MAX_FILES = 5, MAX_SIZE_MB = 2; // These can be configurable
 
         files.forEach(file => {
             if (state.uploadedFiles.length >= MAX_FILES) {
-                showToast(`Maximum ${MAX_FILES} files allowed.`, 'warning'); return;
+                showToast(`Max ${MAX_FILES} data crystals allowed per transmission.`, 'warning'); return;
             }
             if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-                showToast(`File "${file.name}" exceeds ${MAX_SIZE_MB}MB limit.`, 'warning'); return;
+                showToast(`Data crystal "${file.name}" exceeds ${MAX_SIZE_MB}MB integrity limit.`, 'warning'); return;
             }
             if (!state.uploadedFiles.find(f => f.name === file.name && f.size === file.size)) {
                 state.uploadedFiles.push(file);
                 addFileToPreview(file);
             } else {
-                showToast(`File "${file.name}" is already in the list.`, 'info');
+                showToast(`Data crystal "${file.name}" already queued for upload.`, 'info');
             }
         });
         if (state.uploadedFiles.length > 0) dom.filePreviewArea.classList.add('active');
-        dom.fileInput.value = '';
+        dom.fileInput.value = ''; // Reset file input to allow re-selecting same file if removed
     }
 
     function addFileToPreview(file) {
         const fileItem = document.createElement('div');
         fileItem.classList.add('file-item');
-        if (state.animationLevel !== 'none') fileItem.classList.add('animate__animated', 'animate__bounceIn');
-        fileItem.style.setProperty('--animate-duration', '0.4s');
-        fileItem.dataset.fileName = file.name;
+        if (state.animationLevel !== 'none') fileItem.classList.add('animate__animated', 'animate__bounceIn'); // Or 'animate__fadeInRightBig'
+        fileItem.style.setProperty('--animate-duration', '0.45s');
+        fileItem.dataset.fileName = file.name; // Use dataset for easier removal
         fileItem.dataset.fileSize = file.size;
 
-        const iconClass = getFileIconClass(file.type, file.name);
+        const iconClass = getFileIconClass(file.type, file.name); // Helper to get appropriate icon
         fileItem.innerHTML = `
             <i class="fas ${iconClass} file-icon"></i>
-            <span class="file-name" title="${file.name} (${(file.size / 1024).toFixed(1)}KB)">${file.name}</span>
-            <button class="file-remove icon-btn" title="Remove file"><i class="fas fa-times-circle"></i></button>`;
+            <span class="file-name" title="${file.name} (${(file.size / 1024).toFixed(1)}KB, Type: ${file.type || 'Unknown'})">${file.name}</span>
+            <button class="file-remove icon-btn" title="Eject data crystal"><i class="fas fa-times-circle"></i></button>`;
 
         fileItem.querySelector('.file-remove').addEventListener('click', (e) => {
-            e.stopPropagation();
+            e.stopPropagation(); // Prevent triggering other listeners if any
             removeFileFromPreview(file.name, file.size);
         });
         dom.filePreviewContent.appendChild(fileItem);
     }
 
-    function getFileIconClass(fileType, fileName) {
+    function getFileIconClass(fileType, fileName) { // Returns Font Awesome class
         if (fileType.startsWith('image/')) return 'fa-file-image';
         if (fileType.startsWith('audio/')) return 'fa-file-audio';
         if (fileType.startsWith('video/')) return 'fa-file-video';
         if (fileType === 'application/pdf') return 'fa-file-pdf';
         if (fileType === 'application/zip' || fileName.endsWith('.zip') || fileName.endsWith('.rar') || fileName.endsWith('.7z')) return 'fa-file-archive';
-        const codeExtensions = ['.js', '.ts', '.py', '.java', '.c', '.cpp', '.h', '.hpp', '.cs', '.html', '.css', '.json', '.xml', '.yaml', '.yml', '.sh', '.bat', '.v', '.sv', '.vhd', '.md', '.txt'];
-        if (codeExtensions.some(ext => fileName.toLowerCase().endsWith(ext)) || fileType.includes('text')) return 'fa-file-code';
-        if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) return 'fa-file-word';
-        if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx')) return 'fa-file-excel';
-        if (fileName.endsWith('.ppt') || fileName.endsWith('.pptx')) return 'fa-file-powerpoint';
-        return 'fa-file-alt';
+        // More specific code/text types
+        const ext = fileName.slice(fileName.lastIndexOf(".")).toLowerCase();
+        const codeExtensions = ['.js', '.ts', '.py', '.java', '.c', '.cpp', '.h', '.hpp', '.cs', '.html', '.css', '.json', '.xml', '.yaml', '.yml', '.sh', '.bat', '.v', '.sv', '.vhd', '.md', '.txt', '.log'];
+        if (codeExtensions.includes(ext) || fileType.includes('text')) return 'fa-file-code'; // Generic code/text
+        if (['.doc', '.docx'].includes(ext)) return 'fa-file-word';
+        if (['.xls', '.xlsx', '.csv'].includes(ext)) return 'fa-file-excel';
+        if (['.ppt', '.pptx'].includes(ext)) return 'fa-file-powerpoint';
+        return 'fa-file-alt'; // Default file icon
     }
 
     function removeFileFromPreview(fileName, fileSize) {
@@ -1908,11 +1738,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const fileItemElement = dom.filePreviewContent.querySelector(`.file-item[data-file-name="${CSS.escape(fileName)}"][data-file-size="${fileSize}"]`);
         if (fileItemElement) {
             if (state.animationLevel !== 'none') {
-                fileItemElement.classList.remove('animate__bounceIn');
-                fileItemElement.classList.add('animate__animated', 'animate__bounceOut');
+                fileItemElement.classList.remove('animate__bounceIn', 'animate__fadeInRightBig');
+                fileItemElement.classList.add('animate__animated', 'animate__bounceOut'); // Or 'animate__fadeOutLeftBig'
                 fileItemElement.addEventListener('animationend', () => {
                     fileItemElement.remove();
-                    if (state.uploadedFiles.length === 0) closeFilePreview();
+                    if (state.uploadedFiles.length === 0) closeFilePreview(); // Hide preview area if empty
                 }, { once: true });
             } else {
                 fileItemElement.remove();
@@ -1921,43 +1751,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     function closeFilePreview() {
-        dom.filePreviewArea.classList.remove('active');
-        state.uploadedFiles = [];
-        dom.filePreviewContent.innerHTML = '';
+        dom.filePreviewArea.classList.remove('active'); // Hide preview area
+        // Optionally clear files array and preview content if not already done by removeFileFromPreview
+        // state.uploadedFiles = [];
+        // dom.filePreviewContent.innerHTML = '';
     }
 
     function applyCurrentTheme() {
-        applyTheme(state.currentTheme, true);
+        applyTheme(state.currentTheme, true); // true for initial load
     }
 
     function applyTheme(themeName, initialLoad = false) {
         let effectiveTheme = themeName;
         document.body.classList.remove('light-theme', 'dark-theme');
-        const themeIcon = dom.themeToggleButton.querySelector('i');
+        const themeIcon = dom.themeToggleButton.querySelector('i'); // Icon inside button
 
         if (themeName === 'auto') {
             effectiveTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            if (themeIcon) themeIcon.className = 'fas fa-desktop';
+            if (themeIcon) themeIcon.className = 'fas fa-desktop'; // Or a more sci-fi "auto" icon like fa-cogs
         }
 
         if (effectiveTheme === 'dark') {
             document.body.classList.add('dark-theme');
-            if (themeIcon && themeName !== 'auto') themeIcon.className = 'fas fa-sun';
-        } else {
+            if (themeIcon && themeName !== 'auto') themeIcon.className = 'fas fa-sun'; // Sun for "switch to light"
+        } else { // Light theme
             document.body.classList.add('light-theme');
-            if (themeIcon && themeName !== 'auto') themeIcon.className = 'fas fa-moon';
+            if (themeIcon && themeName !== 'auto') themeIcon.className = 'fas fa-moon'; // Moon for "switch to dark"
         }
-        state.currentTheme = themeName;
-        if (dom.themeSelect) dom.themeSelect.value = themeName;
-        if (!initialLoad) saveSettings();
-        console.log(`Theme applied: ${themeName} (Effective: ${effectiveTheme})`);
+        state.currentTheme = themeName; // Store the selected preference ('auto', 'light', or 'dark')
+        if (dom.themeSelect) dom.themeSelect.value = themeName; // Update settings dropdown
+        if (!initialLoad) saveSettings(); // Save settings if not initial load
+        console.log(`Visual Spectrum set to: ${themeName} (Effective: ${effectiveTheme})`);
     }
 
-    function getThemeDisplayName(theme) { return { 'light': 'Light Mode', 'dark': 'Dark Mode', 'auto': 'System Default' }[theme] || 'Unknown'; }
+    function getThemeDisplayName(theme) {
+        return { 'light': 'Daybreak Matrix', 'dark': 'Void Nebula', 'auto': 'Adaptive Chronosphere' }[theme] || 'Unknown Spectrum';
+    }
 
     function applyFontSize(size) {
         const newSize = parseInt(size, 10);
         if (isNaN(newSize) || newSize < 12 || newSize > 20) {
+            // Fallback to default if invalid
             document.body.style.fontSize = '16px';
             if (dom.fontSizeInput) dom.fontSizeInput.value = '16';
             if (dom.fontSizeValue) dom.fontSizeValue.textContent = '16px';
@@ -1969,15 +1803,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyAnimationLevel(level) {
-        document.body.dataset.animationLevel = level;
+        document.body.dataset.animationLevel = level; // Use data attribute for CSS targeting
         state.animationLevel = level;
         if (dom.animationLevelSelect && dom.animationLevelSelect.value !== level) {
             dom.animationLevelSelect.value = level;
         }
-        console.log(`Animation level set to: ${level}`);
+        console.log(`Dynamic Visuals Protocol set to: ${level}`);
     }
 
     function openSettingsModal() {
+        // Populate modal with current settings
         if (dom.themeSelect) dom.themeSelect.value = state.currentTheme;
         const currentFontSize = parseFloat(getComputedStyle(document.body).fontSize);
         if (dom.fontSizeInput) dom.fontSizeInput.value = currentFontSize;
@@ -1988,19 +1823,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.showChatBubblesThinkToggle) dom.showChatBubblesThinkToggle.checked = state.showChatBubblesThink;
         if (dom.showLogBubblesThinkToggle) dom.showLogBubblesThinkToggle.checked = state.showLogBubblesThink;
         if (dom.autoSubmitQuickActionsToggle) dom.autoSubmitQuickActionsToggle.checked = state.autoSubmitQuickActions;
+        if (dom.componentVisibilityToggle) dom.componentVisibilityToggle.checked = state.isIdtComponentVisible;
 
-        dom.settingsModal.style.display = 'flex';
+
+        dom.settingsModal.style.display = 'flex'; // Show modal
         const modalContent = dom.settingsModal.querySelector('.modal-content');
+        // Clear previous out-animations, then apply in-animation
         modalContent.classList.remove('animate__fadeOutDown', 'animate__zoomOut', 'animate__fadeOut');
-        const animIn = state.animationLevel !== 'none' ? (state.animationLevel === 'full' ? 'animate__fadeInUp' : 'animate__fadeIn') : '';
+        const animIn = state.animationLevel !== 'none' ? (state.animationLevel === 'full' ? 'animate__fadeInUpBig' : 'animate__fadeIn') : ''; // Enhanced in-animation
         if (animIn) {
             modalContent.classList.add('animate__animated', animIn);
-            modalContent.style.setProperty('--animate-duration', '0.4s');
+            modalContent.style.setProperty('--animate-duration', '0.5s'); // Slightly longer for effect
         }
     }
 
     function closeSettingsModal(revertChanges = true) {
-        if (revertChanges) {
+        if (revertChanges) { // Revert to previously saved settings if "Save" wasn't clicked
             applyFontSize(localStorage.getItem(APP_PREFIX + 'fontSize') || '16');
             applyAnimationLevel(localStorage.getItem(APP_PREFIX + 'animationLevel') || 'full');
             state.autoScroll = (localStorage.getItem(APP_PREFIX + 'autoScroll') || 'true') === 'true';
@@ -2008,17 +1846,21 @@ document.addEventListener('DOMContentLoaded', () => {
             state.showChatBubblesThink = (localStorage.getItem(APP_PREFIX + 'showChatBubblesThink') || 'true') === 'true';
             state.showLogBubblesThink = (localStorage.getItem(APP_PREFIX + 'showLogBubblesThink') || 'true') === 'true';
             state.autoSubmitQuickActions = (localStorage.getItem(APP_PREFIX + 'autoSubmitQuickActions') || 'true') === 'true';
+            state.isIdtComponentVisible = (localStorage.getItem(APP_PREFIX + 'isIdtComponentVisible') || 'true') === 'true';
 
+            // Update UI elements to reflect reverted state
             if (dom.autoScrollToggle) dom.autoScrollToggle.checked = state.autoScroll;
             if (dom.soundEnabledToggle) dom.soundEnabledToggle.checked = state.soundEnabled;
             if (dom.showChatBubblesThinkToggle) dom.showChatBubblesThinkToggle.checked = state.showChatBubblesThink;
             if (dom.showLogBubblesThinkToggle) dom.showLogBubblesThinkToggle.checked = state.showLogBubblesThink;
             if (dom.autoSubmitQuickActionsToggle) dom.autoSubmitQuickActionsToggle.checked = state.autoSubmitQuickActions;
+            if (dom.componentVisibilityToggle) dom.componentVisibilityToggle.checked = state.isIdtComponentVisible;
+            dom.idtComponentWrapper.classList.toggle('is-visible', state.isIdtComponentVisible); // Reflect visibility
         }
 
         const modalContent = dom.settingsModal.querySelector('.modal-content');
-        modalContent.classList.remove('animate__fadeInUp', 'animate__zoomIn', 'animate__fadeIn');
-        const animOut = state.animationLevel !== 'none' ? (state.animationLevel === 'full' ? 'animate__fadeOutDown' : 'animate__fadeOut') : '';
+        modalContent.classList.remove('animate__fadeInUpBig', 'animate__zoomIn', 'animate__fadeIn');
+        const animOut = state.animationLevel !== 'none' ? (state.animationLevel === 'full' ? 'animate__fadeOutDownBig' : 'animate__fadeOut') : ''; // Enhanced out-animation
 
         const animationEndHandler = () => {
             dom.settingsModal.style.display = 'none';
@@ -2027,26 +1869,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (state.animationLevel !== 'none' && animOut) {
             modalContent.classList.add('animate__animated', animOut);
-            modalContent.style.setProperty('--animate-duration', '0.3s');
+            modalContent.style.setProperty('--animate-duration', '0.4s');
             modalContent.addEventListener('animationend', animationEndHandler, { once: true });
         } else {
-            animationEndHandler();
+            animationEndHandler(); // No animation, hide immediately
         }
     }
 
-
     function collectAndSaveSettings() {
-        applyTheme(dom.themeSelect.value);
-        applyFontSize(dom.fontSizeInput.value);
-        applyAnimationLevel(dom.animationLevelSelect.value);
-        
+        // Theme is applied directly via applyTheme, which also saves.
+        applyFontSize(dom.fontSizeInput.value); // This applies and sets up for saving
+        applyAnimationLevel(dom.animationLevelSelect.value); // This applies and sets up for saving
+
         state.autoScroll = dom.autoScrollToggle.checked;
         state.soundEnabled = dom.soundEnabledToggle.checked;
         state.showChatBubblesThink = dom.showChatBubblesThinkToggle.checked;
         state.showLogBubblesThink = dom.showLogBubblesThinkToggle.checked;
         state.autoSubmitQuickActions = dom.autoSubmitQuickActionsToggle.checked;
+        state.isIdtComponentVisible = dom.componentVisibilityToggle.checked; // Already applied live
 
-        saveSettings();
+        saveSettings(); // Central function to save all state to localStorage
     }
 
     function saveSettings() {
@@ -2059,25 +1901,27 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(APP_PREFIX + 'showLogBubblesThink', state.showLogBubblesThink.toString());
         localStorage.setItem(APP_PREFIX + 'sidebarExpanded', state.isSidebarExpanded.toString());
         localStorage.setItem(APP_PREFIX + 'sessionManagerCollapsed', state.isSessionManagerCollapsed.toString());
-        localStorage.setItem(APP_PREFIX + 'processLogVisible', state.isProcessLogVisible.toString());
+        localStorage.setItem(APP_PREFIX + 'isProcessLogVisible', state.isProcessLogVisible.toString());
         localStorage.setItem(APP_PREFIX + 'processLogCollapsed', state.isProcessLogCollapsed.toString());
         localStorage.setItem(APP_PREFIX + 'autoSubmitQuickActions', state.autoSubmitQuickActions.toString());
         localStorage.setItem(APP_PREFIX + 'currentMode', state.currentMode);
-        console.log("Settings saved to localStorage.");
+        localStorage.setItem(APP_PREFIX + 'isIdtComponentVisible', state.isIdtComponentVisible.toString());
+        // Save 3D component position
+        localStorage.setItem(APP_PREFIX + 'idtComponentTopPercent', document.documentElement.style.getPropertyValue('--idt-offset-top-percentage'));
+        localStorage.setItem(APP_PREFIX + 'idtComponentLeftPercent', document.documentElement.style.getPropertyValue('--idt-offset-left-percentage'));
+
+        console.log("Personalization Matrix data saved to Quantum Datastore.");
     }
 
     function loadSettings() {
-
+        // Load 3D component position first, as it sets CSS vars used by component HTML/CSS
         const savedTopPercent = localStorage.getItem(APP_PREFIX + 'idtComponentTopPercent');
         const savedLeftPercent = localStorage.getItem(APP_PREFIX + 'idtComponentLeftPercent');
+        if (savedTopPercent !== null) document.documentElement.style.setProperty('--idt-offset-top-percentage', savedTopPercent);
+        if (savedLeftPercent !== null) document.documentElement.style.setProperty('--idt-offset-left-percentage', savedLeftPercent);
 
-        if (savedTopPercent !== null) {
-            document.documentElement.style.setProperty('--offset-top-percentage', savedTopPercent);
-        }
-        if (savedLeftPercent !== null) {
-            document.documentElement.style.setProperty('--offset-left-percentage', savedLeftPercent);
-        }
         state.currentTheme = localStorage.getItem(APP_PREFIX + 'theme') || 'auto';
+        // Font size loaded and applied in initializeApp via applyFontSize
         state.animationLevel = localStorage.getItem(APP_PREFIX + 'animationLevel') || 'full';
         state.autoScroll = (localStorage.getItem(APP_PREFIX + 'autoScroll') || 'true') === 'true';
         state.soundEnabled = (localStorage.getItem(APP_PREFIX + 'soundEnabled') || 'false') === 'true';
@@ -2089,16 +1933,20 @@ document.addEventListener('DOMContentLoaded', () => {
         state.isProcessLogCollapsed = (localStorage.getItem(APP_PREFIX + 'processLogCollapsed') || 'true') === 'true';
         state.autoSubmitQuickActions = (localStorage.getItem(APP_PREFIX + 'autoSubmitQuickActions') || 'true') === 'true';
         state.currentMode = localStorage.getItem(APP_PREFIX + 'currentMode') || 'chat';
+        state.isIdtComponentVisible = (localStorage.getItem(APP_PREFIX + 'isIdtComponentVisible') || 'true') === 'true';
 
+        // Update UI elements in settings modal if they exist
         if (dom.autoScrollToggle) dom.autoScrollToggle.checked = state.autoScroll;
         if (dom.soundEnabledToggle) dom.soundEnabledToggle.checked = state.soundEnabled;
         if (dom.showChatBubblesThinkToggle) dom.showChatBubblesThinkToggle.checked = state.showChatBubblesThink;
         if (dom.showLogBubblesThinkToggle) dom.showLogBubblesThinkToggle.checked = state.showLogBubblesThink;
         if (dom.autoSubmitQuickActionsToggle) dom.autoSubmitQuickActionsToggle.checked = state.autoSubmitQuickActions;
+        if (dom.componentVisibilityToggle) dom.componentVisibilityToggle.checked = state.isIdtComponentVisible;
+
 
         dom.sidebarButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === state.currentMode));
-        const sessionNameForPlaceholder = state.sessions[state.currentSessionId]?.name || 'current session';
-        dom.userInput.placeholder = `Message in ${getModeDisplayName(state.currentMode)} mode (${sessionNameForPlaceholder})...`;
+        const sessionNameForPlaceholder = state.sessions[state.currentSessionId]?.name || 'current stream';
+        dom.userInput.placeholder = `Transmit to Hyperion via ${getModeDisplayName(state.currentMode)} Protocol (${sessionNameForPlaceholder})...`;
     }
 
     function resetToDefaultSettings() {
@@ -2116,23 +1964,39 @@ document.addEventListener('DOMContentLoaded', () => {
             processLogCollapsed: true,
             autoSubmitQuickActions: true,
             currentMode: 'chat',
+            isIdtComponentVisible: true,
+            idtComponentTopPercent: '2.5%', // Default from CSS
+            idtComponentLeftPercent: '1.8%', // Default from CSS
         };
+
+        // Apply visual settings
         applyTheme(defaults.theme);
         applyFontSize(defaults.fontSize);
         applyAnimationLevel(defaults.animationLevel);
+
+        // Apply state settings
         state.autoScroll = defaults.autoScroll;
         state.soundEnabled = defaults.soundEnabled;
         state.showChatBubblesThink = defaults.showChatBubblesThink;
         state.showLogBubblesThink = defaults.showLogBubblesThink;
         state.autoSubmitQuickActions = defaults.autoSubmitQuickActions;
         state.currentMode = defaults.currentMode;
+        state.isIdtComponentVisible = defaults.isIdtComponentVisible;
 
+        // Apply UI component states
         updateSidebarState(defaults.sidebarExpanded, true);
         updateSessionManagerState(defaults.sessionManagerCollapsed, true);
-        state.isProcessLogVisible = defaults.isProcessLogVisible;
+        state.isProcessLogVisible = defaults.isProcessLogVisible; // Set state first
         if (state.isProcessLogVisible) showProcessLog(true); else hideProcessLog();
         updateProcessLogCollapseState(defaults.processLogCollapsed, true);
 
+        dom.idtComponentWrapper.classList.toggle('is-visible', state.isIdtComponentVisible);
+        dom.idtComponentToggleBtn.setAttribute('title', state.isIdtComponentVisible ? 'Deactivate AI Core Visualizer' : 'Activate AI Core Visualizer');
+        document.documentElement.style.setProperty('--idt-offset-top-percentage', defaults.idtComponentTopPercent);
+        document.documentElement.style.setProperty('--idt-offset-left-percentage', defaults.idtComponentLeftPercent);
+
+
+        // Update settings modal UI elements
         if (dom.themeSelect) dom.themeSelect.value = defaults.theme;
         if (dom.fontSizeInput) dom.fontSizeInput.value = defaults.fontSize;
         if (dom.fontSizeValue) dom.fontSizeValue.textContent = `${defaults.fontSize}px`;
@@ -2142,27 +2006,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.showChatBubblesThinkToggle) dom.showChatBubblesThinkToggle.checked = defaults.showChatBubblesThink;
         if (dom.showLogBubblesThinkToggle) dom.showLogBubblesThinkToggle.checked = defaults.showLogBubblesThink;
         if (dom.autoSubmitQuickActionsToggle) dom.autoSubmitQuickActionsToggle.checked = defaults.autoSubmitQuickActions;
-        
-        dom.sidebarButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === defaults.currentMode));
-        const sessionNameForPlaceholder = state.sessions[state.currentSessionId]?.name || 'current session';
-        dom.userInput.placeholder = `Message in ${getModeDisplayName(defaults.currentMode)} mode (${sessionNameForPlaceholder})...`;
+        if (dom.componentVisibilityToggle) dom.componentVisibilityToggle.checked = defaults.isIdtComponentVisible;
 
-        saveSettings();
-        showToast('All parameters reset to factory settings!', 'success');
+
+        dom.sidebarButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === defaults.currentMode));
+        const sessionNameForPlaceholder = state.sessions[state.currentSessionId]?.name || 'current stream';
+        dom.userInput.placeholder = `Transmit to Hyperion via ${getModeDisplayName(defaults.currentMode)} Protocol (${sessionNameForPlaceholder})...`;
+
+        saveSettings(); // Persist default settings
+        showToast('System Parameters Reset to Factory Defaults!', 'success');
     }
 
-    function showToast(message, type = 'info', duration = 3500) {
+    function showToast(message, type = 'info', duration = 4000) { // Slightly longer default duration
         const toast = document.createElement('div');
-        toast.classList.add('toast', type, 'glass-effect');
-        const animIn = state.animationLevel !== 'none' ? 'animate__fadeInRight' : '';
-        const animOut = state.animationLevel !== 'none' ? 'animate__fadeOutRight' : '';
+        toast.classList.add('toast', `toast-${type}`, 'glass-effect'); // Added toast- prefix for type class for specificity
+        const animIn = state.animationLevel !== 'none' ? 'animate__fadeInRightBig' : ''; // Enhanced animation
+        const animOut = state.animationLevel !== 'none' ? 'animate__fadeOutRightBig' : '';
 
         if (state.animationLevel !== 'none' && animIn) {
             toast.classList.add('animate__animated', animIn);
-            toast.style.setProperty('--animate-duration', '0.45s');
+            toast.style.setProperty('--animate-duration', '0.5s');
         }
 
-        const icons = { 'info': 'fa-info-circle', 'success': 'fa-check-circle', 'warning': 'fa-exclamation-triangle', 'error': 'fa-times-circle' };
+        const icons = { 'info': 'fa-info-circle', 'success': 'fa-check-circle', 'warning': 'fa-exclamation-triangle', 'error': 'fa-skull-crossbones' }; // Sci-fi error icon
         const iconClass = icons[type] || 'fa-info-circle';
 
         toast.innerHTML = `
@@ -2173,13 +2039,15 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.querySelector('.toast-close').addEventListener('click', () => removeToast(toast, animOut));
         dom.toastContainer.appendChild(toast);
 
-        setTimeout(() => removeToast(toast, animOut), duration);
+        if (duration > 0) { // Allow duration 0 for persistent toasts
+            setTimeout(() => removeToast(toast, animOut), duration);
+        }
     }
 
     function removeToast(toast, animOut) {
-        if (toast.parentElement) {
+        if (toast.parentElement) { // Check if still in DOM
             if (state.animationLevel !== 'none' && animOut && toast.classList.contains('animate__animated')) {
-                toast.classList.remove(toast.classList.contains('animate__fadeInRight') ? 'animate__fadeInRight' : 'animate__fadeIn');
+                toast.classList.remove(toast.classList.contains('animate__fadeInRightBig') ? 'animate__fadeInRightBig' : 'animate__fadeIn');
                 toast.classList.add(animOut);
                 toast.addEventListener('animationend', () => toast.remove(), { once: true });
             } else {
@@ -2190,6 +2058,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function attachQuickActionButtonListeners(container) {
         container.querySelectorAll('.quick-action-btn').forEach(button => {
+            // Remove old listener before adding, to prevent duplicates if called multiple times on same container
             button.removeEventListener('click', handleQuickActionButtonClick);
             button.addEventListener('click', handleQuickActionButtonClick);
         });
@@ -2209,11 +2078,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Call initialization
     initializeApp();
-    attachQuickActionButtonListeners(dom.chatBox); 
 
-    [dom.appHeader, dom.sidebar, dom.inputArea, dom.processLogContainer, dom.settingsModal.querySelector('.modal-content'), dom.filePreviewArea]
-    .forEach(el => {
-        if (el) el.classList.add('glass-effect');
-    });
-});
+}); // End of DOMContentLoaded
