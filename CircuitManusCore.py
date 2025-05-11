@@ -1,14 +1,14 @@
 
 # @FileName: circuitmanus.py
-# @Version: V1.1.3 - 核心电路交互逻辑与DuckDuckGo搜索工具集 (深化修复ToolExecutor异步调用新)
+# @Version: V1.0.0 - 核心电路交互逻辑与DuckDuckGo搜索工具集 (深化修复ToolExecutor异步调用新)
 # @Author: 您的专属程序员 (致力于构建稳定、清晰、可扩展的智能助手核心)
 # @Date: [当前日期] - 深化修复ToolExecutor对异步工具的调用，确保协程被正确await。
 # @License: MIT License
 # @Description:
 # ==============================================================================================
-#  Manus 系统 V1.1.3 技术实现说明 (附带11个工具)
+#  Manus 系统 V1.0.0 技术实现说明 (附带11个工具)
 # ==============================================================================================
-# (V1.1.3 变更日志:
+# (V1.0.0 变更日志:
 #  - 针对ToolExecutor中异步工具返回协程对象而非执行结果的问题，进行了更直接的await调用修复。
 #  - 强化日志，在ToolExecutor调用工具前后打印更多关于工具方法类型和返回类型的信息。
 #  - 确保duckduckgo_search_tool的返回结构在所有路径下都符合预期。)
@@ -346,7 +346,7 @@ class MemoryManager:
 # --- 模块化组件: LLMInterface (LLM 交互接口) ---
 class LLMInterface:
     def __init__(self, agent_instance: 'CircuitAgent', model_name: str = "glm-z1-flash", default_temperature: float = 0.01, default_max_tokens: int = 8190):
-        logger.info(f"[LLMInterface V1.1.3] 初始化 LLM 接口,目标模型: {model_name}。")
+        logger.info(f"[LLMInterface V1.0.0] 初始化 LLM 接口,目标模型: {model_name}。")
         if not agent_instance or not hasattr(agent_instance, 'api_key'):
              raise ValueError("LLMInterface 需要一个包含 'api_key' 属性的 Agent 实例。")
         self.agent_instance = agent_instance
@@ -354,15 +354,15 @@ class LLMInterface:
         if not api_key: raise ValueError("智谱 AI API Key 不能为空。")
         try:
             self.client = ZhipuAI(api_key=api_key)
-            logger.info("[LLMInterface V1.1.3] 智谱 AI 客户端初始化成功。")
+            logger.info("[LLMInterface V1.0.0] 智谱 AI 客户端初始化成功。")
         except Exception as e:
-            logger.critical(f"[LLMInterface V1.1.3] 初始化智谱 AI 客户端失败: {e}", exc_info=True)
+            logger.critical(f"[LLMInterface V1.0.0] 初始化智谱 AI 客户端失败: {e}", exc_info=True)
             raise ConnectionError(f"初始化智谱 AI 客户端失败: {e}") from e
 
         self.model_name = model_name
         self.default_temperature = default_temperature
         self.default_max_tokens = default_max_tokens
-        logger.info(f"[LLMInterface V1.1.3] LLM 接口初始化完成 (模型: {model_name}, 温度: {default_temperature}, 最大Token数: {default_max_tokens}, 流式输出: False)。")
+        logger.info(f"[LLMInterface V1.0.0] LLM 接口初始化完成 (模型: {model_name}, 温度: {default_temperature}, 最大Token数: {default_max_tokens}, 流式输出: False)。")
 
     async def call_llm(self, messages: List[Dict[str, Any]], execution_phase: str, status_callback: Optional[Callable[[Dict], Awaitable[None]]] = None) -> Any:
         call_args = {
@@ -373,8 +373,8 @@ class LLMInterface:
             "stream": False,
         }
 
-        logger.info(f"[LLMInterface V1.1.3] 准备异步调用 LLM ({self.model_name}, 阶段: {execution_phase}, 期望输出格式: <think> 标签后跟 JSON)...")
-        logger.debug(f"[LLMInterface V1.1.3] 发送的消息条数: {len(messages)}。")
+        logger.info(f"[LLMInterface V1.0.0] 准备异步调用 LLM ({self.model_name}, 阶段: {execution_phase}, 期望输出格式: <think> 标签后跟 JSON)...")
+        logger.debug(f"[LLMInterface V1.0.0] 发送的消息条数: {len(messages)}。")
         if logger.isEnabledFor(logging.DEBUG) and len(messages) > 0:
              try:
                  messages_content_for_log = []
@@ -387,9 +387,9 @@ class LLMInterface:
                          content_preview = content[:1000] + ("..." if len(content) > 200 else "")
                      messages_content_for_log.append({"index": m_idx, "role": role, "content_preview_length": len(content), "content_preview": content_preview})
                  messages_summary = json.dumps(messages_content_for_log, ensure_ascii=False, indent=2)
-                 logger.debug(f"[LLMInterface V1.1.3] 发送给 LLM 的消息列表 (预览):\n{messages_summary}")
+                 logger.debug(f"[LLMInterface V1.0.0] 发送给 LLM 的消息列表 (预览):\n{messages_summary}")
              except Exception as e_json:
-                 logger.debug(f"[LLMInterface V1.1.3] 无法序列化消息列表进行调试日志: {e_json}")
+                 logger.debug(f"[LLMInterface V1.0.0] 无法序列化消息列表进行调试日志: {e_json}")
 
         request_id_to_send = self.agent_instance.current_request_id if hasattr(self.agent_instance, 'current_request_id') else None
         if status_callback:
@@ -406,7 +406,7 @@ class LLMInterface:
             start_time = time.monotonic()
             response = await asyncio.to_thread(self.client.chat.completions.create, **call_args)
             duration = time.monotonic() - start_time
-            logger.info(f"[LLMInterface V1.1.3] LLM 异步调用成功。耗时: {duration:.3f} 秒。")
+            logger.info(f"[LLMInterface V1.0.0] LLM 异步调用成功。耗时: {duration:.3f} 秒。")
             if status_callback:
                 await status_callback({
                     "type": "llm_communication_status",
@@ -418,21 +418,21 @@ class LLMInterface:
                 })
 
             if response:
-                if response.usage: logger.info(f"[LLMInterface V1.1.3] Token 统计: Prompt={response.usage.prompt_tokens}, Completion={response.usage.completion_tokens}, Total={response.usage.total_tokens}")
+                if response.usage: logger.info(f"[LLMInterface V1.0.0] Token 统计: Prompt={response.usage.prompt_tokens}, Completion={response.usage.completion_tokens}, Total={response.usage.total_tokens}")
                 if response.choices:
                     finish_reason = response.choices[0].finish_reason
-                    logger.info(f"[LLMInterface V1.1.3] 完成原因: {finish_reason}")
-                    if finish_reason == 'length': logger.warning("[LLMInterface V1.1.3] LLM 响应因达到最大 token 限制而被截断！这可能导致输出不完整！")
+                    logger.info(f"[LLMInterface V1.0.0] 完成原因: {finish_reason}")
+                    if finish_reason == 'length': logger.warning("[LLMInterface V1.0.0] LLM 响应因达到最大 token 限制而被截断！这可能导致输出不完整！")
                     raw_llm_content = response.choices[0].message.content
-                    logger.debug(f"[LLMInterface V1.1.3] LLM 原始响应内容 (完整):\n{raw_llm_content}")
+                    logger.debug(f"[LLMInterface V1.0.0] LLM 原始响应内容 (完整):\n{raw_llm_content}")
                 else:
-                    logger.warning("[LLMInterface V1.1.3] LLM 响应中缺少 'choices' 字段。")
+                    logger.warning("[LLMInterface V1.0.0] LLM 响应中缺少 'choices' 字段。")
             else:
-                 logger.error("[LLMInterface V1.1.3] LLM API 调用返回了 None！")
+                 logger.error("[LLMInterface V1.0.0] LLM API 调用返回了 None！")
                  raise ConnectionError("LLM API call returned None.")
             return response
         except Exception as e:
-            logger.error(f"[LLMInterface V1.1.3] LLM API 异步调用失败: {e}", exc_info=True)
+            logger.error(f"[LLMInterface V1.0.0] LLM API 异步调用失败: {e}", exc_info=True)
             if status_callback:
                  await status_callback({
                     "type": "llm_communication_status",
@@ -746,7 +746,7 @@ class OutputParserV1_0_CamelCaseReasoning:
 # --- 模块化组件: ToolExecutor (工具执行器) ---
 class ToolExecutor:
     def __init__(self, agent_instance: 'CircuitAgent', max_tool_retries: int = 1, tool_retry_delay_seconds: float = 1.0):
-        logger.info("[ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止, UI回调增强 V1.1.3)。") # Version update
+        logger.info("[ToolExecutor] 初始化工具执行器 (支持异步, 重试, 失败中止, UI回调增强 V1.0.0)。") # Version update
         if not isinstance(agent_instance, CircuitAgent):
             raise TypeError("ToolExecutor 需要一个 CircuitAgent 实例。")
         self.agent_instance = agent_instance
@@ -797,7 +797,7 @@ class ToolExecutor:
 
     async def execute_tool_calls(self, tool_call_requests_from_plan: List[Dict[str, Any]], status_callback: Optional[Callable[[Dict], Awaitable[None]]] = None) -> List[Dict[str, Any]]:
         executor_id = f"exec_v1_1_3_{str(uuid4())[:8]}" 
-        logger.info(f"[{executor_id}-ToolExecutor] 准备异步执行 {len(tool_call_requests_from_plan)} 个工具调用请求 (V1.1.3)...")
+        logger.info(f"[{executor_id}-ToolExecutor] 准备异步执行 {len(tool_call_requests_from_plan)} 个工具调用请求 (V1.0.0)...")
         execution_results_for_llm_history: List[Dict[str, Any]] = []
 
         if not tool_call_requests_from_plan:
@@ -958,14 +958,14 @@ class ToolExecutor:
         logger.info(f"[{executor_id}-ToolExecutor] 工具执行流程完成。共处理/记录了 {total_processed_tools}/{total_tools_in_plan} 个计划中的工具调用 (可能因失败提前中止)。")
         return execution_results_for_llm_history
 
-# --- Agent 核心类 (V1.1.3 - 11 Tools) ---
+# --- Agent 核心类 (V1.0.0 - 11 Tools) ---
 class CircuitAgent:
     def __init__(self, api_key: str, model_name: str = "glm-z1-flash",
                  max_short_term_items: int = 30, max_long_term_items: int = 75,
                  planning_llm_retries: int = 5, max_tool_retries: int = 3,
                  tool_retry_delay_seconds: float = 1.0, max_replanning_attempts: int = 3,
                  verbose: bool = True):
-        logger.info(f"\n{'='*30} CircuitAgent 初始化开始 (V1.1.3 - 11 Tools) {'='*30}") # Version update
+        logger.info(f"\n{'='*30} CircuitAgent 初始化开始 (V1.0.0 - 11 Tools) {'='*30}") # Version update
         self.api_key = api_key
         self.verbose_mode = verbose
         self.current_request_id: Optional[str] = None
@@ -1015,7 +1015,7 @@ class CircuitAgent:
         self.planning_llm_retries = max(0, planning_llm_retries)
         self.max_replanning_attempts = max(0, max_replanning_attempts)
         logger.info(f"[AgentV1_1_3 Init] 规划LLM重试次数: {self.planning_llm_retries}, 工具执行重试次数: {max_tool_retries}, 最大重规划尝试次数: {self.max_replanning_attempts}。")
-        logger.info(f"\n{'='*30} CircuitAgent 初始化成功 (V1.1.3 - 11 Tools) {'='*30}\n")
+        logger.info(f"\n{'='*30} CircuitAgent 初始化成功 (V1.0.0 - 11 Tools) {'='*30}\n")
 
     # --- Action Implementations (Tool methods) ---
     @register_tool(
@@ -1479,7 +1479,7 @@ class CircuitAgent:
             tool_result["error"] = {"error_type": "EXTERNAL_SERVICE_ERROR", "error_code": "DUCKDUCKGO_SEARCH_FAILED", "technical_message": str(e_search), "exception_details": traceback.format_exc(limit=3)}
             return tool_result
 
-    # --- Orchestration Layer Method (V1.1.3 - 核心调度逻辑) ---
+    # --- Orchestration Layer Method (V1.0.0 - 核心调度逻辑) ---
     async def process_user_request(self, user_request: str, status_callback: Callable[[Dict[str, Any]], Awaitable[None]]) -> None:
         request_start_time = time.monotonic()
         self.current_request_id = f"req_{str(uuid4())[:12]}"
@@ -1872,7 +1872,7 @@ class CircuitAgent:
             self.current_request_id = None
 
 
-    # --- Helper Methods for Prompts (V1.1.3 - 辅助方法,用于生成系统提示) ---
+    # --- Helper Methods for Prompts (V1.0.0 - 辅助方法,用于生成系统提示) ---
     def _get_tool_schemas_for_prompt(self) -> str:
         if not self.tools_registry: return "  (当前无可用工具)"
         tool_schemas_parts = []
@@ -2140,7 +2140,7 @@ class CircuitAgent:
                 "```\n"
             )
         prompt_parts = [
-            "您是一位初版电路设计编程助理 (Agent Version V1.1.3, 11 Tools)。您的任务是理解用户指令,并据此规划行动或直接回复。\n", # Version update
+            "您是一位初版电路设计编程助理 (Agent Version V1.0.0, 11 Tools)。您的任务是理解用户指令,并据此规划行动或直接回复。\n", # Version update
             reasoning_model_instructions,
             "\n【核心任务: 规划阶段 (V1.0.0)】\n"
             "请首先在 `<think>...</think>` 标签内深入分析用户的最新指令、完整的对话历史、当前的电路状态和记忆。然后,在 `</think>` 标签之后,生成一个符合V1.0-CamelCaseJSON规范的JSON对象作为您的行动计划或直接回复。JSON中所有key【必须】使用camelCase (例如: `isCallTools`, `toolCallRequests`, `requestId`).\n",
@@ -2161,7 +2161,7 @@ class CircuitAgent:
             prompt_parts.append(replan_example_v1_0)
 
         prompt_parts.extend([
-            "\n【可用工具列表与参数规范 (V1.1.3 - 11 Tools)】:\n", # Version update
+            "\n【可用工具列表与参数规范 (V1.0.0 - 11 Tools)】:\n", # Version update
             tool_schemas_desc,
             "\n\n【当前上下文信息 (V1.0.0)】:\n"
             f"Current Request ID (如果可用,请在JSON的requestId字段中原样返回): {request_id or 'N/A_NOT_PROVIDED_IN_PROMPT_SET_TO_NULL'}\n"
@@ -2262,7 +2262,7 @@ class CircuitAgent:
             "```\n"
         )
         return (
-            "您是一位初版电路设计编程助理 (Agent Version V1.1.3, 11 Tools), 经验丰富,技术精湛,并且极其擅长清晰、准确、诚实地汇报工作结果。\n" # Version update
+            "您是一位初版电路设计编程助理 (Agent Version V1.0.0, 11 Tools), 经验丰富,技术精湛,并且极其擅长清晰、准确、诚实地汇报工作结果。\n" # Version update
             f"{reasoning_model_instructions_resp_phase}\n"
             "【核心任务: 响应生成阶段 (V1.0.0)】\n"
             "您当前的任务是: 基于到目前为止的【完整对话历史】(包括用户最初的指令、您在规划阶段生成的V1.0-CamelCaseJSON计划、以及所有【已执行工具的结果详情】,这些工具结果是以 'role: tool', 'toolCallId: ...', 'name: ...', 'content: JSON_string_of_tool_output' 的格式存在于历史记录中的), 首先在 `<think>...</think>` 标签内进行思考和总结, 然后在 `</think>` 之后生成【最终的、面向用户的V1.0-CamelCaseJSON回复】。JSON中所有key【必须】使用camelCase.\n\n"
@@ -2287,7 +2287,7 @@ class CircuitAgent:
 
 # --- Main entry point for testing (Optional) ---
 async def main_test_flow(agent: CircuitAgent, user_query: str):
-    logger.info(f"\n\n>>>>>>>>> 测试开始 (V1.1.3): 用户查询: '{user_query}' <<<<<<<<<<") # Version update
+    logger.info(f"\n\n>>>>>>>>> 测试开始 (V1.0.0): 用户查询: '{user_query}' <<<<<<<<<<") # Version update
 
     async def mock_status_callback(status_update: Dict[str, Any]):
         if "final_v1_0_camelcase_json_if_success" in status_update and status_update["final_v1_0_camelcase_json_if_success"]:
@@ -2308,10 +2308,10 @@ async def main_test_flow(agent: CircuitAgent, user_query: str):
             logger.info(f"[StatusCallback] {json.dumps(status_update, ensure_ascii=False, default=str)}")
 
     await agent.process_user_request(user_query, mock_status_callback)
-    logger.info(f">>>>>>>>>> 测试结束 (V1.1.3): 用户查询: '{user_query}' <<<<<<<<<<\n") # Version update
+    logger.info(f">>>>>>>>>> 测试结束 (V1.0.0): 用户查询: '{user_query}' <<<<<<<<<<\n") # Version update
 
 if __name__ == "__main__":
-    logger.info("========== CircuitAgent V1.1.3 (11 Tools) - 命令行测试模式 ==========") 
+    logger.info("========== CircuitAgent V1.0.0 (11 Tools) - 命令行测试模式 ==========") 
     
     zhipu_api_key = os.environ.get("ZHIPUAI_API_KEY")
     if not zhipu_api_key:
@@ -2329,7 +2329,7 @@ if __name__ == "__main__":
             max_tool_retries=0, 
             max_replanning_attempts=1 
         )
-        logger.info("CircuitAgent V1.1.3 (11 Tools) 初始化成功,准备接收测试指令。")
+        logger.info("CircuitAgent V1.0.0 (11 Tools) 初始化成功,准备接收测试指令。")
     except Exception as e_init:
         logger.critical(f"Agent 初始化失败: {e_init}", exc_info=True)
         sys.exit(f"Agent 初始化失败: {e_init}")
@@ -2347,9 +2347,9 @@ if __name__ == "__main__":
 
     async def run_all_tests_main(agent_instance: CircuitAgent): # 修改函数名以示区别
         for i, query in enumerate(test_queries):
-            logger.info(f"\n--- 测试用例 {i+1}/{len(test_queries)} (V1.1.3) ---")
+            logger.info(f"\n--- 测试用例 {i+1}/{len(test_queries)} (V1.0.0) ---")
             await main_test_flow(agent_instance, query) # 传递 agent_instance
-            logger.info(f"--- 测试用例 {i+1} (V1.1.3) 完成 ---\n")
+            logger.info(f"--- 测试用例 {i+1} (V1.0.0) 完成 ---\n")
             if i < len(test_queries) - 1:
                  await asyncio.sleep(2)
 
@@ -2426,4 +2426,4 @@ if __name__ == "__main__":
                 logger.warning("事件循环仍在运行但未明确关闭，这可能发生在嵌套的asyncio使用中。")
 
 
-        logger.info("========== CircuitAgent V1.1.3 (11 Tools) - 命令行测试结束 ==========")
+        logger.info("========== CircuitAgent V1.0.0 (11 Tools) - 命令行测试结束 ==========")
