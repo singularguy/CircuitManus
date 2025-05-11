@@ -69,6 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
         autoSubmitQuickActionsToggle: document.getElementById('auto-submit-quick-actions'),
         resetSettingsButton: document.getElementById('reset-settings'),
         saveSettingsButton: document.getElementById('save-settings'),
+
+        // 3d組件显示开关
+        idtComponentToggleBtn: document.getElementById('toggleIdtComponentBtn'), // 3D组件的控制按钮
+        idtComponentWrapper: document.getElementById('idtTechComponentWrapper')  // 3D组件的包装器
     };
 
     // ======== 应用状态与配置 ========
@@ -95,7 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
         currentClientRequestId: null,
         lastResponseThinking: null, // This will store thinking log content for process log if needed
         autoSubmitQuickActions: true,
-        pendingToolCalls: {} // Keyed by toolCallId (camelCase)
+        pendingToolCalls: {}, // Keyed by toolCallId (camelCase)
+
+        // 新增：拖动状态
+        isDraggingComponent: false,
+        componentDragStartX: 0,
+        componentDragStartY: 0,
+        componentInitialTop: 0, // 将存储初始的百分比值
+        componentInitialLeft: 0 // 将存储初始的百分比值
     };
 
     // ======== WebSocket 相关 ========
@@ -802,38 +813,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initializeApp() {
         // VERSION UPDATE: Log message reflects V8.3.2
-        console.log("IDT Agent Pro V8.3.2 CamelCase Reasoning Initializing...");
+        console.log("CircuitManus Pro V8.3.2 CamelCase Reasoning Initializing...");
         updateLoaderProgress(10);
-        loadSettings();
+        loadSettings(); // 加载用户设置，这可能会影响UI的初始状态
         updateLoaderProgress(25);
-        applyCurrentTheme();
-        applyFontSize(localStorage.getItem(APP_PREFIX + 'fontSize') || '16');
-        applyAnimationLevel(state.animationLevel);
+        applyCurrentTheme(); // 应用主题（可能受loadSettings影响）
+        applyFontSize(localStorage.getItem(APP_PREFIX + 'fontSize') || '16'); // 应用字体大小
+        applyAnimationLevel(state.animationLevel); // 应用动画级别（可能受loadSettings影响）
         updateLoaderProgress(40);
-        loadSessions();
+        loadSessions(); // 加载会话数据
         updateLoaderProgress(55);
-        setupEventListeners();
+        setupEventListeners(); // 设置所有事件监听器，包括3D组件按钮的
         updateLoaderProgress(70);
-        adjustTextareaHeight();
-        updateCharCounter();
+        adjustTextareaHeight(); // 调整输入框高度
+        updateCharCounter(); // 更新字数统计
         updateLoaderProgress(85);
-        updateSidebarState(state.isSidebarExpanded, true); // true for instant
-        updateSessionManagerState(state.isSessionManagerCollapsed, true); // true for instant
-        updateProcessLogCollapseState(state.isProcessLogCollapsed, true); // true for instant
+        updateSidebarState(state.isSidebarExpanded, true); // 初始化侧边栏状态 (true for instant)
+        updateSessionManagerState(state.isSessionManagerCollapsed, true); // 初始化会话管理器状态 (true for instant)
+        updateProcessLogCollapseState(state.isProcessLogCollapsed, true); // 初始化日志面板折叠状态 (true for instant)
 
 
-        if (localStorage.getItem(APP_PREFIX + 'isProcessLogVisible') === 'true') {
+        // 初始化日志面板的可见性 (基于加载的设置)
+        if (state.isProcessLogVisible) { // state.isProcessLogVisible 应由 loadSettings() 设置
             showProcessLog(true); // true to ensure expanded if visible
         } else {
             hideProcessLog();
         }
-        connectWebSocket(); // Starts WebSocket connection
-        updateLoaderProgress(95); // Almost done before WS fully connects
+
+        // 初始化3D组件控制按钮的title (基于组件初始是否可见，通常HTML中默认是is-visible)
+        // 这个逻辑在 setupEventListeners 之后，确保 dom.idtComponentToggleBtn 和 dom.idtComponentWrapper 已经被获取
+        if (dom.idtComponentToggleBtn && dom.idtComponentWrapper) {
+            if (dom.idtComponentWrapper.classList.contains('is-visible')) {
+                dom.idtComponentToggleBtn.setAttribute('title', '隐藏AI核心视效');
+                // 可选：如果需要根据初始状态设置按钮图标
+                // const icon = dom.idtComponentToggleBtn.querySelector('i');
+                // if (icon) icon.className = 'fas fa-eye-slash'; // 或者其他表示“可隐藏”的图标
+            } else {
+                dom.idtComponentToggleBtn.setAttribute('title', '显示AI核心视效');
+                // 可选：设置表示“可显示”的图标
+                // const icon = dom.idtComponentToggleBtn.querySelector('i');
+                // if (icon) icon.className = 'fas fa-atom';
+            }
+            console.log("IDT Component button title initialized.");
+        } else {
+            // 这个console.warn应该在dom元素获取时就触发了，但再次检查无妨
+            if (!dom.idtComponentToggleBtn) {
+                console.warn("initializeApp: IDT Component Control Button (toggleIdtComponentBtn) not found. Cannot set initial title.");
+            }
+            if (!dom.idtComponentWrapper) {
+                console.warn("initializeApp: IDT Component Wrapper (idtTechComponentWrapper) not found. Cannot determine initial visibility for button title.");
+            }
+        }
+
+        // 事件监听：3D组件拖动
+        if (dom.idtComponentWrapper) {
+            dom.idtComponentWrapper.addEventListener('mousedown', handleComponentMouseDown);
+        } else {
+            console.warn("IDT Component Wrapper (idtTechComponentWrapper) not found for drag setup.");
+        }
+        // 拖动事件监听器结束
+
+        connectWebSocket(); // 启动WebSocket连接
+        updateLoaderProgress(95); // WebSocket连接可能需要时间，这里先更新进度
         setTimeout(() => {
+            // 模拟WebSocket连接和其他异步操作完成后的最终加载进度
             if (dom.loaderProgress) dom.loaderProgress.style.width = '100%';
-        }, 200); // Simulate final bit of loading
+            // 通常隐藏loader和显示主内容的逻辑会在WebSocket的 onopen 或 init_success 回调中执行
+            // 但如果WebSocket连接非常快，或者希望在此处确保loader隐藏，可以添加:
+            // if (dom.loader && !websocket) { // 仅当WS尚未连接时（或者作为一种后备）
+            //    dom.loader.classList.add('hidden');
+            //    if (dom.mainContainer) dom.mainContainer.classList.add('loaded');
+            // }
+        }, 200); // 短暂延迟给WebSocket一个连接的机会
+        
         // VERSION UPDATE
-        console.log("IDT Agent Pro V8.3.2 CamelCase Reasoning initialization sequence complete, awaiting WebSocket confirmation.");
+        console.log("CircuitManus Pro V8.3.2 CamelCase Reasoning initialization sequence complete, awaiting WebSocket confirmation to fully activate.");
+        
+        // 初始化当前会话UI (确保在WebSocket连接尝试之后，因为它可能会依赖WS的init_success来最终确认session_id)
+        // 或者，如果 initializeCurrentSessionUI 不依赖WS的init_success来渲染基本UI，可以早点调用。
+        // 考虑到 switchSession 会发送 init 消息，将其放在 connectWebSocket 之后是合理的。
+        initializeCurrentSessionUI(true); // true 表示是初始加载
+
+        // 确保在页面加载完成后，如果聊天框中有内容，快速操作按钮的监听器被正确附加
+        // (因为appendWelcomeMessage和加载历史消息时会动态添加这些按钮)
+        attachQuickActionButtonListeners(dom.chatBox);
     }
 
     function updateLoaderProgress(percentage) {
@@ -932,6 +995,163 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (dom.toggleProcessLogCollapseButton) dom.toggleProcessLogCollapseButton.addEventListener('click', () => toggleProcessLogCollapse());
+
+        // 事件监听：3D组件显隐切换按钮
+        if (dom.idtComponentToggleBtn && dom.idtComponentWrapper) {
+            dom.idtComponentToggleBtn.addEventListener('click', () => {
+                dom.idtComponentWrapper.classList.toggle('is-visible');
+                if (dom.idtComponentWrapper.classList.contains('is-visible')) {
+                    dom.idtComponentToggleBtn.setAttribute('title', '隐藏AI核心视效');
+                    // 可选：如果你想在切换时改变按钮图标
+                    // const icon = dom.idtComponentToggleBtn.querySelector('i');
+                    // if (icon) icon.className = 'fas fa-eye-slash'; // 假设隐藏时用这个图标
+                } else {
+                    dom.idtComponentToggleBtn.setAttribute('title', '显示AI核心视效');
+                    // 可选：恢复图标
+                    // const icon = dom.idtComponentToggleBtn.querySelector('i');
+                    // if (icon) icon.className = 'fas fa-atom';
+                }
+            });
+        } else {
+            if (!dom.idtComponentToggleBtn) {
+                console.warn("IDT Component Control Button (toggleIdtComponentBtn) not found in DOM.");
+            }
+            if (!dom.idtComponentWrapper) {
+                console.warn("IDT Component Wrapper (idtTechComponentWrapper) not found in DOM.");
+            }
+        }
+    }
+
+    // ======== 3D 组件拖动处理函数 ========
+
+    function handleComponentMouseDown(e) {
+        // 确保只在组件可见且鼠标左键按下时开始拖动
+        if (!dom.idtComponentWrapper.classList.contains('is-visible') || e.button !== 0) {
+            return;
+        }
+
+        state.isDraggingComponent = true;
+        dom.idtComponentWrapper.style.cursor = 'grabbing'; // 改变鼠标指针样式
+        document.body.style.userSelect = 'none'; // 防止拖动时选中页面文本
+
+        // 获取当前通过CSS变量设置的百分比值
+        const styles = getComputedStyle(document.documentElement); // 获取:root的样式
+        const currentTopPercent = parseFloat(styles.getPropertyValue('--offset-top-percentage')) || 0;
+        const currentLeftPercent = parseFloat(styles.getPropertyValue('--offset-left-percentage')) || 0;
+
+        // 将百分比转换为像素值，作为计算的基准
+        // 注意：这里我们直接使用组件当前的offsetParent的尺寸来计算像素。
+        // 如果组件是fixed定位，其offsetParent可能是null，此时应相对于视口。
+        // 由于我们是 fixed 定位，直接用视口尺寸。
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        state.componentInitialTopPx = (currentTopPercent / 100) * viewportHeight;
+        state.componentInitialLeftPx = (currentLeftPercent / 100) * viewportWidth;
+        
+        // 如果之前通过style直接设置了top/left（例如上次拖动的结果），优先使用它们
+        // 但为了保持与百分比变量一致，我们这里强制从CSS变量读取并转换为像素
+        // 如果你希望拖动能“记住”上一次拖动的像素位置，这里的逻辑需要调整
+
+        state.componentDragStartX = e.clientX;
+        state.componentDragStartY = e.clientY;
+
+        // 绑定 mousemove 和 mouseup 到 document，以便鼠标移出组件时仍能响应
+        document.addEventListener('mousemove', handleComponentMouseMove);
+        document.addEventListener('mouseup', handleComponentMouseUp);
+        document.addEventListener('mouseleave', handleComponentMouseUp); // 处理鼠标移出窗口的情况
+
+        e.preventDefault(); // 防止拖动时触发其他默认行为（如图片拖拽）
+    }
+
+    function handleComponentMouseMove(e) {
+        if (!state.isDraggingComponent) {
+            return;
+        }
+
+        const deltaX = e.clientX - state.componentDragStartX;
+        const deltaY = e.clientY - state.componentDragStartY;
+
+        let newTopPx = state.componentInitialTopPx + deltaY;
+        let newLeftPx = state.componentInitialLeftPx + deltaX;
+
+        // --- 可选：边界限制 ---
+        const componentRect = dom.idtComponentWrapper.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        // 限制上边界
+        if (newTopPx < 0) newTopPx = 0;
+        // 限制左边界
+        if (newLeftPx < 0) newLeftPx = 0;
+        // 限制下边界 (组件底部不超出视口底部)
+        if (newTopPx + componentRect.height > viewportHeight) {
+            newTopPx = viewportHeight - componentRect.height;
+        }
+        // 限制右边界 (组件右部不超出视口右部)
+        if (newLeftPx + componentRect.width > viewportWidth) {
+            newLeftPx = viewportWidth - componentRect.width;
+        }
+        // --- 边界限制结束 ---
+
+        // 实时更新组件的内联样式 (使用像素值，拖动更平滑)
+        dom.idtComponentWrapper.style.top = `${newTopPx}px`;
+        dom.idtComponentWrapper.style.left = `${newLeftPx}px`;
+        
+        // 注意：此时我们暂时覆盖了CSS变量定义的百分比位置，
+        // 改为直接用像素值设置内联style。
+        // 在 mouseup 时，我们会将这些像素值转换回百分比并更新CSS变量。
+    }
+
+    function handleComponentMouseUp(e) {
+        if (!state.isDraggingComponent) {
+            return;
+        }
+        state.isDraggingComponent = false;
+        dom.idtComponentWrapper.style.cursor = 'grab'; // 恢复鼠标指针
+        document.body.style.userSelect = ''; // 恢复文本选中
+
+        document.removeEventListener('mousemove', handleComponentMouseMove);
+        document.removeEventListener('mouseup', handleComponentMouseUp);
+        document.removeEventListener('mouseleave', handleComponentMouseUp);
+
+        // 拖动结束，将当前的像素位置转换为百分比，并更新CSS变量
+        // 这样，CSS变量始终反映最新的（或初始的）百分比位置
+        const finalTopPx = parseFloat(dom.idtComponentWrapper.style.top) || 0;
+        const finalLeftPx = parseFloat(dom.idtComponentWrapper.style.left) || 0;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let newTopPercent = (finalTopPx / viewportHeight) * 100;
+        let newLeftPercent = (finalLeftPx / viewportWidth) * 100;
+
+        // 确保百分比在合理范围内 (0-100，或根据组件尺寸调整以防完全移出)
+        // 这里的边界考虑的是组件左上角的位置百分比
+        const componentWidthPercent = (dom.idtComponentWrapper.offsetWidth / viewportWidth) * 100;
+        const componentHeightPercent = (dom.idtComponentWrapper.offsetHeight / viewportHeight) * 100;
+
+        newTopPercent = Math.max(0, Math.min(newTopPercent, 100 - componentHeightPercent));
+        newLeftPercent = Math.max(0, Math.min(newLeftPercent, 100 - componentWidthPercent));
+        
+        // 更新CSS自定义属性
+        document.documentElement.style.setProperty('--offset-top-percentage', `${newTopPercent.toFixed(2)}%`);
+        document.documentElement.style.setProperty('--offset-left-percentage', `${newLeftPercent.toFixed(2)}%`);
+        
+        // 清除内联样式，让CSS变量接管位置，确保一致性
+        // 这样做的好处是，如果你有响应式逻辑依赖于百分比，它能继续工作
+        // 坏处是，如果百分比转换有微小精度损失，可能会有轻微跳动。
+        // 如果希望拖动后位置绝对精确由像素决定，就不清除内联样式，也不更新CSS变量。
+        dom.idtComponentWrapper.style.top = '';
+        dom.idtComponentWrapper.style.left = '';
+
+        document.documentElement.style.setProperty('--offset-left-percentage', `${newLeftPercent.toFixed(2)}%`);
+
+        // 持久化拖动后的位置
+        localStorage.setItem(APP_PREFIX + 'idtComponentTopPercent', `${newTopPercent.toFixed(2)}%`);
+        localStorage.setItem(APP_PREFIX + 'idtComponentLeftPercent', `${newLeftPercent.toFixed(2)}%`);
+
+        dom.idtComponentWrapper.style.top = '';
+        dom.idtComponentWrapper.style.left = '';
     }
 
     function updateCharCounter() {
@@ -1473,7 +1693,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="message-content">
                 <div class="welcome-header">
                     <i class="fas fa-atom robot-icon animate__animated animate__pulse animate__infinite" style="--animate-duration: 2.5s;"></i>
-                    <h2>IDT 智能助手 <span class="version-pro">Pro <span class="version-number">v8.3.2</span></span></h2>
+                    <h2>CircuitManus <span class="version-pro">Pro <span class="version-number">v8.3.2</span></span></h2>
                 </div>
                 <p class="welcome-subtitle">Your advanced assistant for circuit design and programming, now with enhanced CamelCase Reasoning. Ready to materialize your ideas.</p>
                 <div class="capabilities">
@@ -1538,7 +1758,7 @@ document.addEventListener('DOMContentLoaded', () => {
         textContent.classList.add('message-text-content');
 
         let dotsHTML = Array(3).fill('<span class="typing-dot"></span>').join('');
-        textContent.innerHTML = `IDT Agent Pro is processing<span class="typing-dots">${dotsHTML}</span>`;
+        textContent.innerHTML = `CircuitManus Pro is processing<span class="typing-dots">${dotsHTML}</span>`;
         
         contentWrapper.appendChild(textContent);
         bubbleDiv.appendChild(contentWrapper);
@@ -1847,6 +2067,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSettings() {
+
+        const savedTopPercent = localStorage.getItem(APP_PREFIX + 'idtComponentTopPercent');
+        const savedLeftPercent = localStorage.getItem(APP_PREFIX + 'idtComponentLeftPercent');
+
+        if (savedTopPercent !== null) {
+            document.documentElement.style.setProperty('--offset-top-percentage', savedTopPercent);
+        }
+        if (savedLeftPercent !== null) {
+            document.documentElement.style.setProperty('--offset-left-percentage', savedLeftPercent);
+        }
         state.currentTheme = localStorage.getItem(APP_PREFIX + 'theme') || 'auto';
         state.animationLevel = localStorage.getItem(APP_PREFIX + 'animationLevel') || 'full';
         state.autoScroll = (localStorage.getItem(APP_PREFIX + 'autoScroll') || 'true') === 'true';

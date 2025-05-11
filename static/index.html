@@ -4,38 +4,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IDT Agent Pro - 智能交互终端 (V8.3.2 CamelCase Reasoning)</title> <!-- Version Updated -->
+    <title>CircuitManus Pro - 智能交互终端 (V8.3.2 CamelCase Reasoning)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Orbitron:wght@400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="/static/style.css">
+    <!-- 确保你的 /static/style.css 或其他引入的CSS文件包含了3D组件的所有样式 -->
 </head>
 
 <body>
     <div class="page-background-gradient"></div>
 
+    <!-- ==================================================================== -->
+    <!-- == START: Enhanced 3D Sci-Fi Tech Component (IDT Tech Component) HTML == -->
+    <!-- ==================================================================== -->
+    <div id="idtTechComponentWrapper" class="component-wrapper is-visible"> <!-- 初始可见，JS会控制is-visible类 -->
+        <div class="scene">
+            <!-- 核心立方体 -->
+            <div class="core-cube">
+                <div class="face front">
+                    <div class="circuit-pattern">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div class="face-glow-overlay"></div>
+                </div>
+                <div class="face back">
+                    <div class="circuit-pattern alt">
+                        <span></span><span></span>
+                    </div>
+                    <div class="face-glow-overlay"></div>
+                </div>
+                <div class="face left">
+                    <div class="circuit-pattern vertical">
+                        <span></span><span></span>
+                    </div>
+                    <div class="face-glow-overlay"></div>
+                </div>
+                <div class="face right">
+                     <div class="circuit-pattern vertical alt">
+                        <span></span><span></span>
+                     </div>
+                     <div class="face-glow-overlay"></div>
+                </div>
+                <div class="face top">
+                    <div class="circuit-pattern horizontal">
+                        <span></span><span></span>
+                    </div>
+                    <div class="face-glow-overlay"></div>
+                </div>
+                <div class="face bottom">
+                    <div class="circuit-pattern horizontal alt">
+                        <span></span><span></span>
+                    </div>
+                    <div class="face-glow-overlay"></div>
+                </div>
+            </div>
+
+            <!-- 环绕节点 -->
+            <div class="node node1">
+                <div class="node-core"></div>
+                <div class="node-glow-ring"></div>
+            </div>
+            <div class="node node2">
+                <div class="node-core"></div>
+                <div class="node-glow-ring"></div>
+            </div>
+            <div class="node node3">
+                <div class="node-core"></div>
+                <div class="node-glow-ring"></div>
+            </div>
+            <div class="node node4">
+                <div class="node-core"></div>
+                <div class="node-glow-ring"></div>
+            </div>
+            <div class="node node5">
+                <div class="node-core"></div>
+                <div class="node-glow-ring"></div>
+            </div>
+            <div class="node node6">
+                <div class="node-core"></div>
+                <div class="node-glow-ring"></div>
+            </div>
+
+            <!-- 装饰性连接线 (能量流) -->
+            <div class="connection-line line1"></div>
+            <div class="connection-line line2"></div>
+            <div class="connection-line line3"></div>
+            <div class="connection-line line4"></div>
+            <div class="connection-line line5"></div>
+            <div class="connection-line line6"></div>
+
+            <!-- 新增：背景星云/粒子效果 (可选，但能极大增强氛围) -->
+            <div class="star-particles">
+                <!-- JS 动态生成或少量静态示例 -->
+                <div class="particle p1"></div>
+                <div class="particle p2"></div>
+                <div class="particle p3"></div>
+                <div class="particle p4"></div>
+                <div class="particle p5"></div>
+                <div class="particle p6"></div>
+                <div class="particle p7"></div>
+                <div class="particle p8"></div>
+                <div class="particle p9"></div>
+                <div class="particle p10"></div>
+            </div>
+        </div>
+    </div>
+    <!-- ================================================================== -->
+    <!-- == END: Enhanced 3D Sci-Fi Tech Component (IDT Tech Component) HTML == -->
+    <!-- ================================================================== -->
+
+
     <div class="loader-container" id="loader">
         <div class="loader-logo">
             <i class="fas fa-microchip fa-beat" style="--fa-animation-duration: 1.5s;"></i>
-            <span>IDT Agent</span>
+            <span>CircuitManus</span>
         </div>
         <div class="loader-progress-bar">
             <div class="loader-progress"></div>
         </div>
-        <p class="loading-text">核心模块校准中 (V8.3.2 CamelCase Reasoning)...</p> <!-- Version Updated -->
+        <p class="loading-text">核心模块校准中 (V8.3.2 CamelCase Reasoning)...</p>
     </div>
 
     <div class="main-container" id="main-container">
         <header class="header glass-effect" id="app-header">
             <div class="logo">
                 <div class="logo-icon"><i class="fas fa-brain fa-fade" style="--fa-animation-duration: 2s;"></i></div>
-                <h1>IDT Agent <span class="version-pro">Pro <span class="version-number">v8.3.2</span></span></h1> <!-- Version Updated -->
+                <h1>CircuitManus <span class="version-pro">Pro <span class="version-number">v8.3.2</span></span></h1>
             </div>
             <div class="header-buttons">
+                <!-- START: 3D组件控制按钮 (ID: toggleIdtComponentBtn) -->
+                <button id="toggleIdtComponentBtn" class="header-btn icon-btn" title="切换AI核心视效">
+                    <i class="fas fa-atom"></i>
+                </button>
+                <!-- END: 3D组件控制按钮 -->
                 <button id="theme-toggle" class="header-btn icon-btn" title="切换主题">
                     <i class="fas fa-moon"></i>
                 </button>
@@ -109,7 +215,7 @@
                             <!-- Log items will be populated here -->
                         </div>
                     </div>
-                    
+
 
                     <div class="chat-box" id="chat-box">
                         <!-- Welcome message will be appended by JS -->
@@ -131,7 +237,7 @@
                             <i class="fas fa-paperclip"></i>
                         </button>
                         <div class="input-wrapper">
-                            <textarea id="user-input" placeholder="向 IDT Agent Pro 发送消息... (Shift+Enter 换行)"
+                            <textarea id="user-input" placeholder="向 CircuitManus Pro 发送消息... (Shift+Enter 换行)"
                                 rows="1"></textarea>
                             <div class="input-actions-overlay">
                                 <button id="mic-button" class="overlay-btn icon-btn" title="语音输入 (开发中)">
@@ -225,6 +331,7 @@
         </div>
     </div>
 
+    <!-- 你的 /static/script.js 会在这里被加载 -->
     <script src="/static/script.js"></script>
 </body>
 

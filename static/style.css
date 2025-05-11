@@ -2501,3 +2501,346 @@ body[data-animation-level="basic"] .animate__animated.animate__bounceOut {
     color: var(--text-on-primary-bg);
     border-color: var(--primary-color);
 }
+
+/* 拖动样式 */
+.component-wrapper.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: scale(1);
+    /* transform: scale(1) translateX(-50%); */ /* 如果居中 */
+    transition-delay: 0s;
+    cursor: grab; /* 新增：默认可拖动状态的鼠标指针 */
+}
+
+
+/* ==========================================================================
+   IDT 3D科技悬浮组件 (IDT Tech Component) 样式
+   文件: (例如 /static/component.css 或整合到 /static/style.css)
+   ========================================================================== */
+
+/* --- 全局CSS变量定义 (用于3D组件) --- */
+:root {
+    /* 视觉效果颜色 */
+    --primary-glow-color: #00ffff;
+    --secondary-glow-color: #39ff14;
+    --core-bg-color: rgba(10, 40, 70, 0.75);
+    --border-color: #0abdc6;
+
+    /* 尺寸定义 */
+    --core-size: 90px;
+    --node-size: 16px;
+    --half-core-size: calc(var(--core-size) / 2);
+    --half-node-size: calc(var(--node-size) / 2);
+
+    /* 组件包装器整体尺寸 */
+    --wrapper-width: 320px;
+    --wrapper-height: 280px;
+
+    /* 定位偏移量 (相对于浏览器视口) */
+    --offset-top-percentage: 2%;
+    --offset-left-percentage: 1.5%;
+}
+
+/* --- 组件根包装器 (.component-wrapper) --- */
+.component-wrapper {
+    width: var(--wrapper-width);
+    height: var(--wrapper-height);
+    position: fixed;
+    top: var(--offset-top-percentage);
+    left: var(--offset-left-percentage);
+    z-index: 990; /* 根据你的应用层级调整，应低于模态框和最顶层UI */
+    transform-origin: center center;
+
+    /* 显隐控制与过渡效果 */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.9); /* 初始缩小状态，配合 is-visible 实现缩放动画 */
+    /* 如果需要在 left 百分比位置上居中，则添加 translateX(-50%) */
+    /* 例如: transform: scale(0.9) translateX(-50%); */
+
+    transition: opacity 0.4s ease-in-out,
+                visibility 0s linear 0.4s, /* visibility 切换无动画，在 opacity 动画后生效 */
+                transform 0.4s ease-in-out;
+}
+
+.component-wrapper.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: scale(1); /* 恢复正常大小 */
+    /* 如果需要在 left 百分比位置上居中，则添加 translateX(-50%) */
+    /* 例如: transform: scale(1) translateX(-50%); */
+    transition-delay: 0s; /* 清除隐藏时的延迟 */
+}
+
+/* --- 3D场景容器 (.scene) --- */
+.component-wrapper .scene { /* 限定作用域 */
+    width: 100%;
+    height: 100%;
+    perspective: 1400px; /* 3D透视深度 */
+    position: relative;
+    transform-style: preserve-3d; /* 确保子元素在3D空间渲染 */
+}
+
+/* 
+   .tech-component 类在当前提供的HTML中未直接使用作为动画容器，
+   动画直接应用在更具体的元素上。如果需要一个总的动画容器，
+   可以在 .scene 内部再加一层 .tech-component 并应用 float-orbit 动画。
+   目前 float-orbit 动画是为整体设计的，如果应用在 .scene 上，
+   可能需要调整其 transform 属性，因为它还负责 perspective。
+   一个更常见的做法是将整体动画(如悬浮)应用在 .core-cube 的父级，
+   或者直接在 .core-cube 上叠加一个悬浮动画。
+   为保持简单，我们先将动画分配给具体元素。
+*/
+
+/* --- 核心立方体 (.core-cube) 及其面 (.face) --- */
+.component-wrapper .core-cube { /* 限定作用域 */
+    width: var(--core-size);
+    height: var(--core-size);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-style: preserve-3d;
+    transform: translate3d(-50%, -50%, 0px); /* 中心定位，不添加初始旋转，由动画控制 */
+    animation: core-spin 32s infinite linear, float-orbit 28s infinite ease-in-out; /* 组合旋转和悬浮 */
+}
+
+.component-wrapper .face { /* 限定作用域 */
+    position: absolute;
+    width: var(--core-size);
+    height: var(--core-size);
+    background-color: var(--core-bg-color);
+    border: 1px solid var(--border-color);
+    box-shadow:
+        inset 0 0 12px rgba(0, 220, 255, 0.25),
+        0 0 6px rgba(0, 220, 255, 0.15);
+    color: var(--primary-glow-color);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backface-visibility: hidden;
+    overflow: hidden;
+    user-select: none;
+}
+
+.component-wrapper .face.front  { transform: translateZ(var(--half-core-size)); }
+.component-wrapper .face.back   { transform: rotateY(180deg) translateZ(var(--half-core-size)); }
+.component-wrapper .face.left   { transform: rotateY(-90deg) translateZ(var(--half-core-size)); }
+.component-wrapper .face.right  { transform: rotateY(90deg) translateZ(var(--half-core-size)); }
+.component-wrapper .face.top    { transform: rotateX(90deg) translateZ(var(--half-core-size)); }
+.component-wrapper .face.bottom { transform: rotateX(-90deg) translateZ(var(--half-core-size)); }
+
+.component-wrapper .core-label { /* 限定作用域 */
+    text-shadow: 0 0 6px var(--primary-glow-color), 0 0 12px var(--primary-glow-color);
+    font-weight: 700;
+    z-index: 1;
+}
+
+/* --- 面上的电路图案 (.circuit-pattern) --- */
+.component-wrapper .circuit-pattern { /* 限定作用域 */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+.component-wrapper .circuit-pattern::before,
+.component-wrapper .circuit-pattern::after,
+.component-wrapper .circuit-pattern span::before,
+.component-wrapper .circuit-pattern span::after { /* 限定作用域 */
+    content: '';
+    position: absolute;
+    background-color: var(--primary-glow-color);
+    box-shadow: 0 0 2px var(--primary-glow-color);
+    opacity: 0.35;
+    border-radius: 0.5px;
+}
+.component-wrapper .circuit-pattern span { /* 限定作用域 */
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.component-wrapper .face.front .circuit-pattern::before { /* 限定作用域 */
+    width: 65%; height: 1px; top: 32%; left: 18%; transform: rotate(4deg);
+}
+.component-wrapper .face.front .circuit-pattern::after { /* 限定作用域 */
+    width: 1px; height: 55%; top: 22%; left: 68%; transform: rotate(-7deg);
+}
+/* 简化其他面的电路图案 */
+.component-wrapper .face.back .circuit-pattern::before { /* 限定作用域 */
+    width: 50%; height: 1px; top: 60%; left: 25%; transform: rotate(-10deg);
+}
+.component-wrapper .face.left .circuit-pattern::before { /* 限定作用域 */
+    width: 1px; height: 70%; top: 15%; left: 40%;
+}
+
+
+/* --- 环绕节点 (.node) 及其辉光 (.node-glow) --- */
+.component-wrapper .node { /* 限定作用域 */
+    width: var(--node-size);
+    height: var(--node-size);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: calc(var(--half-node-size) * -1);
+    margin-top: calc(var(--half-node-size) * -1);
+    background-color: rgba(0, 150, 180, 0.4);
+    border: 1px solid var(--secondary-glow-color);
+    border-radius: 3px;
+    box-shadow: 0 0 8px var(--secondary-glow-color),
+                inset 0 0 6px rgba(57, 255, 20, 0.4);
+    transform-style: preserve-3d;
+    animation: node-pulse 2.5s infinite alternate ease-in-out;
+}
+
+.component-wrapper .node-glow { /* 限定作用域 */
+    width: 6px;
+    height: 6px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px var(--secondary-glow-color);
+}
+
+/* 节点具体定位的CSS变量 */
+.component-wrapper .node1 { --original-transform: translate3d(80px, -50px, 90px) rotateY(30deg) rotateX(-10deg); animation-delay: -0.2s; }
+.component-wrapper .node2 { --original-transform: translate3d(-90px, 70px, 60px) rotateY(-45deg) rotateX(20deg); animation-delay: -0.7s; }
+.component-wrapper .node3 { --original-transform: translate3d(60px, 90px, -70px) rotateX(40deg) rotateZ(15deg) rotateY(10deg); animation-delay: -1.1s; }
+.component-wrapper .node4 { --original-transform: translate3d(-70px, -80px, -50px) rotateY(60deg) rotateX(-25deg) rotateZ(5deg); animation-delay: -1.6s; }
+.component-wrapper .node5 { --original-transform: translate3d(100px, 5px, -15px) rotateY(90deg) rotateZ(-20deg); animation-delay: -2.0s; }
+.component-wrapper .node6 { --original-transform: translate3d(-20px, -100px, 20px) rotateX(-90deg) rotateY(25deg); animation-delay: -2.4s; }
+
+/* --- 装饰性连接线 (.connection-line) --- */
+.component-wrapper .connection-line { /* 限定作用域 */
+    position: absolute;
+    height: 1px;
+    background: var(--primary-glow-color);
+    box-shadow: 0 0 3px var(--primary-glow-color), 0 0 6px var(--primary-glow-color);
+    opacity: 0.5;
+    top: 50%;
+    left: 50%;
+    transform-origin: 0% 50%;
+    animation: line-flow 3.5s infinite linear;
+    border-radius: 1px;
+    pointer-events: none;
+}
+
+/* 连接线具体定位和长度的CSS变量 */
+.component-wrapper .line1 { width: 90px; --original-line-transform: translateZ(20px) rotateZ(30deg) rotateX(20deg); animation-delay: -0.1s;}
+.component-wrapper .line2 { width: 110px; --original-line-transform: translateZ(-15px) rotateZ(-60deg) rotateY(35deg); animation-delay: -0.6s;}
+.component-wrapper .line3 { width: 70px; --original-line-transform: translateZ(8px) rotateZ(110deg) rotateX(-25deg); animation-delay: -1.2s;}
+.component-wrapper .line4 { width: 100px; --original-line-transform: translateZ(0px) rotateZ(-140deg) rotateY(-15deg); animation-delay: -1.7s;}
+.component-wrapper .line5 { width: 100px; --original-line-transform: translateZ(30px) rotateZ(200deg) rotateX(45deg); animation-delay: -2.3s;}
+.component-wrapper .line6 { width: 80px; --original-line-transform: translateZ(-20px) rotateZ(-270deg) rotateY(10deg); animation-delay: -2.8s;}
+
+
+/* --- 动画定义 (@keyframes) --- */
+
+/* 整体悬浮和轨道旋转动画 (修改为应用在 .core-cube 上) */
+@keyframes float-orbit {
+    0%   { transform: translate3d(-50%, -50%, 0px) translateY(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1); }
+    25%  { transform: translate3d(-50%, -50%, 0px) translateY(-8px) rotateX(-5deg) rotateY(90deg) rotateZ(3deg) scale(1.01); }
+    50%  { transform: translate3d(-50%, -50%, 0px) translateY(5px) rotateX(0deg) rotateY(180deg) rotateZ(0deg) scale(1); }
+    75%  { transform: translate3d(-50%, -50%, 0px) translateY(-5px) rotateX(5deg) rotateY(270deg) rotateZ(-3deg) scale(0.99); }
+    100% { transform: translate3d(-50%, -50%, 0px) translateY(0px) rotateX(0deg) rotateY(360deg) rotateZ(0deg) scale(1); }
+}
+/* 注意：如果 float-orbit 应用在 .core-cube 上，它会覆盖 core-spin 的 rotateY。
+   通常做法是，core-spin 控制自身轴的旋转，而 float-orbit 控制整体的浮动和轻微姿态变化。
+   这里我将 float-orbit 中的 rotateY 移除，让 core-spin 负责Y轴旋转。
+   或者，你可以创建一个额外的包装器给 .core-cube 来分离这两种动画。
+   为了简化，这里修改 float-orbit，让它只负责浮动和微小姿态调整。
+*/
+@keyframes float-orbit { /* 修正版本：仅浮动和微小姿态 */
+    0%   { /* 初始的 transform: translate3d(-50%,-50%,0) 由 .core-cube 自身设置 */
+           /* 这里的 transform 是叠加的 */
+           transform: translateY(0px) rotateX(2deg) rotateZ(0deg) scale(1); 
+         }
+    50%  { 
+           transform: translateY(-10px) rotateX(-2deg) rotateZ(0deg) scale(1.02); 
+         }
+    100% { 
+           transform: translateY(0px) rotateX(2deg) rotateZ(0deg) scale(1); 
+         }
+}
+
+
+/* 核心立方体自身Y轴旋转动画 */
+@keyframes core-spin {
+    from { /* 初始的 transform: translate3d(-50%,-50%,0) 由 .core-cube 自身设置 */
+           /* 这里的 transform 是叠加的，仅控制Y轴旋转 */
+           transform: rotateY(0deg); 
+         }
+    to   { 
+           transform: rotateY(360deg); 
+         }
+}
+/* 
+   修正应用动画的方式：
+   .component-wrapper .core-cube {
+       ...
+       transform: translate3d(-50%, -50%, 0px); // 基础定位
+       animation: core-spin-combined 32s infinite linear; // 一个组合动画
+   }
+
+   @keyframes core-spin-combined {
+       0%   { transform: translate3d(-50%,-50%,0px) translateY(0px) rotateX(2deg) rotateY(0deg) scale(1); }
+       25%  { transform: translate3d(-50%,-50%,0px) translateY(-10px) rotateX(-2deg) rotateY(90deg) scale(1.02); }
+       50%  { transform: translate3d(-50%,-50%,0px) translateY(0px) rotateX(2deg) rotateY(180deg) scale(1); }
+       75%  { transform: translate3d(-50%,-50%,0px) translateY(-10px) rotateX(-2deg) rotateY(270deg) scale(1.02); }
+       100% { transform: translate3d(-50%,-50%,0px) translateY(0px) rotateX(2deg) rotateY(360deg) scale(1); }
+   }
+   上面的组合动画方式更直接。我将采用这种组合方式。
+*/
+.component-wrapper .core-cube {
+    width: var(--core-size);
+    height: var(--core-size);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-style: preserve-3d;
+    /* 初始定位由动画第一帧处理 */
+    animation: core-combined-animation 30s infinite linear;
+}
+
+@keyframes core-combined-animation {
+    0%   { transform: translate3d(-50%, -50%, 0px) translateY(0px)  rotateX(5deg) rotateY(0deg)   scale(1); }
+    25%  { transform: translate3d(-50%, -50%, 0px) translateY(-8px) rotateX(2deg) rotateY(90deg)  scale(1.01); }
+    50%  { transform: translate3d(-50%, -50%, 0px) translateY(0px)  rotateX(5deg) rotateY(180deg) scale(1); }
+    75%  { transform: translate3d(-50%, -50%, 0px) translateY(-8px) rotateX(2deg) rotateY(270deg) scale(1.01); }
+    100% { transform: translate3d(-50%, -50%, 0px) translateY(0px)  rotateX(5deg) rotateY(360deg) scale(1); }
+}
+
+
+/* 环绕节点脉冲动画 */
+@keyframes node-pulse {
+    0% {
+        transform: var(--original-transform) scale3d(0.95, 0.95, 0.95);
+        box-shadow: 0 0 8px var(--secondary-glow-color), inset 0 0 5px rgba(57, 255, 20, 0.3);
+        opacity: 0.7;
+    }
+    100% {
+        transform: var(--original-transform) scale3d(1.05, 1.05, 1.05);
+        box-shadow: 0 0 15px var(--secondary-glow-color), 0 0 8px #fff, inset 0 0 10px rgba(57, 255, 20, 0.5);
+        opacity: 1;
+    }
+}
+
+/* 连接线流动动画 */
+@keyframes line-flow {
+    0%   { opacity: 0.2; transform: var(--original-line-transform) scaleX(0.05) translateX(-50%); }
+    20%  { opacity: 0.7; transform: var(--original-line-transform) scaleX(1) translateX(0%); }
+    80%  { opacity: 0.7; transform: var(--original-line-transform) scaleX(1) translateX(0%); }
+    100% { opacity: 0.2; transform: var(--original-line-transform) scaleX(0.05) translateX(1900%); }
+}
+/* ==========================================================================
+   IDT 3D科技悬浮组件 样式结束
+   ========================================================================== */
+
