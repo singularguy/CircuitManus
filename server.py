@@ -28,17 +28,17 @@ except ImportError as e:
             self.verbose_mode = kwargs.get('verbose', False)
 
         async def process_user_request(self, user_request: str, status_callback: Callable[[Dict], Awaitable[None]] = None) -> None:
-            # V8.3.0 - Fake agent error message does not need <think> tags.
-            error_msg_content = "错误: 后端Agent核心模块未能加载,无法处理您的请求. 请联系管理员检查服务器日志 (V8.3.0-Reasoning Fallback). "
+            # V1.0.0 - Fake agent error message does not need <think> tags.
+            error_msg_content = "错误: 后端Agent核心模块未能加载,无法处理您的请求. 请联系管理员检查服务器日志 (V1.0.0-Reasoning Fallback). "
             logger.error("假的Agent: 收到请求,返回错误信息. ")
             if status_callback:
                  # This thinking detail is for the process log, not part of the user-facing message.
-                 await status_callback({"type": "status", "stage": "error", "status": "completed", "message": "Agent核心模块未加载. ", "details": {"thinking": "Agent核心代码未加载 (V8.3.0 Fallback)"}})
+                 await status_callback({"type": "status", "stage": "error", "status": "completed", "message": "Agent核心模块未加载. ", "details": {"thinking": "Agent核心代码未加载 (V1.0.0 Fallback)"}})
                  await status_callback({"type": "final_response", "content": error_msg_content})
 
 
 # --- FastAPI 应用实例 ---
-app = FastAPI(title="CircuitManus Agent API - V8.3.0 Reasoning", version="1.3.0") # V8.3.0 Version Update
+app = FastAPI(title="CircuitManus Agent API - V1.0.0 Reasoning", version="1.3.0") # V1.0.0 Version Update
 
 # --- 挂载静态文件目录 ---
 try:
@@ -65,7 +65,7 @@ else:
 async def get_agent_instance(session_id: str) -> CircuitAgent:
     """根据会话 ID 获取或创建 Agent 实例. """
     if session_id not in agent_sessions:
-        logger.info(f"为 Session {session_id} 创建新的 Agent 实例 (V8.3.0 Reasoning Model)...")
+        logger.info(f"为 Session {session_id} 创建新的 Agent 实例 (V1.0.0 Reasoning Model)...")
         if AGENT_AVAILABLE:
             try:
                 # Pass verbose=True for detailed logging from Agent to console/file
@@ -155,7 +155,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         await websocket.send_json({
                             "type": "init_success",
                             "session_id": session_id,
-                            "message": "WebSocket连接建立成功,Agent (V8.3.0 Reasoning Model)已准备就绪. ", # V8.3.0 Version Update
+                            "message": "WebSocket连接建立成功,Agent (V1.0.0 Reasoning Model)已准备就绪. ", # V1.0.0 Version Update
                             "agent_available": AGENT_AVAILABLE
                         })
                         logger.info(f"Session {session_id} WebSocket初始化成功并发送确认. ")
@@ -239,7 +239,7 @@ async def websocket_endpoint(websocket: WebSocket):
 # --- 用于直接运行服务器进行测试 ---
 if __name__ == "__main__":
     import uvicorn
-    logger.info("直接运行 server.py,启动 Uvicorn 开发服务器 (V8.3.0 Reasoning)...") # V8.3.0 Version Update
+    logger.info("直接运行 server.py,启动 Uvicorn 开发服务器 (V1.0.0 Reasoning)...") # V1.0.0 Version Update
 
     uvicorn.run(
         "server:app",

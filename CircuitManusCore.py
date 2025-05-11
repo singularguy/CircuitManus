@@ -447,7 +447,7 @@ class LLMInterface:
 # --- 模块化组件: OutputParserV1_0_CamelCaseReasoning (输出解析器) ---
 class OutputParserV1_0_CamelCaseReasoning:
     def __init__(self, agent_tools_registry: Optional[Dict[str, Dict[str, Any]]] = None):
-        logger.info("[OutputParserV1_0_CamelCaseReasoning] 初始化输出解析器 (适配 ManusLLMResponse-V1.0 CamelCase JSON结构,提取 <think> 标签,增强布尔解析)。")
+        logger.info("[OutputParserV1_0_CamelCaseReasoning] 初始化输出解析器 (适配 ManusLLMResponse-V1.0.0 CamelCase JSON结构,提取 <think> 标签,增强布尔解析)。")
         self.agent_tools_registry = agent_tools_registry if agent_tools_registry else {}
 
     def _validate_tool_arguments(self, tool_name: str, tool_arguments: Dict[str, Any], tool_call_id: str) -> List[Dict[str, str]]:
@@ -739,7 +739,7 @@ class OutputParserV1_0_CamelCaseReasoning:
             logger.error(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning]\n{error_message}\n解析的 JSON 内容 (可能不完整或无效):\n{json_content_for_log}")
             return None, error_message, failed_validation_points_list
 
-        logger.info(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] LLM 响应 (阶段: {execution_phase}, LLM_ID: {parsed_json_dict.get('llmInteractionId', 'N/A')}) 已成功解析并验证为 ManusLLMResponse-V1.0-CamelCaseJSON兼容结构 (思考过程来源: {'<think> block' if extracted_thought_process else 'JSON field'})！")
+        logger.info(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] LLM 响应 (阶段: {execution_phase}, LLM_ID: {parsed_json_dict.get('llmInteractionId', 'N/A')}) 已成功解析并验证为 ManusLLMResponse-V1.0.0兼容结构 (思考过程来源: {'<think> block' if extracted_thought_process else 'JSON field'})！")
         return parsed_json_dict, "", []
 
 
@@ -1548,7 +1548,7 @@ class CircuitAgent:
 
                 memory_context = self.memory_manager.get_memory_context_for_prompt()
                 tool_schemas = self._get_tool_schemas_for_prompt()
-                system_prompt_planning = self._get_planning_prompt_v1_0_camelcase_reasoning(tool_schemas, memory_context, is_currently_replanning, self.current_request_id)
+                system_prompt_planning = self._get_planning_prompt_v1_0(tool_schemas, memory_context, is_currently_replanning, self.current_request_id)
                 messages_for_planning = [{"role": "system", "content": system_prompt_planning}] + self.memory_manager.short_term
 
                 llm_call_attempt_inner = 0
@@ -1597,7 +1597,7 @@ class CircuitAgent:
                                 break
 
                         if not agent_accepted_latest_plan_for_action and llm_call_attempt_inner < self.planning_llm_retries:
-                            error_to_report_cb = parser_error_msg_this_llm_call or "V1.0-CamelCaseJSON结构或内容校验失败。"
+                            error_to_report_cb = parser_error_msg_this_llm_call or "V1.0.0结构或内容校验失败。"
                             if parsed_failed_validation_points_this_llm_call:
                                 error_to_report_cb += " 失败点: " + json.dumps(parsed_failed_validation_points_this_llm_call[:2], ensure_ascii=False)
                             await status_callback({"type": "general_status", "request_id": self.current_request_id, "stage": "planning", "status": "llm_retry_needed", "message": f"大脑计划处理遇到问题,尝试重新沟通 ({error_to_report_cb[:1000]})", "details": {"llm_call_attempt": llm_call_attempt_inner + 1, "parser_error": parser_error_msg_this_llm_call, "validation_failures": parsed_failed_validation_points_this_llm_call}})
@@ -1739,7 +1739,7 @@ class CircuitAgent:
                         break
 
                 else:
-                    logger.info(f"{log_prefix} 决策: 直接回复 (V1.0-CamelCaseJSON)。无需工具调用。")
+                    logger.info(f"{log_prefix} 决策: 直接回复 (V1.0.0)。无需工具调用。")
                     if isinstance(response_user_obj_from_plan, dict) and response_user_obj_from_plan.get("content","").strip():
                         tool_execution_results_for_llm_history = []
                         final_llm_camelcase_json_for_reply = current_llm_plan_camelcase_json_obj
@@ -1773,7 +1773,7 @@ class CircuitAgent:
                 logger.info(f"[OrchestratorV1_1_3 - ReqID:{self.current_request_id}] 工具执行成功,开始生成最终响应...")
                 await status_callback({"type": "general_status", "request_id": self.current_request_id, "stage": "response_generation", "status": "started", "message": "正在总结操作结果并生成最终回复...", "details": {"reason": "Tool execution completed successfully. Generating final summary."}})
 
-                system_prompt_resp_gen = self._get_response_generation_prompt_v1_0_camelcase_reasoning(
+                system_prompt_resp_gen = self._get_response_generation_prompt_v1_0(
                     self.memory_manager.get_memory_context_for_prompt(),
                     self._get_tool_schemas_for_prompt(),
                     self.current_request_id
@@ -1802,7 +1802,7 @@ class CircuitAgent:
                             self.memory_manager.add_to_short_term(llm_msg_obj_final_gen.model_dump(exclude_unset=True))
                         except Exception as e_mem_add_final_resp: logger.error(f"添加最终LLM响应到记忆失败: {e_mem_add_final_resp}")
                     else:
-                        err_msg_final_resp_gen = final_parser_err_resp or "V1.0-CamelCaseJSON最终响应JSON校验失败。"
+                        err_msg_final_resp_gen = final_parser_err_resp or "V1.0.0最终响应JSON校验失败。"
                         if final_validation_failures_resp: err_msg_final_resp_gen += " 失败点: " + json.dumps(final_validation_failures_resp[:2], ensure_ascii=False)
                         elif parsed_final_camelcase_resp_json and parsed_final_camelcase_resp_json.get("status") == "failure":
                              err_msg_final_resp_gen = parsed_final_camelcase_resp_json.get("errorDetails",{}).get("technicalMessage", err_msg_final_resp_gen)
@@ -1904,14 +1904,14 @@ class CircuitAgent:
             tool_schemas_parts.append(f"  - 工具名称: `{tool_name}`\n    工具描述: {desc}\n  工具参数详情 (这些参数应放在 `toolArguments` 对象内部):\n{chr(10).join(param_desc_segments)}")
         return "\n\n".join(tool_schemas_parts)
 
-    def _get_planning_prompt_v1_0_camelcase_reasoning(self, tool_schemas_desc: str, memory_context: str,
+    def _get_planning_prompt_v1_0(self, tool_schemas_desc: str, memory_context: str,
                                 is_replanning: bool = False, request_id: Optional[str] = None) -> str:
         current_timestamp_utc = datetime.now(timezone.utc).isoformat()
         llm_interaction_id_example_plan_prefix = f"plan_ex_llm_id_{str(uuid4())[:6]}"
         example_prev_tool_call_id = f"tc_ex_prev_fail_{str(uuid4())[:6]}"
 
         reasoning_model_instructions = (
-            "\n【重要: Reasoning Model 输出规范 (V1.0-CamelCaseJSON)】\n"
+            "\n【重要: Reasoning Model 输出规范 (V1.0.0)】\n"
             "1.  **思考过程**: 您的详细思考过程、分析、逐步推理和决策逻辑【必须】包含在 `<think>...</think>` 标签内,并放在您回复的最开始部分。\n"
             "2.  **JSON 输出**: 在 `</think>` 标签之后,您【必须】输出一个严格符合下面描述的V1.0-CamelCaseJSON格式的单个JSON对象。此JSON对象应被三个反引号和'json'标记包围 (即 ```json ... ```)。JSON中所有key【必须】使用camelCase (例如: `isCallTools`, `toolCallRequests`, `requestId`).\n"
             "3.  **`thoughtProcess` 字段 (in JSON)**: JSON对象内部的 `thoughtProcess` 字段现在是次要的。它可以是一个简短的总结或留空 ( `\"\"` ),因为您的主要思考过程已在 `<think>...</think>` 块中。Agent将优先使用 `<think>` 块中的内容作为思考日志。\n"
@@ -1920,7 +1920,7 @@ class CircuitAgent:
         replanning_guidance_v1_0 = ""
         if is_replanning:
             replanning_guidance_v1_0 = (
-                "\n【重要: 重规划指示 (V1.0-CamelCaseJSON - Reasoning Model)】\n"
+                "\n【重要: 重规划指示 (V1.0.0 - Reasoning Model)】\n"
                 "您当前正在进行重规划。这意味着您之前的规划或工具执行遇到了问题。请在您的 `<think>...</think>` 块中：\n"
                 "1.  **仔细分析失败原因**: 详细检查对话历史中的 `role: tool` 消息 (`content` JSON内的 `status: \"failure\"`, `message`, `errorDetails`) 和 `role: assistant` 消息中可能的Agent解析/校验错误 (`errorDetails.failedValidationPoints`)。\n"
                 "2.  **参考当前电路状态**: 【务必】仔细查阅 `memory_context` 中的【当前电路状态】。您的新计划【必须】基于当前实际存在的元件和连接。不要不必要地重新添加已存在的元件。\n"
@@ -1998,7 +1998,7 @@ class CircuitAgent:
 ```
 """
         direct_qa_example_v1_0 = (
-            "\n【通用示例1: 直接回答用户问题 (无需工具) - V1.0-CamelCaseJSON Reasoning Model Output】\n"
+            "\n【通用示例1: 直接回答用户问题 (无需工具) - V1.0.0 Reasoning Model Output】\n"
             "如果用户问: “你好,什么是电容？”\n"
             "您的输出应类似 (ID和时间戳会变化): \n"
             "<think>\n"
@@ -2090,7 +2090,7 @@ class CircuitAgent:
         replan_example_v1_0 = ""
         if is_replanning:
             replan_example_v1_0 = (
-                "\n【重规划示例 (V1.0-CamelCaseJSON Reasoning Model Output): 工具失败后,成功重规划并调用新/修正的工具】\n"
+                "\n【重规划示例 (V1.0.0 Reasoning Model Output): 工具失败后,成功重规划并调用新/修正的工具】\n"
                 "假设历史记录中有如下用户请求和失败的工具调用: \n"
                 "  User: \"连接 R10 和 C5\"\n"
                 "  Assistant (Previous Plan JSON): ... (Planned connect_components_tool for R10, C5, llmInteractionId: " + example_prev_tool_call_id + "_plan) ...\n"
@@ -2142,14 +2142,14 @@ class CircuitAgent:
         prompt_parts = [
             "您是一位初版电路设计编程助理 (Agent Version V1.1.3, 11 Tools)。您的任务是理解用户指令,并据此规划行动或直接回复。\n", # Version update
             reasoning_model_instructions,
-            "\n【核心任务: 规划阶段 (V1.0-CamelCaseJSON)】\n"
+            "\n【核心任务: 规划阶段 (V1.0.0)】\n"
             "请首先在 `<think>...</think>` 标签内深入分析用户的最新指令、完整的对话历史、当前的电路状态和记忆。然后,在 `</think>` 标签之后,生成一个符合V1.0-CamelCaseJSON规范的JSON对象作为您的行动计划或直接回复。JSON中所有key【必须】使用camelCase (例如: `isCallTools`, `toolCallRequests`, `requestId`).\n",
             replanning_guidance_v1_0 if is_replanning else "",
-            "【V1.0-CamelCaseJSON 输出格式规范 (在</think>之后输出, 必须严格遵守)】:\n",
+            "【V1.0.0 输出格式规范 (在</think>之后输出, 必须严格遵守)】:\n",
             v1_0_camelcase_json_schema_description_for_prompt,
-            "\n【重要指令与检查清单 (V1.0-CamelCaseJSON - Planning)】:\n"
+            "\n【重要指令与检查清单 (V1.0.0 - Planning)】:\n"
             "1.  **`<think>` Block First**: 您的详细逐步推理**必须**在 `<think>...</think>` 标签内,并置于回复最开始。\n"
-            "2.  **JSON After `</think>`**: V1.0-CamelCaseJSON 对象 (用 ```json ... ``` 包裹) **必须**紧跟 `</think>` 标签。此JSON中的所有键名必须是 camelCase (例如, `requestId`, `isCallTools`, `toolCallRequests`)。`toolArguments` 内部的键名 (例如, `component_type`) 应遵循下面工具 Schema 中提供的 snake_case 命名。\n"
+            "2.  **JSON After `</think>`**: V1.0.0 对象 (用 ```json ... ``` 包裹) **必须**紧跟 `</think>` 标签。此JSON中的所有键名必须是 camelCase (例如, `requestId`, `isCallTools`, `toolCallRequests`)。`toolArguments` 内部的键名 (例如, `component_type`) 应遵循下面工具 Schema 中提供的 snake_case 命名。\n"
             "3.  **JSON `thoughtProcess` Field**: 此JSON字段现在是次要的。它可以是简短总结或空字符串 `\"\"`。`<think>...</think>` 块中的内容是主要的思考过程。\n"
             "4.  **`decision.isCallTools`**: JSON中的此字段**必须**是布尔值 (`true` 或 `false`)。大小写不敏感的字符串 \"True\" 或 \"true\" 也可接受,Agent会将其解析为布尔值。\n"
             "5.  **其他 JSON 字段**: 严格遵循V1.0-CamelCaseJSON Schema 的JSON部分。\n"
@@ -2163,7 +2163,7 @@ class CircuitAgent:
         prompt_parts.extend([
             "\n【可用工具列表与参数规范 (V1.1.3 - 11 Tools)】:\n", # Version update
             tool_schemas_desc,
-            "\n\n【当前上下文信息 (V1.0-CamelCaseJSON)】:\n"
+            "\n\n【当前上下文信息 (V1.0.0)】:\n"
             f"Current Request ID (如果可用,请在JSON的requestId字段中原样返回): {request_id or 'N/A_NOT_PROVIDED_IN_PROMPT_SET_TO_NULL'}\n"
             f"Current UTC Time (供您生成timestampUtc参考): {current_timestamp_utc}\n"
             f"当前电路与记忆摘要:\n{memory_context}\n\n"
@@ -2171,12 +2171,12 @@ class CircuitAgent:
         ])
         return "".join(prompt_parts)
 
-    def _get_response_generation_prompt_v1_0_camelcase_reasoning(self, memory_context: str, tool_schemas_desc: str, request_id: Optional[str] = None) -> str:
+    def _get_response_generation_prompt_v1_0(self, memory_context: str, tool_schemas_desc: str, request_id: Optional[str] = None) -> str:
         current_timestamp_utc = datetime.now(timezone.utc).isoformat()
         llm_interaction_id_example_resp_prefix = f"resp_ex_llm_id_{str(uuid4())[:6]}"
 
         reasoning_model_instructions_resp_phase = (
-            "\n【重要: Reasoning Model 输出规范 (V1.0-CamelCaseJSON - Response Generation)】\n"
+            "\n【重要: Reasoning Model 输出规范 (V1.0.0 - Response Generation)】\n"
             "1.  **思考过程**: 您的详细思考过程 (如何分析工具结果或决定直接回复, 以及如何构思最终回复) 【必须】包含在 `<think>...</think>` 标签内,并放在您回复的最开始部分。\n"
             "2.  **JSON 输出**: 在 `</think>` 标签之后,您【必须】输出一个严格符合下面描述的V1.0-CamelCaseJSON格式的单个JSON对象。此JSON对象应被三个反引号和'json'标记包围 (即 ```json ... ```)。JSON中所有key【必须】使用camelCase.\n"
             "3.  **`thoughtProcess` 字段 (in JSON)**: JSON对象内部的 `thoughtProcess` 字段现在是次要的。它可以是一个简短的总结或留空 ( `\"\"` ),因为您的主要思考过程已在 `<think>...</think>` 块中。Agent将优先使用 `<think>` 块中的内容作为思考日志。\n"
@@ -2226,7 +2226,7 @@ class CircuitAgent:
 ```
 """
         response_gen_example_v1_0 = (
-            "\n【示例 (V1.0-CamelCaseJSON Reasoning Model Output): 总结工具结果并生成最终回复】\n"
+            "\n【示例 (V1.0.0 Reasoning Model Output): 总结工具结果并生成最终回复】\n"
             "假设对话历史中包含以下工具执行结果 (工具1成功, 工具2是搜索工具也成功):\n"
             "  Tool Message 1 (for toolCallId: tc_xyz_add_r1): { \"role\": \"tool\", ..., \"content\": \"{\\\"status\\\": \\\"success\\\", \\\"message\\\": \\\"已添加电阻R1\\\", ...}\" }\n"
             "  Tool Message 2 (for toolCallId: tc_abc_search_led): { \"role\": \"tool\", ..., \"content\": \"{\\\"status\\\": \\\"success\\\", \\\"message\\\": \\\"已完成对'LED'的DuckDuckGo搜索,找到2条相关信息。\\\", \\\"data\\\": {\\\"query\\\": \\\"LED\\\", \\\"num_results_returned\\\": 2, \\\"results_json_string\\\": \\\"[{\\\\\\\"title\\\\\\\":\\\\\\\"LED - Wikipedia\\\\\\\", ...}]\\\"}}\" }\n"
@@ -2264,20 +2264,20 @@ class CircuitAgent:
         return (
             "您是一位初版电路设计编程助理 (Agent Version V1.1.3, 11 Tools), 经验丰富,技术精湛,并且极其擅长清晰、准确、诚实地汇报工作结果。\n" # Version update
             f"{reasoning_model_instructions_resp_phase}\n"
-            "【核心任务: 响应生成阶段 (V1.0-CamelCaseJSON)】\n"
+            "【核心任务: 响应生成阶段 (V1.0.0)】\n"
             "您当前的任务是: 基于到目前为止的【完整对话历史】(包括用户最初的指令、您在规划阶段生成的V1.0-CamelCaseJSON计划、以及所有【已执行工具的结果详情】,这些工具结果是以 'role: tool', 'toolCallId: ...', 'name: ...', 'content: JSON_string_of_tool_output' 的格式存在于历史记录中的), 首先在 `<think>...</think>` 标签内进行思考和总结, 然后在 `</think>` 之后生成【最终的、面向用户的V1.0-CamelCaseJSON回复】。JSON中所有key【必须】使用camelCase.\n\n"
-            "【V1.0-CamelCaseJSON 输出格式规范 (在</think>之后输出, 与规划阶段结构相同,但有特定值要求 - 再次强调)】:\n"
+            "【V1.0.0 输出格式规范 (在</think>之后输出, 与规划阶段结构相同,但有特定值要求 - 再次强调)】:\n"
             f"{v1_0_camelcase_json_schema_description_for_resp_phase}\n"
-            "【重要指令与检查清单 (V1.0-CamelCaseJSON - 响应生成阶段特定要求)】:\n"
+            "【重要指令与检查清单 (V1.0.0 - 响应生成阶段特定要求)】:\n"
             "1.  **`<think>` Block First**: 您的详细工具结果分析和回复构思**必须**在 `<think>...</think>` 标签内。\n"
-            "2.  **JSON After `</think>`**: V1.0-CamelCaseJSON 对象 (用 ```json ... ``` 包裹) **必须**紧跟 `</think>` 标签。此JSON中的所有键名必须是 camelCase。\n"
+            "2.  **JSON After `</think>`**: V1.0.0 对象 (用 ```json ... ``` 包裹) **必须**紧跟 `</think>` 标签。此JSON中的所有键名必须是 camelCase。\n"
             "3.  **`executionPhase`**: 在此阶段,此值【必须】是 `\"response_generation\"`。\n"
             "4.  **`decision.isCallTools`**: 在此响应生成阶段,此值【必须】为 `false` (或可解析为`false`的字符串)。\n"
             "5.  **`decision.toolCallRequests`**: 在此响应生成阶段,此列表【必须】为 `[]` (空数组) 或 `null`。\n"
             "6.  **`decision.responseToUser.content`**: 这是您基于所有先前步骤生成的【最终、完整、友好】的文本回复。它【不能】为空字符串或仅包含空白。\n"
             "7.  **回顾工具结果**: 仔细检查对话历史中 `role: tool` 的消息。您的最终回复必须准确反映这些结果。\n\n"
             f"{response_gen_example_v1_0}\n"
-            "【上下文参考信息 (仅供你回顾 - V1.0-CamelCaseJSON)】:\n"
+            "【上下文参考信息 (仅供你回顾 - V1.0.0)】:\n"
             f"Current Request ID (如果可用,请在JSON的requestId字段中原样返回): {request_id or 'N/A_NOT_PROVIDED_IN_PROMPT_SET_TO_NULL'}\n"
             f"Current UTC Time (供您生成timestampUtc参考): {current_timestamp_utc}\n"
             f"当前电路与记忆摘要:\n{memory_context}\n"

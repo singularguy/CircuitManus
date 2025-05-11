@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Attempting to connect WebSocket (Attempt ${wsReconnectAttempts + 1}): ${websocketUrl}`);
         if (dom.loader && wsReconnectAttempts === 0) {
             const loadingText = dom.loader.querySelector('.loading-text');
-            if (loadingText) loadingText.textContent = "INITIATING HYPERLOOP CONNECTION (V8.3.2 Sci-Fi)...";
+            if (loadingText) loadingText.textContent = "INITIATING HYPERLOOP CONNECTION (V1.0.0 Sci-Fi)...";
         }
 
         websocket = new WebSocket(websocketUrl);
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         websocket.onopen = (event) => {
             console.log("WebSocket connection established", event);
             wsReconnectAttempts = 0;
-            showToast("Quantum Entanglement Link ACTIVE (V8.3.2 Sci-Fi).", "success", 4000);
+            showToast("Quantum Entanglement Link ACTIVE (V1.0.0 Sci-Fi).", "success", 4000);
             sendWebSocketMessage({
                 type: 'init',
                 session_id: state.currentSessionId
@@ -214,8 +214,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem(APP_PREFIX + 'lastSessionId', state.currentSessionId);
 
                 const agentStatusMessage = message.agent_available === false
-                    ? 'AI Core Module OFFLINE. Functionality severely limited. (V8.3.2 Sci-Fi)'
-                    : 'Hyperion Core (V8.3.2 Sci-Fi) online and synchronized!';
+                    ? 'AI Core Module OFFLINE. Functionality severely limited. (V1.0.0 Sci-Fi)'
+                    : 'Hyperion Core (V1.0.0 Sci-Fi) online and synchronized!';
                 const agentStatusType = message.agent_available === false ? 'warning' : 'success';
                 showToast(agentStatusMessage, agentStatusType, message.agent_available ? 4500 : 8000);
 
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (dom.loader) dom.loader.classList.add('hidden'); // Still hide loader on error
                 if (dom.mainContainer) dom.mainContainer.classList.add('loaded');
                 if (message.agent_available === false) {
-                    appendMessage("CRITICAL SYSTEM ALERT: Hyperion AI core failed to initialize. Subsystems non-responsive. (V8.3.2 Sci-Fi)", 'error-system', false, null, false, [], "System Error");
+                    appendMessage("CRITICAL SYSTEM ALERT: Hyperion AI core failed to initialize. Subsystems non-responsive. (V1.0.0 Sci-Fi)", 'error-system', false, null, false, [], "System Error");
                 }
                 setLoadingState(false);
                 break;
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSessionList();
 
         const llmIdForLog = finalCamelCaseJson?.llmInteractionId || llm_interaction_id || 'N/A';
-        appendLogItem(`AI FINAL TRANSMISSION DELIVERED (LLM_ID: ${llmIdForLog})`, 'fas fa-flag-checkered log-success', 'type-final_response', finalCamelCaseJson ? { summary: actualContentForBubble.substring(0, 120) + "...", raw_response: finalCamelCaseJson } : { error_details: "Response generation indicated failure or missing V8.3.2 JSON." });
+        appendLogItem(`AI FINAL TRANSMISSION DELIVERED (LLM_ID: ${llmIdForLog})`, 'fas fa-flag-checkered log-success', 'type-final_response', finalCamelCaseJson ? { summary: actualContentForBubble.substring(0, 120) + "...", raw_response: finalCamelCaseJson } : { error_details: "Response generation indicated failure or missing V1.0.0 JSON." });
         if (state.isProcessLogVisible) showProcessLog(true);
     }
 
@@ -727,7 +727,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initializeApp() {
-        console.log("CircuitManus Pro - HYPERION CORE (V8.3.2 Sci-Fi Enhanced) Initializing...");
+        console.log("CircuitManus Pro - HYPERION CORE (V1.0.0 Sci-Fi Enhanced) Initializing...");
         // updateLoaderProgress(10); // Removed as loader is now more visual
         loadSettings();
         // updateLoaderProgress(25);
@@ -1510,12 +1510,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="message-content">
                 <div class="welcome-header">
                     <i class="fas fa-atom robot-icon animate__animated animate__pulse animate__infinite" style="--animate-duration: 2.8s;"></i>
-                    <h2>CircuitManus <span class="version-pro">Hyperion <span class="version-number">v8.3.2</span></span></h2>
+                    <h2>CircuitManus <span class="version-pro">Hyperion <span class="version-number">v1.0.0</span></span></h2>
                 </div>
                 <p class="welcome-subtitle">Your Advanced Tactical AI for Circuit Schematics & Quantum Programming. Hyperion Core online. Transmit your directives.</p>
                 <div class="capabilities">
                     <div class="capability"><i class="fas fa-bolt-lightning"></i><span>RAPID ANALYSIS</span></div>
-                    <div class="capability"><i class="fas fa-lightbulb-on"></i><span>INSIGHTFUL SOLUTIONS</span></div>
                     <div class="capability"><i class="fas fa-tools"></i><span>TOOL INTEGRATION</span></div>
                     <div class="capability"><i class="fas fa-infinity"></i><span>ITERATIVE REFINEMENT</span></div>
                     <div class="capability"><i class="fas fa-brain"></i><span>INTELLIGENT THINKING</span></div>
@@ -1524,6 +1523,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="capability"><i class="fas fa-project-diagram"></i><span>CIRCUIT DESIGN</span></div>
                     <div class="capability"><i class="fas fa-cogs"></i><span>SYSTEM DESIGN</span></div>
                     <div class="capability"><i class="fas fa-user-astronaut"></i><span>USER FRIENDLY</span></div>
+                    <div class="capability"><i class="fas fa-chart-line"></i><span>ANALYSIS</span></div>
+                    <div class="capability"><i class="fas fa-code-branch"></i><span>VERSION CONTROL</span></div>
                 </div>
                  <div class="quick-actions">
                     <p>Initiate Command Sequence or Select Pre-emptive Protocol:</p>
