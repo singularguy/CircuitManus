@@ -1,6 +1,6 @@
 
 # @FileName: circuitmanus.py
-# @Version: V1.1.3 - 核心电路交互逻辑与DuckDuckGo搜索工具集 (深化修复ToolExecutor异步调用)
+# @Version: V1.1.3 - 核心电路交互逻辑与DuckDuckGo搜索工具集 (深化修复ToolExecutor异步调用新)
 # @Author: 您的专属程序员 (致力于构建稳定、清晰、可扩展的智能助手核心)
 # @Date: [当前日期] - 深化修复ToolExecutor对异步工具的调用，确保协程被正确await。
 # @License: MIT License
