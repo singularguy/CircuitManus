@@ -437,17 +437,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 dom.chatArea.style.marginRight = `${logSidebarCollapsedWidth + parseInt(getComputedStyle(dom.chatArea).paddingRight || '0', 10)}px`;
                 // 设置右侧日志侧边栏容器的宽度为折叠后的宽度
                 dom.processLogSidebarContainer.style.width = `${logSidebarCollapsedWidth}px`;
-                // 隐藏关闭按钮，显示折叠按钮
-                dom.closeProcessLogSidebarButton.style.display = 'none';
-                dom.toggleProcessLogSidebarCollapseButton.style.display = 'flex'; // Ensure it's visible
+                 // 隐藏关闭按钮，显示折叠按钮
+                 dom.closeProcessLogSidebarButton.style.display = 'none';
+                 dom.toggleProcessLogSidebarCollapseButton.style.display = 'flex'; // Ensure it's visible
             } else { // 如果右侧日志侧边栏未折叠
                 // 设置聊天区域的右边距为固定宽度的侧边栏宽度加上原有的右内边距
                 dom.chatArea.style.marginRight = `${logSidebarFixedWidth + parseInt(getComputedStyle(dom.chatArea).paddingRight || '0', 10)}px`;
                 // 设置右侧日志侧边栏容器的宽度为固定宽度
                 dom.processLogSidebarContainer.style.width = `${logSidebarFixedWidth}px`;
-                // 显示关闭按钮，确保折叠按钮也是可见的
-                dom.closeProcessLogSidebarButton.style.display = 'flex';
-                dom.toggleProcessLogSidebarCollapseButton.style.display = 'flex';
+                 // 显示关闭按钮，确保折叠按钮也是可见的
+                 dom.closeProcessLogSidebarButton.style.display = 'flex';
+                 dom.toggleProcessLogSidebarCollapseButton.style.display = 'flex';
             }
         } else { // 如果右侧日志侧边栏不可见
             // 清除聊天区域的右边距设置，恢复默认
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * 更新右侧日志侧边栏的折叠状态。
+     * 更新右侧日志侧边栏的折叠/展开状态。
      * @param {boolean} collapse - 是否折叠侧边栏。
      * @param {boolean} [instant=false] - 是否立即更新，无动画。
      * 此函数会切换相关的CSS类，更新图标，并重新应用布局。
@@ -690,7 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // 跳过特定类型的特定键，这些键可能冗余或已在其他地方处理
                     // 确保只跳过 tool_call_id 在特定的消息类型中
                     if ((type === 'plan_details' || type === 'tool_status_update') && key === 'tool_call_id') {
-                        continue;
+                         continue;
                     }
 
                     // 特殊处理 'uiHints' 键
@@ -698,7 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // 获取 displayNameForTool 和 estimatedDurationCategory，并进行HTML转义
                         const dn = String(value.displayNameForTool || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         const ed = String(value.estimatedDurationCategory || 'N/A').replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                        // 检查 showProgressGranularly 是否存在并显示
+                         // 检查 showProgressGranularly 是否存在并显示
                         const spg = value.showProgressGranularly !== undefined ? `, 细粒度进度: ${value.showProgressGranularly ? '是' : '否'}` : '';
                         // 构建 uiHints 的 HTML
                         partHtml += `<div class="log-detail-item" style="${paddingLeftStyle}"><strong class="log-detail-key">UI投影:</strong> <span class="log-detail-value">显示: ${dn}, 时长: ${ed}${spg}</span></div>`;
@@ -714,14 +714,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             // 格式化参数键名
                             const formattedArgKey = argKey.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
                             // 将参数键值对添加到数组，并对值进行HTML转义
-                            const argValue = value[argKey];
-                            let formattedArgValue;
-                            if (typeof argValue === 'object' && argValue !== null) {
-                                try { formattedArgValue = JSON.stringify(argValue).replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-                                catch (e) { formattedArgValue = String(argValue).replace(/</g, "&lt;").replace(/>/g, "&gt;") + " (JSON error)"; }
-                            } else {
-                                formattedArgValue = String(argValue).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                            }
+                             const argValue = value[argKey];
+                             let formattedArgValue;
+                             if (typeof argValue === 'object' && argValue !== null) {
+                                 try { formattedArgValue = JSON.stringify(argValue).replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+                                 catch (e) { formattedArgValue = String(argValue).replace(/</g, "&lt;").replace(/>/g, "&gt;") + " (JSON error)"; }
+                             } else {
+                                 formattedArgValue = String(argValue).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                             }
                             argItems.push(`<em class="log-arg-key">${formattedArgKey}</em>: ${formattedArgValue}`);
                         }
                         // 构建参数的 HTML
@@ -757,10 +757,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * 向右侧日志侧边栏添加一个新的日志项。
-     * @param {string} messageText - 日志消息文本。
+     * 此函数处理不包含独立思考过程的日志条目。图标和主消息文本将并排显示。
+     * @param {string} messageText - 日志消息文本 (将作为主文本)。
      * @param {string} iconClass - 用于日志项的FontAwesome图标类。
      * @param {string} [itemClasses=''] - 附加到日志项的CSS类字符串。
-     * @param {object|null} [details=null] - 包含详细信息的对象，将格式化并显示。
+     * @param {object|null} [details=null] - 包含详细信息的对象，将格式化并显示在主文本下方。
      * @returns {HTMLElement|null} 创建的日志项DOM元素，如果失败则返回null。
      */
     function appendLogItem(messageText, iconClass, itemClasses = '', details = null) {
@@ -780,13 +781,12 @@ document.addEventListener('DOMContentLoaded', () => {
             logItemDiv.classList.add(...itemClasses.split(' ').filter(cls => cls)); // 分割字符串并过滤空类名后添加
         }
 
-        // 创建图标元素
+        // 创建图标元素 (作为日志项的第一个子元素 - CSS将使其与第二个子元素并排)
         const iconEl = document.createElement('i');
         iconEl.className = iconClass; // 设置图标的 FontAwesome 类
-        // 将图标添加到日志项 div (作为第一个子元素)
         logItemDiv.appendChild(iconEl);
 
-        // 创建主要内容区域的包装器 (垂直 flex 容器)，包含主文本和详细信息
+        // 创建主要内容区域的包装器 (垂直 flex 容器)，包含主文本和详细信息 (作为日志项的第二个子元素)
         const contentAreaWrapper = document.createElement('div');
         contentAreaWrapper.classList.add('log-item-content-area'); // 添加 CSS 类
 
@@ -798,10 +798,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 如果存在详细信息且不为空对象
         if (details && Object.keys(details).length > 0) {
-            // 创建详细信息区域的 div 元素
+            // 创建详细信息区域的 div 元素 (作为内容区域包装器的第二个子元素)
             const detailsEl = document.createElement('div');
-            detailsEl.className = 'log-item-details';
-            // 解析日志项的类名以获取类型、阶段和状态
+            detailsEl.className = 'log-item-details'; // 使用通用详细信息类
+            // 解析日志项的类名以获取类型、阶段和状态，用于格式化详细信息
             const { type: logType, stage: logStage, status: logStatus } = parseItemClasses(logItemDiv.className);
             // 格式化详细信息对象为 HTML 字符串
             const formattedDetailsHtml = formatLogDetails(details, logType, logStage, logStatus);
@@ -810,15 +810,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (formattedDetailsHtml) {
                 detailsEl.innerHTML = formattedDetailsHtml; // 设置详细信息区域的 HTML 内容
             } else { // 如果格式化失败或无内容
-                // 添加一个表示“无详细信息”的默认消息，或者尝试显示原始 details 对象
-                detailsEl.innerHTML = `<span class="log-detail-item"><strong class="log-detail-key">详细信息:</strong> <span class="log-detail-value">(无或格式化失败)</span></span>`;
+                 // 添加一个表示“无详细信息”的默认消息，或者尝试显示原始 details 对象
+                 detailsEl.innerHTML = `<span class="log-detail-item"><strong class="log-detail-key">详细信息:</strong> <span class="log-detail-value">(无或格式化失败)</span></span>`;
                 try {
                     // Fallback: Attempt to represent the details object as JSON or string if formatting failed
                     let rawDetailsStr = typeof details === 'object' ? JSON.stringify(details, null, 2) : String(details);
                     detailsEl.innerHTML += `<pre class="log-detail-raw-json error"><code>${rawDetailsStr.replace(/</g, "&lt;").replace(/>/g, "&gt;")}<br>(原始数据)</code></pre>`;
                 } catch (e_raw) {
-                    // If even the fallback fails
-                    detailsEl.innerHTML += `<span class="log-detail-item error"><strong class="log-detail-key">原始数据错误:</strong> <span class="log-detail-value">${e_raw.message}</span></span>`;
+                     // If even the fallback fails
+                     detailsEl.innerHTML += `<span class="log-detail-item error"><strong class="log-detail-key">原始数据错误:</strong> <span class="log-detail-value">${e_raw.message}</span></span>`;
                 }
             }
             contentAreaWrapper.appendChild(detailsEl); // 将详细信息区域添加到内容区域包装器
@@ -838,10 +838,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * 向右侧日志侧边栏添加一个包含思考过程的日志项。
-     * @param {string} headerText - 日志项的头部消息文本。
+     * 此函数处理包含独立思考过程的日志条目。图标和主消息文本将并排显示，思考过程在下方独立区域。
+     * @param {string} headerText - 日志项的头部消息文本 (将作为主文本)。
      * @param {string} headerIconClass - 用于头部的FontAwesome图标类。
      * @param {string} itemClasses - 附加到日志项的CSS类字符串。
-     * @param {string} thinkContent - 思考过程的文本内容。
+     * @param {string} thinkContent - 思考过程的文本内容 (将显示在主文本下方)。
      * @param {string} [thinkBubbleLabel="详细思考投影"] - 思考气泡的标签文本。
      * @returns {HTMLElement|null} 创建的日志项DOM元素，如果失败则返回null。
      */
@@ -860,12 +861,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // 如果有附加的 CSS 类，则添加它们
         if (itemClasses) logItemDiv.classList.add(...itemClasses.split(' '));
 
-        // 创建图标元素 (作为日志项的第一个子元素)
+        // 创建图标元素 (作为日志项的第一个子元素 - CSS将使其与第二个子元素并排)
         const iconEl = document.createElement('i');
         iconEl.className = headerIconClass; // 设置图标的 FontAwesome 类
         logItemDiv.appendChild(iconEl);
 
-        // 创建主要内容区域的包装器 (垂直 flex 容器)，包含主文本和思考内容
+        // 创建主要内容区域的包装器 (垂直 flex 容器)，包含主文本和思考内容 (作为日志项的第二个子元素)
         const contentAreaWrapper = document.createElement('div');
         contentAreaWrapper.classList.add('log-item-content-area'); // 添加 CSS 类
 
@@ -878,7 +879,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 如果存在思考内容
         if (thinkContent) {
-            // 创建思考内容区域的 div 元素 (作为内容区域包装器的第二个子元素)
+            // 创建思考内容区域的 div 元素 (作为内容区域包装器的第二个子元素 - 将显示在主文本下方)
             const thinkDiv = document.createElement('div');
             thinkDiv.classList.add('log-think-content'); // 添加特定类名
 
@@ -891,10 +892,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const trimmedJson = jsonContentStr.trim(); // Remove leading/trailing whitespace from JSON content
                 try {
                     const parsedJson = JSON.parse(trimmedJson); // Parse the JSON
-                    // Format the parsed JSON object into a string with indentation, and escape HTML special characters
+                    // Format the parsed JSON object into a string with indentation (2 spaces), and escape HTML special characters
                     const escapedJsonString = JSON.stringify(parsedJson, null, 2)
                         .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    // Return the formatted HTML using <pre> and <code> tags with appropriate class
+                    // Return the formatted HTML using <pre> and <code> tags with the embedded-json class
                     return `<pre class="log-detail-raw-json"><code>${escapedJsonString}</code></pre>`;
                 } catch (jsonErr) {
                     // If JSON parsing fails, log a warning to the console
@@ -902,11 +903,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Escape HTML special characters from the original JSON content
                     const escapedOriginalJson = trimmedJson
                         .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    // Return HTML containing the original content and an error message, using error class
+                    // Return HTML containing the original content and an error message, styled as an error embedded JSON block
                     return `<pre class="log-detail-raw-json error"><code>${escapedOriginalJson}<br>(无效JSON投影)</code></pre>`;
                 }
             });
-            // Set the HTML content of the thinking content area, including the label and formatted thought text
+            // Set the HTML content of the thinking content area, including the label and formatted thinking text
             thinkDiv.innerHTML = `<strong><i class="fas fa-brain"></i> ${thinkBubbleLabel}:</strong><div class="think-bubble">${formattedThink}</div>`;
             // Append the thinking content area to the content area wrapper
             contentAreaWrapper.appendChild(thinkDiv);
@@ -1015,50 +1016,50 @@ document.addEventListener('DOMContentLoaded', () => {
         state.pendingToolCalls = {};
         // 遍历计划中的每一个工具调用 (toolCall)
         if (Array.isArray(plan)) { // Ensure plan is an array before iterating
-            plan.forEach(toolCall => {
-                // 从 toolCall 对象中解构出相关属性
-                const { toolCallId, toolName, toolArguments, uiHints = {}, order } = toolCall;
-                // Check if essential properties exist
-                if (!toolCallId || !toolName) {
-                    console.warn("Plan details missing essential fields (toolCallId or toolName), skipping:", toolCall);
-                    appendLogItem(
-                        `收到无效计划项 (缺少ID或名称).`,
-                        'fas fa-exclamation-circle log-warning',
-                        'type-plan_details status-invalid',
-                        toolCall
-                    );
-                    return; // Skip this invalid item
-                }
-                // 将当前工具调用信息记录到待处理列表中
-                state.pendingToolCalls[toolCallId] = {
-                    name: toolName, // 工具名称
-                    args_summary: summarizeArguments(toolArguments), // 参数的简短总结
-                    ui_hints: uiHints, // UI 提示信息
-                    order: order // 执行顺序
-                };
-                // 获取工具的显示名称，优先使用 uiHints 中的 displayNameForTool，
-                // 否则从 toolName 生成（移除 "_tool" 后缀，下划线转空格，首字母大写）
-                const displayName = uiHints.displayNameForTool || toolName.replace(/_tool$/, "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-                // 构建日志项的消息文本
-                const logMessageText = `执行节点 #${order}: ${displayName} (ID: ${toolCallId}) - 状态: QUEUED`;
-                // 调用 appendLogItem 函数将计划中的工具调用添加到日志侧边栏
-                appendLogItem(
-                    logMessageText, // 日志消息文本
-                    'fas fa-tasks log-info', // 日志图标 (任务列表图标)
-                    `type-plan_details tool-${toolName} status-pending`, // 日志项 CSS 类
-                    { arguments: toolArguments, tool_call_id: toolCallId, ui_hints: uiHints } // 详细信息
-                );
-            });
+             plan.forEach(toolCall => {
+                 // 从 toolCall 对象中解构出相关属性
+                 const { toolCallId, toolName, toolArguments, uiHints = {}, order } = toolCall;
+                 // Check if essential properties exist
+                 if (!toolCallId || !toolName) {
+                      console.warn("Plan details missing essential fields (toolCallId or toolName), skipping:", toolCall);
+                      appendLogItem(
+                          `收到无效计划项 (缺少ID或名称).`,
+                          'fas fa-exclamation-circle log-warning',
+                          'type-plan_details status-invalid',
+                          toolCall
+                      );
+                      return; // Skip this invalid item
+                 }
+                 // 将当前工具调用信息记录到待处理列表中
+                 state.pendingToolCalls[toolCallId] = {
+                     name: toolName, // 工具名称
+                     args_summary: summarizeArguments(toolArguments), // 参数的简短总结
+                     ui_hints: uiHints, // UI 提示信息
+                     order: order // 执行顺序
+                 };
+                 // Get the display name for the tool, prioritizing displayNameForTool from uiHints, otherwise generating from toolName
+                 const displayName = uiHints.displayNameForTool || toolName.replace(/_tool$/, "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                 // Construct the log message text
+                 const logMessageText = `执行节点 #${order}: ${displayName} (ID: ${toolCallId}) - 状态: QUEUED`;
+                 // Call the appendLogItem function to add the planned tool call to the log sidebar
+                 // Details include arguments and UI hints for display
+                 appendLogItem(
+                     logMessageText, // Log message text (主文本)
+                     'fas fa-tasks log-info', // Log icon (任务列表 icon)
+                     `type-plan_details tool-${toolName} status-pending`, // Log item CSS classes
+                     { arguments: toolArguments, tool_call_id: toolCallId, ui_hints: uiHints } // Detailed information for display below the main text
+                 );
+             });
         } else {
             console.warn("Received plan_details message with non-array plan property:", plan);
-            appendLogItem(
+             appendLogItem(
                 `收到无效计划详情 (Plan不是数组).`,
                 'fas fa-exclamation-circle log-error',
                 'type-plan_details status-invalid',
-                { raw_plan_data: plan }
+                { raw_plan_data: plan } // Include raw data in details
             );
         }
-        // 显示并确保展开日志侧边栏，以便用户能看到计划详情
+        // Show and ensure the log sidebar is expanded so the user can see the plan details
         showProcessLogSidebar(true);
     }
 
@@ -1070,40 +1071,40 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleToolStatusUpdate(msg) {
         // 从消息对象中解构出工具调用ID、工具名称、状态、消息文本和详细信息
         const { tool_call_id, tool_name, status, message: msgText, details } = msg;
-        // Validate essential fields
+         // Validate essential fields
         if (!tool_call_id || !tool_name || status === undefined || msgText === undefined) {
-            console.warn("Received invalid tool_status_update message (missing essential fields):", msg);
-            appendLogItem(
-                `收到无效工具状态更新 (缺少ID,名称,状态或消息).`,
-                'fas fa-exclamation-circle log-error',
-                'type-tool_status_update status-invalid',
-                msg
-            );
+             console.warn("Received invalid tool_status_update message (missing essential fields):", msg);
+              appendLogItem(
+                 `收到无效工具状态更新 (缺少ID,名称,状态或消息).`,
+                 'fas fa-exclamation-circle log-error',
+                 'type-tool_status_update status-invalid',
+                 msg // Include the full invalid message in details
+             );
             return;
         }
-        // 初始化日志图标类为齿轮图标和通用日志信息类
+        // Initialize log icon class and generic info class
         let logIconClass = 'fas fa-cog log-info';
-        // 根据状态设置特定的状态CSS类
+        // Set specific status CSS class
         let itemStatusClass = `status-${status}`;
 
-        // 根据不同的工具执行状态 (status) 更新日志图标类
-        if (status === 'running') logIconClass = 'fas fa-cogs fa-spin log-processing'; // 运行中：旋转的齿轮组图标
-        else if (status === 'retrying') logIconClass = 'fas fa-history fa-spin log-processing'; // 重试中：旋转的历史记录图标
-        else if (status === 'succeeded') logIconClass = 'fas fa-check-double log-success'; // 成功：双勾选成功图标
-        else if (status === 'failed') logIconClass = 'fas fa-times-circle log-error'; // 失败：错误叉号圆圈图标
-        else if (status === 'aborted_due_to_previous_failure') { // 因先前失败而中止
-            logIconClass = 'fas fa-ban log-warning'; // 中止：禁止图标 (警告)
-            itemStatusClass = 'status-aborted'; // 将状态类明确设置为 'aborted'
+        // Update log icon class based on different tool execution statuses
+        if (status === 'running') logIconClass = 'fas fa-cogs fa-spin log-processing'; // Running: Spinning cogs icon
+        else if (status === 'retrying') logIconClass = 'fas fa-history fa-spin log-processing'; // Retrying: Spinning history icon
+        else if (status === 'succeeded') logIconClass = 'fas fa-check-double log-success'; // Succeeded: Double checkmark icon
+        else if (status === 'failed') logIconClass = 'fas fa-times-circle log-error'; // Failed: Error cross icon
+        else if (status === 'aborted_due_to_previous_failure') { // Aborted due to previous failure
+            logIconClass = 'fas fa-ban log-warning'; // Aborted: Ban icon (warning)
+            itemStatusClass = 'status-aborted'; // Explicitly set status class to 'aborted'
         }
 
-        // 从待处理工具调用列表中获取该工具的信息
+        // Get tool information from the pending tool calls list
         const pendingToolInfo = state.pendingToolCalls[tool_call_id];
-        // 获取工具的显示名称，优先使用待处理信息中的uiHints，否则从tool_name生成
+        // Get the display name for the tool, prioritizing displayNameForTool from pending info's uiHints, otherwise generating from tool_name
         const displayName = pendingToolInfo?.ui_hints?.displayNameForTool || tool_name.replace(/_tool$/, "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-        // 构建完整的日志消息文本
+        // Construct the full log message text (this will be the main text next to the icon)
         let fullLogMessage = `工具模块: ${displayName} (ID: ${tool_call_id}) - ${status.replace(/_/g, ' ').toUpperCase()}: ${msgText}`;
 
-        // 尝试在日志侧边栏内容区查找已存在的对应此工具调用的日志项
+        // Attempt to find an existing log item for this tool call in the sidebar content area
         // Added data-tool-call-id attribute in appendLogItem to make lookup reliable
         let existingLogItem = dom.processLogSidebarContent.querySelector(`.log-item[data-tool-call-id="${tool_call_id}"]`);
 
@@ -1119,57 +1120,58 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageEl = existingLogItem.querySelector('.log-item-message');
             if (messageEl) messageEl.textContent = fullLogMessage; // Update message text
 
-            // Find or create the details element
-            let detailsEl = existingLogItem.querySelector('.log-item-details') || existingLogItem.querySelector('.log-think-content'); // Could be either class for details
+            // Find or create the details element within the content area wrapper
+            const contentAreaWrapper = existingLogItem.querySelector('.log-item-content-area');
+            if (contentAreaWrapper) {
+                 let detailsEl = contentAreaWrapper.querySelector('.log-item-details') || contentAreaWrapper.querySelector('.log-think-content'); // Could be either class for details
 
-            if (details && Object.keys(details).length > 0) { // If there are new details
-                if (!detailsEl) { // If original item didn't have details, create a new one
-                    detailsEl = document.createElement('div');
-                    detailsEl.className = 'log-item-details'; // Assume it's a standard details block
-                    const contentAreaWrapper = existingLogItem.querySelector('.log-item-content-area');
-                    if (contentAreaWrapper) contentAreaWrapper.appendChild(detailsEl);
-                    else console.error("Tool status update: Cannot find content area wrapper for details.");
-                }
-                // Ensure the correct class is applied based on context if needed, though details is usually standard
-                detailsEl.classList.remove('log-think-content'); // Remove if it was a think block previously
-                detailsEl.classList.add('log-item-details'); // Add standard details class
+                 if (details && Object.keys(details).length > 0) { // If there are new details
+                     if (!detailsEl) { // If original item didn't have details, create a new one
+                          detailsEl = document.createElement('div');
+                          detailsEl.className = 'log-item-details'; // Assume it's a standard details block
+                          contentAreaWrapper.appendChild(detailsEl);
+                     }
+                      // Ensure the correct class is applied for standard details
+                     detailsEl.classList.remove('log-think-content'); // Remove if it was a think block previously
+                     detailsEl.classList.add('log-item-details'); // Add standard details class
 
-
-                const { type, stage, status: parsedStatus } = parseItemClasses(existingLogItem.className);
-                const formattedDetailsHtml = formatLogDetails(details, type, stage, parsedStatus);
-                detailsEl.innerHTML = formattedDetailsHtml || '';
-                if (!formattedDetailsHtml) { // If formatting failed, provide fallback
-                    detailsEl.innerHTML = `<span class="log-detail-item"><strong class="log-detail-key">详细信息:</strong> <span class="log-detail-value">(无或格式化失败)</span></span>`;
-                    try {
-                        let rawDetailsStr = typeof details === 'object' ? JSON.stringify(details, null, 2) : String(details);
-                        detailsEl.innerHTML += `<pre class="log-detail-raw-json error"><code>${rawDetailsStr.replace(/</g, "&lt;").replace(/>/g, "&gt;")}<br>(原始数据)</code></pre>`;
-                    } catch (e_raw) { /* Ignore further errors */ }
-                }
-
-
-            } else if (detailsEl) { // If there are no new details, but an element for details existed, remove it
-                detailsEl.remove(); // Remove the details element entirely
+                     const { type, stage, status: parsedStatus } = parseItemClasses(existingLogItem.className);
+                     const formattedDetailsHtml = formatLogDetails(details, type, stage, parsedStatus);
+                     detailsEl.innerHTML = formattedDetailsHtml || '';
+                      if (!formattedDetailsHtml) { // If formatting failed, provide fallback
+                          detailsEl.innerHTML = `<span class="log-detail-item"><strong class="log-detail-key">详细信息:</strong> <span class="log-detail-value">(无或格式化失败)</span></span>`;
+                          try {
+                              let rawDetailsStr = typeof details === 'object' ? JSON.stringify(details, null, 2) : String(details);
+                              detailsEl.innerHTML += `<pre class="log-detail-raw-json error"><code>${rawDetailsStr.replace(/</g, "&lt;").replace(/>/g, "&gt;")}<br>(原始数据)</code></pre>`;
+                          } catch (e_raw) { /* Ignore further errors */ }
+                      }
+                 } else if (detailsEl) { // If there are no new details, but an element for details existed, remove it
+                     detailsEl.remove(); // Remove the details element entirely
+                 }
+            } else {
+                 console.error("Tool status update: Cannot find content area wrapper for details update.");
             }
 
-            // Add animation feedback
+
+             // Add animation feedback
             existingLogItem.classList.remove('animate__flash', 'animate__headShake', 'animate__pulse');
             if (status === 'failed') existingLogItem.classList.add('animate__headShake'); // Shake on failure
             else if (status === 'succeeded') existingLogItem.classList.add('animate__pulse'); // Pulse on success
             else existingLogItem.classList.add('animate__flash'); // Flash on other updates
 
         } else { // If no existing log item found, create a new one
-            // Create a new log item for this tool status update
-            const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass}`, details);
+             // Create a new log item for this tool status update
+             const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass}`, details);
             // Add the toolCallId as a data attribute for future lookups
-            if (logItemDiv) logItemDiv.dataset.toolCallId = tool_call_id;
+             if (logItemDiv) logItemDiv.dataset.toolCallId = tool_call_id;
 
             // Add animation feedback to the newly created item
             if (logItemDiv) {
-                logItemDiv.classList.remove('animate__fadeInUp'); // Remove initial fade-in
-                logItemDiv.classList.add('animate__animated'); // Ensure animated class is present for potential future animations
-                if (status === 'failed') logItemDiv.classList.add('animate__headShake');
-                else if (status === 'succeeded') logItemDiv.classList.add('animate__pulse');
-                else logItemDiv.classList.add('animate__flash');
+                 logItemDiv.classList.remove('animate__fadeInUp'); // Remove initial fade-in
+                 logItemDiv.classList.add('animate__animated'); // Ensure animated class is present for potential future animations
+                 if (status === 'failed') logItemDiv.classList.add('animate__headShake');
+                 else if (status === 'succeeded') logItemDiv.classList.add('animate__pulse');
+                 else logItemDiv.classList.add('animate__flash');
                 logItemDiv.style.setProperty('--animate-duration', '0.5s');
             }
         }
@@ -1193,16 +1195,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleInterimResponse(msg) {
         // 从消息对象中解构出 content (回复内容) 和 llm_interaction_id
         const { content, llm_interaction_id } = msg;
-        // 调用 appendLogItem 函数将过渡性回复添加到日志侧边栏
+        // Call the appendLogItem function to add the interim response to the log sidebar
+        // The main text will be a preview of the intention message
         appendLogItem(
-            // 日志消息文本，显示回复内容的前180个字符，如果超过则加省略号
+            // Log message text, showing the first 180 characters of the content, with ellipsis if longer
             `AI意图墨迹: "${content.substring(0, 180)}${content.length > 180 ? '...' : ''}"`,
-            'fas fa-feather-alt log-info', // 日志图标 (羽毛笔图标，表示意图)
-            'type-agent_intention', // 日志项 CSS 类
-            // 详细信息，包含 LLM 交互 ID 和完整的回复内容
+            'fas fa-feather-alt log-info', // Log icon (feather pen icon, indicating intention)
+            'type-agent_intention', // Log item CSS classes
+            // Detailed information, including LLM interaction ID and the full content
             { llm_interaction_id: llm_interaction_id, full_content: content }
         );
-        // 如果日志侧边栏当前不可见，则显示它（不强制展开）
+        // If the process log sidebar is currently not visible, show it (without forcing expansion)
         if (!state.isProcessLogSidebarVisible) showProcessLogSidebar(false);
     }
 
@@ -1212,19 +1215,19 @@ document.addEventListener('DOMContentLoaded', () => {
      * 此函数会解析最终响应，将其添加到聊天区域，并更新会话状态。
      */
     function handleFinalResponse(msg) {
-        // 隐藏正在输入的指示器
+        // Hide the typing indicator
         hideTypingIndicator();
-        // 设置应用的加载状态为 false (非加载中)
+        // Set the application's loading state to false (not loading)
         setLoadingState(false);
-        // 清除当前客户端请求ID，表示此请求已完成
+        // Clear the current client request ID, indicating this request is complete
         state.currentClientRequestId = null;
-        // 清空待处理的工具调用记录
+        // Clear the list of pending tool calls
         state.pendingToolCalls = {};
 
-        // 从消息对象中解构出 content (主要回复内容) 和 llm_interaction_id
+        // Destructure content (main response content) and llm_interaction_id from the message object
         const { content, llm_interaction_id } = msg;
-        // 获取消息中可能包含的特定版本（v1.3.2）的驼峰命名JSON对象，如果成功的话
-        const finalCamelCaseJson = msg.final_v1_3_2_camelcase_json_if_success; // 确保版本号与后端一致
+        // Get the camelCase JSON object for the specific version (v1.3.2) from the message, if successful
+        const finalCamelCaseJson = msg.final_v1_3_2_camelcase_json_if_success; // Ensure version number syncs with backend
 
         // Initialize thinking content and actual response content for the chat bubble
         let thinkingForBubble = null;
@@ -1241,7 +1244,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalCamelCaseJson.decision.responseToUser && typeof finalCamelCaseJson.decision.responseToUser === 'object' &&
                 finalCamelCaseJson.decision.responseToUser.content !== undefined // Check if content exists even if it's null/empty
             ) {
-                // Use the content from the JSON, defaulting to an empty string if it's null or undefined
+                 // Use the content from the JSON, defaulting to an empty string if it's null or undefined
                 actualContentForBubble = finalCamelCaseJson.decision.responseToUser.content || "";
 
 
@@ -1256,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Create a list item and a quick action button for each suggestion
                             // Escape quotes in data-message attribute
                             const escapedMessage = String(sugg.textForUser).replace(/"/g, '&quot;');
-                            // Escape HTML special characters in the displayed text
+                             // Escape HTML special characters in the displayed text
                             const escapedTextForUser = String(sugg.textForUser).replace(/</g, "&lt;").replace(/>/g, "&gt;");
                             suggestionsText += `<li><a href="#" class="quick-action-btn lumina-button" data-message="${escapedMessage}"><i class="fas fa-arrow-right"></i> ${escapedTextForUser}</a></li>`;
                         }
@@ -1268,17 +1271,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     appendMessage(actualContentForBubble, 'agent', true, thinkingForBubble, false, [], null);
                 } else {
                     // If no suggestions, just append the response content to the chat box
-                    // If actualContentForBubble is empty from JSON and there are no suggestions, provide a default message
+                     // If actualContentForBubble is empty from JSON and there are no suggestions, provide a default message
                     if (!actualContentForBubble.trim()) {
-                        actualContentForBubble = "(Agent返回的回复内容为空)"; // Fallback message
-                        console.warn("Final response JSON has empty content and no suggestions. Using fallback message.");
+                         actualContentForBubble = "(Agent返回的回复内容为空)"; // Fallback message
+                         console.warn("Final response JSON has empty content and no suggestions. Using fallback message.");
                     }
                     appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], null); // Use false for isHTML if no suggestions added HTML
                 }
             } else {
                 // If the JSON structure is not as expected, use the raw content as a fallback, and log a warning
                 console.warn("Final response JSON structure missing decision.responseToUser.content or nested objects are invalid. Using fallback content.", finalCamelCaseJson);
-                // Use the raw content as the final message, add an error type for potential styling
+                 // Use the raw content as the final message, add an error type for potential styling
                 appendMessage(content || "(Agent返回的原始内容为空)", 'agent', false, thinkingForBubble, false, [], "ContentMissingIn_V1_PCP_JSON_Or_Structure_Invalid");
                 actualContentForBubble = content || "(Agent返回的原始内容为空)"; // Update for session history
             }
@@ -1323,7 +1326,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add a log item to the process log sidebar indicating the final response has been rendered
         appendLogItem(`AI最终回复已渲染 (LLM_ID: ${llmIdForLog})`, 'fas fa-flag-checkered log-success', 'type-final_response',
             // Detailed information: if finalCamelCaseJson exists, include content summary and raw response; otherwise include error details
-            finalCamelCaseJson ? { summary: (actualContentForBubble.includes('<div class="final-response-suggestions">') ? actualContentForBubble.substring(0, 120).split('<br>')[0] : actualContentForBubble.substring(0, 120)) + "...", raw_response_v1_3_2: finalCamelCaseJson } : { error_details: "响应生成指示失败或缺少有效JSON.", fallback_content_preview: (content || "(空)").substring(0, 120) + "..." }
+            finalCamelCaseJson ? { summary: (actualContentForBubble.includes('<div class="final-response-suggestions">') ? actualContentForBubble.substring(0, 120).split('<br>')[0] : actualContentForBubble.substring(0, 120)) + "...", raw_response_v1_3_2: finalCamelCaseJson } : { error_details: "响应生成指示失败或缺少有效JSON.", fallback_content_preview: (content || "(空)").substring(0,120) + "..."}
         );
         // Based on the current state of the process log sidebar, decide whether to force expansion or maintain state
         if (!state.isProcessLogSidebarVisible) showProcessLogSidebar(false); // If not visible, show but don't force expand
@@ -1385,10 +1388,10 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeCurrentSessionUI(true);
         // 为聊天框中的快捷操作按钮附加事件监听器
         attachQuickActionButtonListeners(dom.chatBox);
-        // 更新输入区域高度的CSS变量
+        // Update the CSS variable for input area height
         updateInputAreaHeightVar();
 
-        // 在控制台输出系统就绪信息
+        // Log that the system is ready
         console.log("光绘墨迹终端 系统就绪. 等待数据流.");
     }
 
@@ -1496,122 +1499,122 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.componentVisibilityToggle) dom.componentVisibilityToggle.addEventListener('change', (e) => {
             state.isIdtComponentVisible = e.target.checked; // 更新状态
             toggleThreeBlackHoleVisibility(state.isIdtComponentVisible); // 切换3D组件的可见性
-            // 更新3D组件切换按钮的 title 和图标
+            // Update the title and icon of the 3D component toggle button
             dom.idtComponentToggleBtn.setAttribute('title', state.isIdtComponentVisible ? '停用核心投影' : '激活核心投影');
             const idtIcon = dom.idtComponentToggleBtn.querySelector('i');
             if (idtIcon) idtIcon.className = state.isIdtComponentVisible ? 'fas fa-eye-slash' : 'fas fa-atom';
-            // 如果设置中的可见性切换开关存在，则同步其状态
+            // If the visibility toggle switch in settings exists, sync its state
             if (dom.componentVisibilityToggle) dom.componentVisibilityToggle.checked = state.isIdtComponentVisible;
-            // 将可见性状态保存到 localStorage
+            // Save the visibility state to localStorage
             localStorage.setItem(APP_PREFIX + 'isIdtComponentVisible', state.isIdtComponentVisible.toString());
         });
 
-        // 如果设置模态框存在，为其添加点击事件监听器 (用于点击模态框外部区域关闭模态框)
+        // If the settings modal exists, add a click event listener to it (to close the modal when clicking outside its content)
         if (dom.settingsModal) dom.settingsModal.addEventListener('click', (e) => {
-            if (e.target === dom.settingsModal) closeSettingsModal(true); // 如果点击目标是模态框本身 (背景)，则关闭
+            if (e.target === dom.settingsModal) closeSettingsModal(true); // If the clicked target is the modal itself (background), close it
         });
 
-        // 监听系统颜色方案变化 (用于 'auto-crystal' 主题)
+        // Listen for system color scheme changes (for 'auto-crystal' theme)
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (state.currentTheme === 'auto-crystal') applyCurrentTheme(); // 如果当前是自动主题，则重新应用主题
+            if (state.currentTheme === 'auto-crystal') applyCurrentTheme(); // If the current theme is auto, reapply the theme
         });
 
-        // 如果右侧日志侧边栏折叠/展开按钮存在，为其添加点击事件监听器
+        // If the process log sidebar collapse/expand button exists, add a click event listener
         if (dom.toggleProcessLogSidebarCollapseButton) dom.toggleProcessLogSidebarCollapseButton.addEventListener('click', () => toggleProcessLogSidebarCollapse());
-        // 如果右侧日志侧边栏关闭按钮存在，为其添加点击事件监听器
+        // If the process log sidebar close button exists, add a click event listener
         if (dom.closeProcessLogSidebarButton) dom.closeProcessLogSidebarButton.addEventListener('click', () => hideProcessLogSidebar());
 
-        // 如果3D组件切换按钮和其包装器都存在
+        // If the 3D component toggle button and its wrapper both exist
         if (dom.idtComponentToggleBtn && dom.idtComponentWrapper) {
-            // 为切换按钮添加点击事件监听器
+            // Add a click event listener to the toggle button
             dom.idtComponentToggleBtn.addEventListener('click', () => {
-                // 切换3D组件的可见性状态 (根据当前是否包含 'is-visible' 类)
+                // Toggle the visibility state of the 3D component (based on whether it currently has the 'is-visible' class)
                 state.isIdtComponentVisible = !dom.idtComponentWrapper.classList.contains('is-visible');
-                toggleThreeBlackHoleVisibility(state.isIdtComponentVisible); // 应用新的可见性
-                // 更新按钮的 title 和图标
+                toggleThreeBlackHoleVisibility(state.isIdtComponentVisible); // Apply the new visibility
+                // Update the title and icon of the button
                 dom.idtComponentToggleBtn.setAttribute('title', state.isIdtComponentVisible ? '停用核心投影' : '激活核心投影');
                 const idtIcon = dom.idtComponentToggleBtn.querySelector('i');
                 if (idtIcon) idtIcon.className = state.isIdtComponentVisible ? 'fas fa-eye-slash' : 'fas fa-atom';
-                // 如果设置中的可见性切换开关存在，则同步其状态
+                // If the visibility toggle switch in settings exists, sync its state
                 if (dom.componentVisibilityToggle) dom.componentVisibilityToggle.checked = state.isIdtComponentVisible;
-                // 将可见性状态保存到 localStorage
+                // Save the visibility state to localStorage
                 localStorage.setItem(APP_PREFIX + 'isIdtComponentVisible', state.isIdtComponentVisible.toString());
             });
         }
 
-        // 如果3D组件包装器存在，为其添加鼠标按下事件监听器 (用于拖拽)
+        // If the 3D component wrapper exists, add a mousedown event listener to it (for dragging)
         if (dom.idtComponentWrapper) {
             dom.idtComponentWrapper.addEventListener('mousedown', handleComponentMouseDown);
         }
-        // 为 window 添加 resize 事件监听器
+        // Add a resize event listener to the window
         window.addEventListener('resize', () => {
-            updateInputAreaHeightVar(); // 更新输入区域高度的CSS变量
-            applyFixedLogSidebarLayout(); // 应用右侧日志侧边栏布局
-            // 如果Three.js已初始化且相机、渲染器和包装器都存在 (用于响应式调整画布大小)
+            updateInputAreaHeightVar(); // Update the CSS variable for input area height
+            applyFixedLogSidebarLayout(); // Apply the layout for the right process log sidebar
+            // If Three.js is initialized and camera, renderer, and wrapper exist (for responsive canvas resizing)
             if (state.threeJsInitialized && state.threeJsCamera && state.threeJsRenderer && dom.idtComponentWrapper) {
-                const Rcontainer = dom.idtComponentWrapper; // 获取3D组件容器
-                state.threeJsCamera.aspect = Rcontainer.clientWidth / Rcontainer.clientHeight; // 更新相机宽高比
-                state.threeJsCamera.updateProjectionMatrix(); // 更新相机投影矩阵
-                state.threeJsRenderer.setSize(Rcontainer.clientWidth, Rcontainer.clientHeight); // 更新渲染器大小
+                const Rcontainer = dom.idtComponentWrapper; // Get the 3D component container
+                state.threeJsCamera.aspect = Rcontainer.clientWidth / Rcontainer.clientHeight; // Update camera aspect ratio
+                state.threeJsCamera.updateProjectionMatrix(); // Update camera projection matrix
+                state.threeJsRenderer.setSize(Rcontainer.clientWidth, Rcontainer.clientHeight); // Update renderer size
             }
         });
 
-        // 为聊天框添加鼠标悬停事件监听器，用于显示复制按钮
+        // Add mouseover event listener to the chat box for showing the copy button
         dom.chatBox.addEventListener('mouseover', handleChatBoxMouseOver);
-        // 为聊天框添加鼠标移出事件监听器，用于隐藏复制按钮
+        // Add mouseout event listener to the chat box for hiding the copy button
         dom.chatBox.addEventListener('mouseout', handleChatBoxMouseOut);
     }
 
     /**
-     * 初始化Three.js黑洞特效。
-     * @param {HTMLElement} container - 用于挂载Three.js Canvas的DOM元素。
-     * 此函数负责创建Three.js场景、相机、渲染器、光照和3D对象。
+     * Initializes the Three.js black hole effect.
+     * @param {HTMLElement} container - The DOM element to which the Three.js Canvas will be mounted.
+     * This function is responsible for creating the Three.js scene, camera, renderer, lighting, and 3D objects.
      */
     function initThreeBlackHole(container) {
-        // 如果 Three.js 已经初始化
+        // If Three.js is already initialized
         if (state.threeJsInitialized) {
-            // 并且当前没有动画ID，但是组件应该是可见的
+            // And there is no current animation ID, but the component should be visible
             if (!state.threeJsAnimationId && state.isIdtComponentVisible) {
-                animateThreeBlackHole(); // 重新启动动画
+                animateThreeBlackHole(); // Restart the animation
             }
-            return; // 直接返回，不再重复初始化
+            return; // Return without re-initializing
         }
-        // 如果容器元素未找到
+        // If the container element is not found
         if (!container) {
-            console.error("Three.js: Container element not found for black hole."); // 打印错误信息
-            return; // 退出函数
+            console.error("Three.js: Container element not found for black hole."); // Log error message
+            return; // Exit function
         }
-        // 如果 THREE 对象未定义 (Three.js库未加载)
+        // If the THREE object is not defined (Three.js library is not loaded)
         if (typeof THREE === 'undefined') {
-            console.error("Three.js library is not loaded."); // 打印错误信息
-            showToast("错误: 3D核心组件库未能加载。", "error", 5000); // 显示错误Toast
-            return; // 退出函数
+            console.error("Three.js library is not loaded."); // Log error message
+            showToast("错误: 3D核心组件库未能加载。", "error", 5000); // Show error Toast
+            return; // Exit function
         }
 
-        // 创建 Three.js 场景
+        // Create a Three.js scene
         state.threeJsScene = new THREE.Scene();
-        // 创建透视相机 (视野角度, 宽高比, 近裁剪面, 远裁剪面)
+        // Create a perspective camera (field of view, aspect ratio, near clipping plane, far clipping plane)
         state.threeJsCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 2000);
-        // 设置相机位置 (Z轴向后移动，使物体可见)
+        // Set the camera's position (move back along the Z axis to make objects visible)
         state.threeJsCamera.position.z = 60;
-        // 创建 WebGL 渲染器，开启抗锯齿和透明背景
+        // Create a WebGL renderer, enabling anti-aliasing and transparent background
         state.threeJsRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        // 设置渲染器大小为容器的宽高
+        // Set the renderer size to match the container's width and height
         state.threeJsRenderer.setSize(container.clientWidth, container.clientHeight);
-        // 设置设备像素比，以获得更清晰的渲染效果
+        // Set the device pixel ratio for sharper rendering
         state.threeJsRenderer.setPixelRatio(window.devicePixelRatio);
         // Clear any existing canvas elements from previous initializations
         container.querySelectorAll('canvas').forEach(canvas => canvas.remove());
-        // 将渲染器的 DOM 元素 (canvas) 添加到容器中
+        // Append the renderer's DOM element (canvas) to the container
         container.appendChild(state.threeJsRenderer.domElement);
 
-        // 创建环境光 (颜色, 强度)
+        // Create an ambient light (color, intensity)
         const ambientLight = new THREE.AmbientLight(0xaaaaaa, 0.5);
-        state.threeJsScene.add(ambientLight); // 将环境光添加到场景
-        // 创建点光源 (颜色, 强度, 距离)
+        state.threeJsScene.add(ambientLight); // Add ambient light to the scene
+        // Create a point light (color, intensity, distance)
         const pointLight = new THREE.PointLight(0xffffff, 1, 500);
-        pointLight.position.set(0, 20, 30); // 设置点光源位置
-        state.threeJsScene.add(pointLight); // 将点光源添加到场景
+        pointLight.position.set(0, 20, 30); // Set the point light's position
+        state.threeJsScene.add(pointLight); // Add point light to the scene
 
         // Create a group to hold the black hole and accretion disks, for easier manipulation
         state.threeBlackHoleGroup = new THREE.Group();
@@ -2245,8 +2248,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * 渲染会话列表到UI。
-     * 根据 `state.sessions` 中的数据动态创建列表项。
+     * Renders the session list to the UI.
+     * Dynamically creates list items based on the data in `state.sessions`.
      */
     function renderSessionList() {
         // If the session list container element (ul) does not exist, do nothing
@@ -2330,9 +2333,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * 格式化时间戳为用户友好的相对时间字符串。
-     * @param {number} dateTimestamp - 时间戳。
-     * @returns {string} 格式化后的时间字符串 (例如 "刚刚", "5分前", "昨天", "2023/10/26")。
+     * Formats a timestamp into a user-friendly relative time string.
+     * @param {number} dateTimestamp - The timestamp.
+     * @returns {string} The formatted time string (e.g., "just now", "5 min ago", "yesterday", "10/26/2023").
      */
     function formatTimeSince(dateTimestamp) {
         const now = new Date(); // Get current time
@@ -2360,7 +2363,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * 保存当前所有会话数据到localStorage。
+     * Saves all current session data to localStorage.
      */
     function saveSessions() {
         try {
@@ -2375,7 +2378,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * 从localStorage加载会话数据。
+     * Loads session data from localStorage.
      */
     function loadSessions() {
         // Get the stored session data string from localStorage
@@ -2426,9 +2429,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * 更新左侧边栏的展开/收起状态。
-     * @param {boolean} expand - 是否展开。
-     * @param {boolean} [instant=false] - 是否立即更新，无动画。
+     * Updates the expanded/collapsed state of the left sidebar.
+     * @param {boolean} expand - Whether to expand or collapse.
+     * @param {boolean} [instant=false] - Whether to update instantly without animation.
      */
     function updateSidebarState(expand, instant = false) {
         // Update the sidebar expanded state in the state
@@ -2455,9 +2458,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * 更新会话管理器的折叠/展开状态。
-     * @param {boolean} collapse - 是否折叠。
-     * @param {boolean} [instant=false] - 是否立即更新，无动画。
+     * Updates the collapsed/expanded state of the session manager.
+     * @param {boolean} collapse - Whether to collapse or expand.
+     * @param {boolean} [instant=false] - Whether to update instantly without animation.
      */
     function updateSessionManagerState(collapse, instant = false) {
         // Update the session manager collapsed state in the state
@@ -2932,7 +2935,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Define extra space to simulate vertical padding for single-line text, improving visual appearance
         const singleLinePadding = 5;
         // Check if it's a single line of text (by checking for newline characters) AND the actual content height is less than the minimum height plus the simulated vertical padding
-        // This condition aims to avoid adding extra height unnecessarily when the minHeight is already sufficient for single-line text plus its actual CSS padding
+         // This condition aims to avoid adding extra height unnecessarily when the minHeight is already sufficient for single-line text plus its actual CSS padding
         if (dom.userInput.value.split('\n').length <= 1 && scrollHeight < minHeight + singleLinePadding * 2) {
             // If this is the case, add the simulated padding to the scrollHeight
             scrollHeight += singleLinePadding;
@@ -3150,9 +3153,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 fileItemElement.addEventListener('animationend', () => {
                     // After the animation finishes, check again if the Toast is still in the DOM (in case it was removed by other means during the animation)
                     if (fileItemElement.parentElement) {
-                        fileItemElement.remove(); // Remove the DOM element
-                        // If the upload file list is empty after removal, close (hide) the file preview area
-                        if (state.uploadedFiles.length === 0) closeFilePreview();
+                         fileItemElement.remove(); // Remove the DOM element
+                         // If the upload file list is empty after removal, close (hide) the file preview area
+                         if (state.uploadedFiles.length === 0) closeFilePreview();
                     }
                 }, { once: true }); // once: true means the event triggers only once
             } else {
