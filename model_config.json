@@ -1,0 +1,15 @@
+{
+  "default_model_id": "reasoning_zhipu_flash",
+  "models": {
+    "reasoning_zhipu_flash": {
+      "name": "glm-z1-flash",
+      "type": "reasoning",
+      "description": "智谱 Z1 Flash (支持工具调用的推理模型)"
+    },
+    "non_reasoning_zhipu_lite": {
+      "name": "glm-4-flash-250414",
+      "type": "non_reasoning",
+      "description": "智谱 GLM-4 (强大的非推理模型)"
+    }
+  }
+}
