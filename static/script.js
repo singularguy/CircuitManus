@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 如果加载动画元素存在，并且是第一次尝试连接，并且没有显示致命错误
         if (dom.loader && wsReconnectAttempts === 0 && !dom.loader.classList.contains('loader-fatal-error')) {
             const loadingText = dom.loader.querySelector('.loading-text'); // 获取加载文本元素
-            if (loadingText) loadingText.textContent = "同步光绘墨迹流 (V1.1.4 Lumina)..."; // 更新加载文本，版本号同步
+            if (loadingText) loadingText.textContent = "同步光绘墨迹流 (V1.0.0 Lumina)..."; // 更新加载文本，版本号同步
         }
 
         websocket = new WebSocket(websocketUrl); // 创建新的 WebSocket 实例
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         websocket.onopen = (event) => {
             console.log("WebSocket: Connection established.", event); // 在控制台打印连接成功信息
             wsReconnectAttempts = 0; // 重置重连尝试次数
-            showToast("光绘墨迹数据流 ACTIVE (V1.1.4 Lumina).", "success", 4000); // 显示连接成功的 Toast 通知，版本号同步
+            showToast("光绘墨迹数据流 ACTIVE (V1.0.0 Lumina).", "success", 4000); // 显示连接成功的 Toast 通知，版本号同步
             // 发送初始化消息到 WebSocket 服务器
             sendWebSocketMessage({
                 type: 'init', // 消息类型为 'init'
@@ -305,8 +305,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // 根据 Agent 可用状态设置提示消息和类型
                         const agentStatusMessage = message.agent_available === false
-                            ? 'Lumina AI核心 OFFLINE. 功能受限. (V1.1.4 Lumina)' // Agent 不可用时的消息，版本号同步
-                            : 'Lumina核心 (V1.1.4 Lumina) 已同步到光绘网络!'; // Agent 可用时的消息，版本号同步
+                            ? 'Lumina AI核心 OFFLINE. 功能受限. (V1.0.0 Lumina)' // Agent 不可用时的消息，版本号同步
+                            : 'Lumina核心 (V1.0.0 Lumina) 已同步到光绘网络!'; // Agent 可用时的消息，版本号同步
                         const agentStatusType = message.agent_available === false ? 'warning' : 'success'; // Agent 不可用时为警告，可用时为成功
                         // 显示 Toast 通知
                         showToast(agentStatusMessage, agentStatusType, message.agent_available ? 4500 : 8000);
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // 如果 Agent 不可用
                         if (message.agent_available === false) {
                             // 在聊天框追加系统错误消息
-                            appendMessage("CRITICAL SYSTEM ALERT: Lumina AI核心未能初始化. 子系统无响应. (V1.1.4 Lumina)", 'error-system', false, null, false, [], "System Error"); // 版本号同步
+                            appendMessage("CRITICAL SYSTEM ALERT: Lumina AI核心未能初始化. 子系统无响应. (V1.0.0 Lumina)", 'error-system', false, null, false, [], "System Error"); // 版本号同步
                         }
                         setLoadingState(false); // 设置加载状态为 false
                     } catch (e) {
@@ -1342,7 +1342,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function initializeApp() {
         // 在控制台输出初始化信息，包含版本号
-        console.log("CircuitManus Pro - 光绘墨迹终端 (V1.1.4 Lumina) 初始化..."); // 版本号同步
+        console.log("CircuitManus Pro - 光绘墨迹终端 (V1.0.0 Lumina) 初始化..."); // 版本号同步
 
         // 加载用户设置 (如主题、字体大小等)
         loadSettings();
@@ -2776,9 +2776,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="message-content">
                 <div class="welcome-header">
                     <!-- Robot icon with animation -->
-                    <i class="fas fa-brush robot-icon animate__animated animate__pulse animate__infinite" style="--animate-duration: 3.5s;"></i>
+                    <i class="fas fa-dna robot-icon animate__animated animate__pulse animate__infinite" style="--animate-duration: 3.5s;"></i>
                     <!-- App title and version -->
-                    <h2>CircuitManus <span class="version-pro">Lumina <span class="version-number">v1.1.4</span></span></h2> <!-- Version sync -->
+                    <h2>CircuitManus <span class="version-pro">Lumina <span class="version-number">v1.0.0</span></span></h2> <!-- Version sync -->
                 </div>
                 <!-- Subtitle -->
                 <p class="welcome-subtitle">您的光绘墨迹交互界面，赋能创意与构想。Lumina核心已激活，请挥洒您的灵感。</p>
