@@ -60,6 +60,7 @@ if not API_KEY:
 else:
     logger.info("成功获取 ZHIPUAI_API_KEY 环境变量. ")
 
+#　再获取一次
 
 # 函数: 根据会话 ID 获取或创建 Agent 实例
 async def get_agent_instance(session_id: str) -> CircuitAgent:
