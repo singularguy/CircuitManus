@@ -1,0 +1,8 @@
+{
+    "python.analysis.extraPaths": [
+        "./" // 或者 "${workspaceFolder}"，表示当前工作区根目录
+    ],
+    "python.autoComplete.extraPaths": [
+        "./" // 确保自动完成也能找到
+    ]
+}

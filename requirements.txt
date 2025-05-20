@@ -4,3 +4,4 @@ uvicorn[standard] # [standard] 包含常用依赖如 websockets, http-tools
 zhipuai
 jinja2
 aiofiles
+google-search-results
