@@ -119,30 +119,42 @@ else:
 async def get_agent_instance(session_id: str) -> CircuitAgent:
     """
     根据会话 ID 获取或创建 Agent 实例。
-    如果实例不存在，则创建一个新的 CircuitAgent。
-    此函数现在更加健壮，能处理 AGENT_AVAILABLE 的情况。
+    现在调用 Agent 的构造函数时，传递配置文件路径。
     """
     if session_id not in agent_sessions:
-        logger.info(f"为 Session {session_id} 创建新的 Agent 实例 (V1.0.0 Refactored)...")
-        if AGENT_AVAILABLE and API_KEY: # 确保Agent可用且API Key存在 (如果Agent强制需要)
+        logger.info(f"为 Session {session_id} 创建新的 Agent 实例 (V1.0.0 Refactored & Configurable)...")
+        if AGENT_AVAILABLE: # 检查 Agent 核心代码是否可用
             try:
-                # verbose=True 会传递给 Agent 的 __init__，进而影响其日志级别
-                new_agent = CircuitAgent(api_key=API_KEY, verbose=True) 
+                # CircuitAgent 的构造函数现在期望配置文件路径
+                # .env 文件路径可以不传，ConfigLoader 会尝试默认位置
+                # API_KEY 和 verbose_mode 会由 Agent 内部的 ConfigLoader 处理
+                
+                # 确定配置文件的路径，通常相对于项目根目录
+                # 假设 server.py 在项目根目录，config.yaml 也在项目根目录
+                config_yaml_file_path = "config.yaml" 
+                # .env 文件路径，如果想明确指定，否则 ConfigLoader 会自己找
+                # dotenv_file_path = ".env" 
+                dotenv_file_path = None # 让 ConfigLoader 默认查找
+
+                # 实例化 Agent，传递配置文件路径
+                new_agent = CircuitAgent(
+                    config_yaml_path=config_yaml_file_path,
+                    dotenv_path=dotenv_file_path
+                )
+                
                 agent_sessions[session_id] = new_agent
-                agent_locks[session_id] = asyncio.Lock() # 为新会话创建锁
-                logger.info(f"Agent 实例为 Session {session_id} 创建成功 (V1.0.0 Refactored).")
-            except Exception as e:
-                logger.error(f"创建真实的 Agent 实例失败 (Session {session_id}): {e}", exc_info=True)
-                # 如果真实 Agent 创建失败，为了服务器不崩溃，可以返回一个假的，或者直接抛出异常
-                # 这里选择抛出异常，让WebSocket连接知道Agent初始化失败
+                agent_locks[session_id] = asyncio.Lock() 
+                logger.info(f"Agent 实例为 Session {session_id} 创建成功 (V1.0.0 Refactored & Configurable).")
+            except ValueError as ve: # 例如 API Key 未找到时 Agent __init__ 抛出的 ValueError
+                logger.error(f"创建真实的 Agent 实例因配置问题失败 (Session {session_id}): {ve}", exc_info=True)
+                raise RuntimeError(f"无法为会话 {session_id} 创建真实的 Agent 实例: {ve}") from ve
+            except Exception as e: # 其他可能的初始化错误
+                logger.error(f"创建真实的 Agent 实例发生未知错误 (Session {session_id}): {e}", exc_info=True)
                 raise RuntimeError(f"无法为会话 {session_id} 创建真实的 Agent 实例: {e}") from e
-        elif AGENT_AVAILABLE and not API_KEY: # Agent代码存在，但API_KEY缺失
-            logger.error(f"无法为 Session {session_id} 创建真实的 Agent 实例，因为 ZHIPUAI_API_KEY 未设置。")
-            raise RuntimeError(f"无法为会话 {session_id} 创建 Agent 实例: ZHIPUAI_API_KEY 缺失。")
-        else: # AGENT_AVAILABLE is False
+        # AGENT_AVAILABLE is False 的情况保持不变
+        else: 
              logger.warning(f"Agent 核心代码不可用,为 Session {session_id} 创建了一个假的 Agent 实例 (get_agent_instance).")
-             # 创建假的Agent实例 (它在 AGENT_AVAILABLE=False 时被定义)
-             agent_sessions[session_id] = CircuitAgent(api_key="FAKE_KEY_AGENT_UNAVAILABLE", verbose=True) 
+             agent_sessions[session_id] = CircuitAgent(config_yaml_path="dummy_config.yaml") # 假Agent也需要匹配签名
              agent_locks[session_id] = asyncio.Lock()
     return agent_sessions[session_id]
 

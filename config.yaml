@@ -1,0 +1,63 @@
+# IDT_AGENT_NATIVE/config.yaml
+# CircuitManus Agent Configuration File
+
+# -----------------------------------------------------------------------------
+# Agent Core Settings
+# -----------------------------------------------------------------------------
+agent_settings:
+  general:
+    agent_version: "V1.0.0_Refactored_Config" # 当前Agent版本
+    default_user_facing_error_message: "抱歉，处理您的请求时发生了一个内部错误，请稍后再试。"
+
+  llm: # 大语言模型相关配置
+    provider: "zhipuai" # 当前支持 "zhipuai", 未来可扩展
+    model_name: "glm-z1-flash" # 使用的具体模型名称
+    default_temperature: 0.01  # LLM生成文本的随机性 (0.0-1.0)
+    default_max_tokens: 8190   # LLM单次响应最大输出token数
+    planning_llm_retries: 3    # 规划阶段LLM调用失败时的重试次数
+    response_generation_llm_retries: 1 # 响应生成阶段LLM调用失败时的重试次数
+    api_timeout_seconds: 120     # 调用LLM API的超时时间 (秒)
+
+  tools: # 工具执行相关配置
+    max_tool_retries: 1             # 单个工具执行失败时的最大重试次数
+    tool_retry_delay_seconds: 1.5   # 工具重试之间的延迟时间 (秒)
+    
+    specific_tools: # 特定工具的配置 (未来可扩展)
+      duckduckgo_search:
+        default_num_results: 3    # DuckDuckGo搜索默认返回结果数
+        timeout_seconds: 20       # DuckDuckGo搜索超时时间 (秒)
+        # region: "wt-wt" # 可选：DuckDuckGo区域设置，例如 "us-en", "wt-wt" (无区域)
+        # safe_search: "moderate" # 可选：安全搜索级别 "off", "moderate", "strict"
+
+  memory: # 记忆管理相关配置
+    max_short_term_items: 40  # 短期记忆最大条目数
+    max_long_term_items: 100  # 长期记忆最大条目数
+    recent_long_term_count_for_prompt: 7 # 用于提示的近期长期记忆条目数
+
+  orchestration: # Agent编排逻辑相关配置
+    max_replanning_attempts: 2 # 最大重规划尝试次数
+
+  logging: # 日志系统配置
+    # 控制台日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    log_level_console: "INFO" 
+    # 文件日志级别 (通常可以更详细)
+    log_level_file: "DEBUG"   
+    log_dir: "WebUIAgentLogs" # 日志文件存放目录
+    # Agent初始化时的默认verbose状态, 会覆盖console_level，若为true则console为DEBUG
+    verbose_mode_default: true 
+
+  security: # 安全相关配置 (可选，根据需求启用)
+    max_input_length_user_request: 10000 # 用户输入最大长度
+    # max_output_length_llm_response_content: 20000 # LLM最终回复内容最大长度 (这个通常由max_tokens间接控制)
+
+  feature_flags: # 实验性功能开关 (未来可扩展)
+    # example_feature_flag: false
+    enable_detailed_llm_message_logging: true # 是否在DEBUG级别详细记录发往LLM的消息
+
+# -----------------------------------------------------------------------------
+# Server Settings (可选，如果FastAPI服务器也从这里读取)
+# -----------------------------------------------------------------------------
+# server_settings:
+#   host: "127.0.0.1"
+#   port: 8000
+#   # reload_on_change: true # 通常由Uvicorn命令行控制

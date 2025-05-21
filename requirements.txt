@@ -1,7 +1,9 @@
-zhipuai>=2.0.0 # 智谱 AI 官方 SDK，用于与模型交互和Function Calling
+zhipuai>=2.0.0
 fastapi
-uvicorn[standard] # [standard] 包含常用依赖如 websockets, http-tools
+uvicorn[standard]
 zhipuai
 jinja2
 aiofiles
 google-search-results
+python-dotenv>=0.19.0
+PyYAML>=5.4.1

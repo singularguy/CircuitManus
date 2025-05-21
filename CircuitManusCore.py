@@ -444,10 +444,10 @@ class LLMInterface:
                  })
             raise
 
-# --- 模块化组件: OutputParserV1_0_CamelCaseReasoning (输出解析器) ---
-class OutputParserV1_0_CamelCaseReasoning:
+# --- 模块化组件: OutputParser (输出解析器) ---
+class OutputParser:
     def __init__(self, agent_tools_registry: Optional[Dict[str, Dict[str, Any]]] = None):
-        logger.info("[OutputParserV1_0_CamelCaseReasoning] 初始化输出解析器 (适配 ManusLLMResponse-V1.0.0 CamelCase JSON结构,提取 <think> 标签,增强布尔解析)。")
+        logger.info("[OutputParser] 初始化输出解析器 (适配 ManusLLMResponse-V1.0.0 CamelCase JSON结构,提取 <think> 标签,增强布尔解析)。")
         self.agent_tools_registry = agent_tools_registry if agent_tools_registry else {}
 
     def _validate_tool_arguments(self, tool_name: str, tool_arguments: Dict[str, Any], tool_call_id: str) -> List[Dict[str, str]]:
@@ -518,8 +518,8 @@ class OutputParserV1_0_CamelCaseReasoning:
 
 
     def parse_llm_response_to_structured_json(self, llm_api_response_message: Any, execution_phase: str) -> Tuple[Optional[Dict[str, Any]], str, List[Dict[str,str]]]:
-        parser_id = f"parse_v1_0_camelcase_{str(uuid4())[:8]}"
-        logger.debug(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 开始解析 LLM 响应 (阶段: {execution_phase})...")
+        parser_id = f"parse{str(uuid4())[:8]}"
+        logger.debug(f"[{parser_id}-OutputParser] 开始解析 LLM 响应 (阶段: {execution_phase})...")
         parsed_json_dict: Optional[Dict[str, Any]] = None
         error_message: str = ""
         failed_validation_points_list: List[Dict[str, str]] = []
@@ -527,16 +527,16 @@ class OutputParserV1_0_CamelCaseReasoning:
 
         if llm_api_response_message is None:
             error_message = "LLM 响应对象 (Message) 为 None。"
-            logger.error(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 解析失败: {error_message}")
+            logger.error(f"[{parser_id}-OutputParser] 解析失败: {error_message}")
             return None, error_message, [{"jsonPath": "root", "issue_description": error_message}]
 
         raw_content = getattr(llm_api_response_message, 'content', None)
         if not raw_content or not raw_content.strip():
             error_message = "LLM 响应内容 (content 字段) 为空或仅包含空白字符。"
-            logger.error(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 解析失败: {error_message}")
+            logger.error(f"[{parser_id}-OutputParser] 解析失败: {error_message}")
             return None, error_message, [{"jsonPath": "content", "issue_description": error_message}]
 
-        logger.debug(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 接收到的原始 LLM content (完整):\n{raw_content}")
+        logger.debug(f"[{parser_id}-OutputParser] 接收到的原始 LLM content (完整):\n{raw_content}")
 
         content_to_parse_for_json = raw_content
         think_match = re.search(r"<think>(.*?)</think>", raw_content, re.DOTALL | re.IGNORECASE)
@@ -544,59 +544,59 @@ class OutputParserV1_0_CamelCaseReasoning:
         if think_match:
             extracted_thought_process = think_match.group(1).strip()
             content_to_parse_for_json = raw_content[think_match.end():].strip()
-            logger.info(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 成功提取到 <think>...</think> 内容。")
-            logger.debug(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 提取的思考过程 (预览):\n{extracted_thought_process[:1000]}...")
-            logger.debug(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 剩余内容待解析为JSON (预览):\n{content_to_parse_for_json[:1000]}...")
+            logger.info(f"[{parser_id}-OutputParser] 成功提取到 <think>...</think> 内容。")
+            logger.debug(f"[{parser_id}-OutputParser] 提取的思考过程 (预览):\n{extracted_thought_process[:1000]}...")
+            logger.debug(f"[{parser_id}-OutputParser] 剩余内容待解析为JSON (预览):\n{content_to_parse_for_json[:1000]}...")
             if not content_to_parse_for_json:
                  error_message = "LLM 响应包含 <think> 块但之后没有内容可解析为 JSON。"
-                 logger.error(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 解析失败: {error_message}")
+                 logger.error(f"[{parser_id}-OutputParser] 解析失败: {error_message}")
                  return None, error_message, [{"jsonPath": "root_after_think_block", "issue_description": error_message}]
         else:
-            logger.warning(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 未在LLM响应中找到有效的 <think>...</think> 块,将尝试按旧方式解析整个内容。")
+            logger.warning(f"[{parser_id}-OutputParser] 未在LLM响应中找到有效的 <think>...</think> 块,将尝试按旧方式解析整个内容。")
 
         json_string_to_parse = content_to_parse_for_json.strip()
         match_md_json = re.search(r"```json\s*(.*?)\s*```", json_string_to_parse, re.DOTALL | re.IGNORECASE)
         if match_md_json:
             json_string_to_parse = match_md_json.group(1).strip()
-            logger.debug(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 从 Markdown 代码块中提取到 JSON 字符串。")
+            logger.debug(f"[{parser_id}-OutputParser] 从 Markdown 代码块中提取到 JSON 字符串。")
         else:
             first_brace = json_string_to_parse.find('{')
             last_brace = json_string_to_parse.rfind('}')
             if first_brace > 0 and (last_brace == -1 or first_brace > last_brace) :
                 prefix_content = json_string_to_parse[:first_brace].strip()
-                logger.warning(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 在预期的 JSON 开头 '{{' 之前检测到非空白内容: '{prefix_content[:1000]}...'。将尝试从 '{{' 开始解析。")
+                logger.warning(f"[{parser_id}-OutputParser] 在预期的 JSON 开头 '{{' 之前检测到非空白内容: '{prefix_content[:1000]}...'。将尝试从 '{{' 开始解析。")
                 json_string_to_parse = json_string_to_parse[first_brace:]
             elif first_brace == -1 :
                 error_message = "无法在 LLM 响应内容 (post-<think>或完整) 中找到 JSON 对象的起始 '{'。"
-                logger.error(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 解析失败: {error_message} 原始响应预览 (post-<think>或完整): {json_string_to_parse[:1000]}...")
+                logger.error(f"[{parser_id}-OutputParser] 解析失败: {error_message} 原始响应预览 (post-<think>或完整): {json_string_to_parse[:1000]}...")
                 return None, error_message, [{"jsonPath": "content_for_json_parsing", "issue_description": error_message}]
 
-        logger.debug(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 预处理后,准备解析的 JSON 字符串 (完整):\n{json_string_to_parse}")
+        logger.debug(f"[{parser_id}-OutputParser] 预处理后,准备解析的 JSON 字符串 (完整):\n{json_string_to_parse}")
 
         try:
             parsed_json_dict = json.loads(json_string_to_parse)
-            logger.info(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] JSON 字符串成功解析为字典。")
+            logger.info(f"[{parser_id}-OutputParser] JSON 字符串成功解析为字典。")
         except json.JSONDecodeError as json_err:
             error_message = f"JSON 解析失败: {json_err}。"
-            logger.error(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] {error_message} Raw JSON string (截断): '{json_string_to_parse[:1000]}...'")
+            logger.error(f"[{parser_id}-OutputParser] {error_message} Raw JSON string (截断): '{json_string_to_parse[:1000]}...'")
             return None, error_message, [{"jsonPath": "root_json_parsing", "issue_description": f"JSONDecodeError: {json_err}"}]
         except Exception as e:
             error_message = f"解析 LLM 响应时发生未知错误: {e}"
-            logger.error(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 解析时未知错误: {error_message}", exc_info=True)
+            logger.error(f"[{parser_id}-OutputParser] 解析时未知错误: {error_message}", exc_info=True)
             return None, error_message, [{"jsonPath": "root_json_parsing", "issue_description": f"Unexpected parsing error: {e}"}]
 
         if not isinstance(parsed_json_dict, dict):
             error_message = "解析后的结果不是一个 JSON 对象 (字典)。"
-            logger.error(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 结构验证失败: {error_message}")
+            logger.error(f"[{parser_id}-OutputParser] 结构验证失败: {error_message}")
             return None, error_message, [{"jsonPath": "root_json_parsing", "issue_description": error_message}]
 
         if extracted_thought_process is not None:
             if "thoughtProcess" in parsed_json_dict and parsed_json_dict["thoughtProcess"] and parsed_json_dict["thoughtProcess"] != extracted_thought_process:
-                logger.warning(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] LLM提供了<think>块和JSON内部的thoughtProcess。将优先使用<think>块内容。")
+                logger.warning(f"[{parser_id}-OutputParser] LLM提供了<think>块和JSON内部的thoughtProcess。将优先使用<think>块内容。")
             parsed_json_dict["thoughtProcess"] = extracted_thought_process
-            logger.info(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 已将<think>块内容置于parsed_json_dict['thoughtProcess']。")
+            logger.info(f"[{parser_id}-OutputParser] 已将<think>块内容置于parsed_json_dict['thoughtProcess']。")
         elif "thoughtProcess" not in parsed_json_dict or not parsed_json_dict.get("thoughtProcess", "").strip():
-             logger.warning(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] LLM未提供<think>块,且JSON内部的thoughtProcess为空或缺失。思考过程可能不完整。")
+             logger.warning(f"[{parser_id}-OutputParser] LLM未提供<think>块,且JSON内部的thoughtProcess为空或缺失。思考过程可能不完整。")
 
         required_top_level_fields = ["requestId", "llmInteractionId", "timestampUtc", "status", "executionPhase", "thoughtProcess", "decision"]
         for field in required_top_level_fields:
@@ -625,17 +625,17 @@ class OutputParserV1_0_CamelCaseReasoning:
                 if not isinstance(error_details_obj.get("technicalMessage"), str) or not error_details_obj.get("technicalMessage","").strip():
                     failed_validation_points_list.append({"jsonPath": "errorDetails.technicalMessage", "issue_description": "'errorDetails' 对象中缺少有效的 'technicalMessage' 字符串。"})
                 if "isDirectLlmFailure" not in error_details_obj or not isinstance(error_details_obj.get("isDirectLlmFailure"), bool):
-                    logger.warning(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 'errorDetails.isDirectLlmFailure' 字段缺失或类型不为布尔。Agent将假定为False。LLM输出应包含此字段。")
+                    logger.warning(f"[{parser_id}-OutputParser] 'errorDetails.isDirectLlmFailure' 字段缺失或类型不为布尔。Agent将假定为False。LLM输出应包含此字段。")
                     failed_validation_points_list.append({"jsonPath": "errorDetails.isDirectLlmFailure", "issue_description": "'errorDetails' 对象中缺少有效的布尔字段 'isDirectLlmFailure'。"})
         elif status_val == "success" and parsed_json_dict.get("errorDetails") is not None:
              failed_validation_points_list.append({"jsonPath": "errorDetails", "issue_description": "当 'status' 为 'success' 时, 'errorDetails' 字段必须为 null 或不存在。"})
 
         if not isinstance(parsed_json_dict.get("thoughtProcess"), str):
             if parsed_json_dict.get("thoughtProcess") is not None:
-                logger.warning(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 'thoughtProcess' 字段存在但类型不正确 (应为字符串)。")
+                logger.warning(f"[{parser_id}-OutputParser] 'thoughtProcess' 字段存在但类型不正确 (应为字符串)。")
                 failed_validation_points_list.append({"jsonPath": "thoughtProcess", "issue_description": "'thoughtProcess' 字段如果存在,必须是字符串。"})
         elif not parsed_json_dict.get("thoughtProcess","").strip() and extracted_thought_process is None:
-            logger.warning(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] LLM未提供<think>块,且JSON内部的thoughtProcess为空或缺失。思考过程可能不完整。")
+            logger.warning(f"[{parser_id}-OutputParser] LLM未提供<think>块,且JSON内部的thoughtProcess为空或缺失。思考过程可能不完整。")
 
         decision_obj = parsed_json_dict.get("decision")
         if not isinstance(decision_obj, dict):
@@ -655,14 +655,14 @@ class OutputParserV1_0_CamelCaseReasoning:
                 failed_validation_points_list.append({"jsonPath": "decision.isCallTools", "issue_description": f"'decision.isCallTools' 值 '{raw_is_call_tools_val}' 无效。必须是布尔类型或可解析为布尔的字符串('true'/'false')。"})
             else:
                 decision_obj["isCallTools"] = is_call_tools_val
-                logger.debug(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 'isCallTools' (原始值: {raw_is_call_tools_val}) 被解析为布尔值: {is_call_tools_val}。")
+                logger.debug(f"[{parser_id}-OutputParser] 'isCallTools' (原始值: {raw_is_call_tools_val}) 被解析为布尔值: {is_call_tools_val}。")
 
             tool_call_requests = decision_obj.get("toolCallRequests")
             if is_call_tools_val is True:
                 if not isinstance(tool_call_requests, list):
                     failed_validation_points_list.append({"jsonPath": "decision.toolCallRequests", "issue_description": "当 'isCallTools' 为 True 时, 'toolCallRequests' 必须是一个列表。"})
                 elif not tool_call_requests:
-                    logger.warning(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] 'isCallTools' 为 True 但 'toolCallRequests' 列表为空。这可能是一个规划逻辑问题。")
+                    logger.warning(f"[{parser_id}-OutputParser] 'isCallTools' 为 True 但 'toolCallRequests' 列表为空。这可能是一个规划逻辑问题。")
                 elif tool_call_requests:
                     for i, tool_req_item in enumerate(tool_call_requests):
                         item_path_prefix = f"decision.toolCallRequests[{i}]"
@@ -736,10 +736,10 @@ class OutputParserV1_0_CamelCaseReasoning:
             error_message = "\n".join(error_message_parts)
 
             json_content_for_log = json.dumps(parsed_json_dict, indent=2, ensure_ascii=False) if parsed_json_dict else json_string_to_parse[:1000]
-            logger.error(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning]\n{error_message}\n解析的 JSON 内容 (可能不完整或无效):\n{json_content_for_log}")
+            logger.error(f"[{parser_id}-OutputParser]\n{error_message}\n解析的 JSON 内容 (可能不完整或无效):\n{json_content_for_log}")
             return None, error_message, failed_validation_points_list
 
-        logger.info(f"[{parser_id}-OutputParserV1_0_CamelCaseReasoning] LLM 响应 (阶段: {execution_phase}, LLM_ID: {parsed_json_dict.get('llmInteractionId', 'N/A')}) 已成功解析并验证为 ManusLLMResponse-V1.0.0兼容结构 (思考过程来源: {'<think> block' if extracted_thought_process else 'JSON field'})！")
+        logger.info(f"[{parser_id}-OutputParser] LLM 响应 (阶段: {execution_phase}, LLM_ID: {parsed_json_dict.get('llmInteractionId', 'N/A')}) 已成功解析并验证为 ManusLLMResponse-V1.0.0兼容结构 (思考过程来源: {'<think> block' if extracted_thought_process else 'JSON field'})！")
         return parsed_json_dict, "", []
 
 
@@ -1002,7 +1002,7 @@ class CircuitAgent:
         try:
             self.memory_manager = MemoryManager(max_short_term_items, max_long_term_items)
             self.llm_interface = LLMInterface(agent_instance=self, model_name=model_name)
-            self.output_parser = OutputParserV1_0_CamelCaseReasoning(agent_tools_registry=self.tools_registry)
+            self.output_parser = OutputParser(agent_tools_registry=self.tools_registry)
             self.tool_executor = ToolExecutor(
                 agent_instance=self,
                 max_tool_retries=max_tool_retries,
@@ -1512,7 +1512,7 @@ class CircuitAgent:
                     "thoughtProcess": "Agent检测到用户输入为空或仅包含空白字符,无需进一步处理。",
                     "decision": { "isCallTools": False, "toolCallRequests": [], "responseToUser": {"contentType":"text/plain", "content": "您的指令似乎是空的,请重新输入！"}}
                 }
-                await status_callback({"type": "final_response", "request_id": self.current_request_id, "llm_interaction_id": empty_input_err_json["llmInteractionId"], "content": empty_input_err_json["decision"]["responseToUser"]["content"], "final_v1_0_camelcase_json_if_success": None})
+                await status_callback({"type": "final_response", "request_id": self.current_request_id, "llm_interaction_id": empty_input_err_json["llmInteractionId"], "content": empty_input_err_json["decision"]["responseToUser"]["content"], "finaljson_if_success": None})
                 return
 
             await status_callback({"type": "general_status", "request_id": self.current_request_id, "stage": "input_validation", "status": "received", "message": "收到用户指令,开始处理...", "details": {"user_request_preview": user_request[:1000]}})
@@ -1529,7 +1529,7 @@ class CircuitAgent:
                     "executionPhase": "planning", "thoughtProcess": "Agent在将用户消息添加到短期记忆时遇到错误。",
                     "decision": { "isCallTools": False, "toolCallRequests": [], "responseToUser": {"contentType":"text/plain", "content": f"抱歉,我在记录您的指令时遇到了内部问题 ({e_mem_user})！请稍后重试。" }}
                 }
-                await status_callback({"type": "final_response", "request_id": self.current_request_id, "llm_interaction_id": mem_err_json["llmInteractionId"], "content": mem_err_json["decision"]["responseToUser"]["content"], "final_v1_0_camelcase_json_if_success": None})
+                await status_callback({"type": "final_response", "request_id": self.current_request_id, "llm_interaction_id": mem_err_json["llmInteractionId"], "content": mem_err_json["decision"]["responseToUser"]["content"], "finaljson_if_success": None})
                 return
 
             replanning_loop_count = 0
@@ -1548,7 +1548,7 @@ class CircuitAgent:
 
                 memory_context = self.memory_manager.get_memory_context_for_prompt()
                 tool_schemas = self._get_tool_schemas_for_prompt()
-                system_prompt_planning = self._get_planning_prompt_v1_0(tool_schemas, memory_context, is_currently_replanning, self.current_request_id)
+                system_prompt_planning = self._get_planning_prompt(tool_schemas, memory_context, is_currently_replanning, self.current_request_id)
                 messages_for_planning = [{"role": "system", "content": system_prompt_planning}] + self.memory_manager.short_term
 
                 llm_call_attempt_inner = 0
@@ -1773,7 +1773,7 @@ class CircuitAgent:
                 logger.info(f"[OrchestratorV1_1_3 - ReqID:{self.current_request_id}] 工具执行成功,开始生成最终响应...")
                 await status_callback({"type": "general_status", "request_id": self.current_request_id, "stage": "response_generation", "status": "started", "message": "正在总结操作结果并生成最终回复...", "details": {"reason": "Tool execution completed successfully. Generating final summary."}})
 
-                system_prompt_resp_gen = self._get_response_generation_prompt_v1_0(
+                system_prompt_resp_gen = self._get_response_generation_prompt(
                     self.memory_manager.get_memory_context_for_prompt(),
                     self._get_tool_schemas_for_prompt(),
                     self.current_request_id
@@ -1838,7 +1838,7 @@ class CircuitAgent:
                 "request_id": self.current_request_id,
                 "llm_interaction_id": final_llm_interaction_id_for_user,
                 "content": final_reply_for_user.strip() if final_reply_for_user else "抱歉,未能生成有效的回复。",
-                "final_v1_0_camelcase_json_if_success": final_llm_camelcase_json_for_reply
+                "finaljson_if_success": final_llm_camelcase_json_for_reply
             })
 
             if not (final_llm_camelcase_json_for_reply and final_llm_camelcase_json_for_reply.get("status") == "success"):
@@ -1864,7 +1864,7 @@ class CircuitAgent:
             fatal_llm_interaction_id = f"fatal_agent_err_{str(uuid4())[:6]}"
             await status_callback({"type": "thinking_log", "request_id": request_id_for_fatal, "llm_interaction_id": fatal_llm_interaction_id, "stage": "fatal_error_capture", "content": thinking_log_content_fatal})
             await status_callback({"type": "general_status", "request_id": request_id_for_fatal, "stage": "fatal_error_handler", "status": "error", "message": f"请求处理失败,发生致命内部错误: {str(e_process_top_level)[:1000]}", "details": {"error_type": type(e_process_top_level).__name__, "full_error_message": str(e_process_top_level)}})
-            await status_callback({"type": "final_response", "request_id": request_id_for_fatal, "llm_interaction_id": fatal_llm_interaction_id, "content": error_msg_for_user_fatal, "final_v1_0_camelcase_json_if_success": None})
+            await status_callback({"type": "final_response", "request_id": request_id_for_fatal, "llm_interaction_id": fatal_llm_interaction_id, "content": error_msg_for_user_fatal, "finaljson_if_success": None})
         finally:
             request_end_time = time.monotonic()
             duration_total = request_end_time - request_start_time
@@ -1904,7 +1904,7 @@ class CircuitAgent:
             tool_schemas_parts.append(f"  - 工具名称: `{tool_name}`\n    工具描述: {desc}\n  工具参数详情 (这些参数应放在 `toolArguments` 对象内部):\n{chr(10).join(param_desc_segments)}")
         return "\n\n".join(tool_schemas_parts)
 
-    def _get_planning_prompt_v1_0(self, tool_schemas_desc: str, memory_context: str,
+    def _get_planning_prompt(self, tool_schemas_desc: str, memory_context: str,
                                 is_replanning: bool = False, request_id: Optional[str] = None) -> str:
         current_timestamp_utc = datetime.now(timezone.utc).isoformat()
         llm_interaction_id_example_plan_prefix = f"plan_ex_llm_id_{str(uuid4())[:6]}"
@@ -1917,9 +1917,9 @@ class CircuitAgent:
             "3.  **`thoughtProcess` 字段 (in JSON)**: JSON对象内部的 `thoughtProcess` 字段现在是次要的。它可以是一个简短的总结或留空 ( `\"\"` ),因为您的主要思考过程已在 `<think>...</think>` 块中。Agent将优先使用 `<think>` 块中的内容作为思考日志。\n"
         )
 
-        replanning_guidance_v1_0 = ""
+        replanning_guidance = ""
         if is_replanning:
-            replanning_guidance_v1_0 = (
+            replanning_guidance = (
                 "\n【重要: 重规划指示 (V1.0.0 - Reasoning Model)】\n"
                 "您当前正在进行重规划。这意味着您之前的规划或工具执行遇到了问题。请在您的 `<think>...</think>` 块中：\n"
                 "1.  **仔细分析失败原因**: 详细检查对话历史中的 `role: tool` 消息 (`content` JSON内的 `status: \"failure\"`, `message`, `errorDetails`) 和 `role: assistant` 消息中可能的Agent解析/校验错误 (`errorDetails.failedValidationPoints`)。\n"
@@ -1932,7 +1932,7 @@ class CircuitAgent:
                 "**核心原则**: 不要因为*过去*的工具执行失败,就将您*当前新制定*的计划的JSON标记为 `status: 'failure'`. `status` 反映的是您【当前这次生成JSON这个行为本身】的成功与否。\n"
             )
 
-        v1_0_camelcase_json_schema_description_for_prompt = """
+        json_schema_description_for_prompt = """
 ```json
 {
   "requestId": "string_or_null_当前用户请求周期的ID_如果系统提示中提供了此值请原样返回_否则为null",
@@ -1997,7 +1997,7 @@ class CircuitAgent:
 }
 ```
 """
-        direct_qa_example_v1_0 = (
+        direct_qa_example = (
             "\n【通用示例1: 直接回答用户问题 (无需工具) - V1.0.0 Reasoning Model Output】\n"
             "如果用户问: “你好,什么是电容？”\n"
             "您的输出应类似 (ID和时间戳会变化): \n"
@@ -2031,7 +2031,7 @@ class CircuitAgent:
             "}\n"
             "```\n"
         )
-        tool_call_example_v1_0 = (
+        tool_call_example = (
             "\n【通用示例2: 需要调用工具时的输出V1.0-CamelCaseJSON Reasoning Model Output】\n"
             "如果用户说: “帮我加一个1k欧姆的电阻R1,再用DuckDuckGo搜索'什么是LED'并返回2条结果,然后把R1连到GND。”\n"
             "您的输出应类似 (ID和时间戳会变化,每个toolCallId必须唯一,由您生成): \n"
@@ -2087,9 +2087,9 @@ class CircuitAgent:
             "```\n"
         )
         
-        replan_example_v1_0 = ""
+        replan_example = ""
         if is_replanning:
-            replan_example_v1_0 = (
+            replan_example = (
                 "\n【重规划示例 (V1.0.0 Reasoning Model Output): 工具失败后,成功重规划并调用新/修正的工具】\n"
                 "假设历史记录中有如下用户请求和失败的工具调用: \n"
                 "  User: \"连接 R10 和 C5\"\n"
@@ -2144,9 +2144,9 @@ class CircuitAgent:
             reasoning_model_instructions,
             "\n【核心任务: 规划阶段 (V1.0.0)】\n"
             "请首先在 `<think>...</think>` 标签内深入分析用户的最新指令、完整的对话历史、当前的电路状态和记忆。然后,在 `</think>` 标签之后,生成一个符合V1.0-CamelCaseJSON规范的JSON对象作为您的行动计划或直接回复。JSON中所有key【必须】使用camelCase (例如: `isCallTools`, `toolCallRequests`, `requestId`).\n",
-            replanning_guidance_v1_0 if is_replanning else "",
+            replanning_guidance if is_replanning else "",
             "【V1.0.0 输出格式规范 (在</think>之后输出, 必须严格遵守)】:\n",
-            v1_0_camelcase_json_schema_description_for_prompt,
+            json_schema_description_for_prompt,
             "\n【重要指令与检查清单 (V1.0.0 - Planning)】:\n"
             "1.  **`<think>` Block First**: 您的详细逐步推理**必须**在 `<think>...</think>` 标签内,并置于回复最开始。\n"
             "2.  **JSON After `</think>`**: V1.0.0 对象 (用 ```json ... ``` 包裹) **必须**紧跟 `</think>` 标签。此JSON中的所有键名必须是 camelCase (例如, `requestId`, `isCallTools`, `toolCallRequests`)。`toolArguments` 内部的键名 (例如, `component_type`) 应遵循下面工具 Schema 中提供的 snake_case 命名。\n"
@@ -2154,11 +2154,11 @@ class CircuitAgent:
             "4.  **`decision.isCallTools`**: JSON中的此字段**必须**是布尔值 (`true` 或 `false`)。大小写不敏感的字符串 \"True\" 或 \"true\" 也可接受,Agent会将其解析为布尔值。\n"
             "5.  **其他 JSON 字段**: 严格遵循V1.0-CamelCaseJSON Schema 的JSON部分。\n"
             "6.  **电路状态感知**: 在规划涉及现有元件的工具调用前,请在 `memory_context` (当前电路状态) 中确认它们的存在。如果需要连接像 'INPUT' 这样的抽象节点而它们并非作为元件存在,请首先规划添加它们 (例如,作为 'Terminal')。\n\n",
-            direct_qa_example_v1_0,
-            tool_call_example_v1_0,
+            direct_qa_example,
+            tool_call_example,
         ]
         if is_replanning:
-            prompt_parts.append(replan_example_v1_0)
+            prompt_parts.append(replan_example)
 
         prompt_parts.extend([
             "\n【可用工具列表与参数规范 (V1.0.0 - 11 Tools)】:\n", # Version update
@@ -2171,7 +2171,7 @@ class CircuitAgent:
         ])
         return "".join(prompt_parts)
 
-    def _get_response_generation_prompt_v1_0(self, memory_context: str, tool_schemas_desc: str, request_id: Optional[str] = None) -> str:
+    def _get_response_generation_prompt(self, memory_context: str, tool_schemas_desc: str, request_id: Optional[str] = None) -> str:
         current_timestamp_utc = datetime.now(timezone.utc).isoformat()
         llm_interaction_id_example_resp_prefix = f"resp_ex_llm_id_{str(uuid4())[:6]}"
 
@@ -2182,7 +2182,7 @@ class CircuitAgent:
             "3.  **`thoughtProcess` 字段 (in JSON)**: JSON对象内部的 `thoughtProcess` 字段现在是次要的。它可以是一个简短的总结或留空 ( `\"\"` ),因为您的主要思考过程已在 `<think>...</think>` 块中。Agent将优先使用 `<think>` 块中的内容作为思考日志。\n"
         )
         
-        v1_0_camelcase_json_schema_description_for_resp_phase = """
+        json_schema_description_for_resp_phase = """
 ```json
 {
   "requestId": "string_or_null_当前用户请求周期的ID_如果系统提示中提供了此值请原样返回_否则为null",
@@ -2225,7 +2225,7 @@ class CircuitAgent:
 }
 ```
 """
-        response_gen_example_v1_0 = (
+        response_gen_example = (
             "\n【示例 (V1.0.0 Reasoning Model Output): 总结工具结果并生成最终回复】\n"
             "假设对话历史中包含以下工具执行结果 (工具1成功, 工具2是搜索工具也成功):\n"
             "  Tool Message 1 (for toolCallId: tc_xyz_add_r1): { \"role\": \"tool\", ..., \"content\": \"{\\\"status\\\": \\\"success\\\", \\\"message\\\": \\\"已添加电阻R1\\\", ...}\" }\n"
@@ -2267,7 +2267,7 @@ class CircuitAgent:
             "【核心任务: 响应生成阶段 (V1.0.0)】\n"
             "您当前的任务是: 基于到目前为止的【完整对话历史】(包括用户最初的指令、您在规划阶段生成的V1.0-CamelCaseJSON计划、以及所有【已执行工具的结果详情】,这些工具结果是以 'role: tool', 'toolCallId: ...', 'name: ...', 'content: JSON_string_of_tool_output' 的格式存在于历史记录中的), 首先在 `<think>...</think>` 标签内进行思考和总结, 然后在 `</think>` 之后生成【最终的、面向用户的V1.0-CamelCaseJSON回复】。JSON中所有key【必须】使用camelCase.\n\n"
             "【V1.0.0 输出格式规范 (在</think>之后输出, 与规划阶段结构相同,但有特定值要求 - 再次强调)】:\n"
-            f"{v1_0_camelcase_json_schema_description_for_resp_phase}\n"
+            f"{json_schema_description_for_resp_phase}\n"
             "【重要指令与检查清单 (V1.0.0 - 响应生成阶段特定要求)】:\n"
             "1.  **`<think>` Block First**: 您的详细工具结果分析和回复构思**必须**在 `<think>...</think>` 标签内。\n"
             "2.  **JSON After `</think>`**: V1.0.0 对象 (用 ```json ... ``` 包裹) **必须**紧跟 `</think>` 标签。此JSON中的所有键名必须是 camelCase。\n"
@@ -2276,7 +2276,7 @@ class CircuitAgent:
             "5.  **`decision.toolCallRequests`**: 在此响应生成阶段,此列表【必须】为 `[]` (空数组) 或 `null`。\n"
             "6.  **`decision.responseToUser.content`**: 这是您基于所有先前步骤生成的【最终、完整、友好】的文本回复。它【不能】为空字符串或仅包含空白。\n"
             "7.  **回顾工具结果**: 仔细检查对话历史中 `role: tool` 的消息。您的最终回复必须准确反映这些结果。\n\n"
-            f"{response_gen_example_v1_0}\n"
+            f"{response_gen_example}\n"
             "【上下文参考信息 (仅供你回顾 - V1.0.0)】:\n"
             f"Current Request ID (如果可用,请在JSON的requestId字段中原样返回): {request_id or 'N/A_NOT_PROVIDED_IN_PROMPT_SET_TO_NULL'}\n"
             f"Current UTC Time (供您生成timestampUtc参考): {current_timestamp_utc}\n"
@@ -2290,10 +2290,10 @@ async def main_test_flow(agent: CircuitAgent, user_query: str):
     logger.info(f"\n\n>>>>>>>>> 测试开始 (V1.0.0): 用户查询: '{user_query}' <<<<<<<<<<") # Version update
 
     async def mock_status_callback(status_update: Dict[str, Any]):
-        if "final_v1_0_camelcase_json_if_success" in status_update and status_update["final_v1_0_camelcase_json_if_success"]:
+        if "finaljson_if_success" in status_update and status_update["finaljson_if_success"]:
             printable_update = status_update.copy()
             try:
-                printable_update["final_v1_0_camelcase_json_if_success"] = json.loads(json.dumps(status_update["final_v1_0_camelcase_json_if_success"], indent=2, ensure_ascii=False))
+                printable_update["finaljson_if_success"] = json.loads(json.dumps(status_update["finaljson_if_success"], indent=2, ensure_ascii=False))
             except:
                 pass
             logger.info(f"[StatusCallback] {json.dumps(printable_update, indent=2, ensure_ascii=False, default=str)}")
