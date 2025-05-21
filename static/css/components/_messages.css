@@ -1,0 +1,354 @@
+/* ==========================================================================
+   [ START OF FILE components/_messages.css ]
+   聊天消息气泡和相关元素样式
+   ========================================================================== */
+
+.chat-box .message {
+  display: flex;
+  align-items: flex-start; /* Avatar and bubble top-aligned */
+  max-width: 90%;
+}
+
+.chat-box .message.message-user {
+  align-self: flex-end; /* User messages on the right */
+  flex-direction: row-reverse; /* Avatar on the right */
+}
+
+.chat-box .message.message-agent {
+  align-self: flex-start; /* Agent messages on the left */
+}
+
+.chat-box .message.system-message {
+  align-self: center;
+  max-width: 85%;
+  width: fit-content;
+  font-size: calc(var(--base-font-size) * 0.88);
+  text-align: center;
+  color: var(--current-text-secondary);
+  opacity: 0.8;
+  display: block; /* Not part of the flex flow for user/agent */
+}
+
+.chat-box .message.system-message-initial.lumina-panel {
+  align-self: stretch;
+  width: auto; /* Let content decide */
+  max-width: 95%;
+  margin: var(--spacing-unit) auto;
+  text-align: left;
+  opacity: 1;
+}
+
+.chat-box .message .message-bubble {
+  background-color: var(--current-panel-bg);
+  border-radius: var(--border-radius-soft);
+  padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
+  box-shadow: 0 3px 10px rgba(var(--current-text-primary-rgb), 0.04),
+              0 1px 2px rgba(var(--current-text-primary-rgb), 0.02);
+  border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  position: relative; /* For copy button */
+  background-blend-mode: multiply; /* Or overlay, depending on texture */
+  transition: transform var(--transition-duration-light-pulse) ease,
+              box-shadow var(--transition-duration-light-pulse) ease;
+  flex-grow: 0; /* Don't grow */
+  flex-shrink: 1; /* Allow to shrink */
+}
+
+.chat-box .message:hover .message-bubble {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(var(--current-text-primary-rgb), 0.06),
+              0 2px 5px rgba(var(--current-text-primary-rgb), 0.03);
+}
+
+.chat-box .message.message-user .message-bubble {
+  background-color: rgba(var(--current-accent-light-rgb), 0.12);
+  border-color: rgba(var(--current-accent-light-rgb), 0.3);
+  color: var(--current-text-primary);
+}
+.chat-box .message.message-user .message-bubble a {
+  color: var(--current-accent-light);
+}
+
+.chat-box .message.system-message .message-bubble {
+  background-color: transparent;
+  border: var(--lumina-line-weight-thin) dashed rgba(var(--current-panel-border-rgb), 0.6);
+  box-shadow: none;
+  padding: calc(var(--spacing-unit) * 1.2);
+}
+.chat-box .message.system-message.error-message .message-bubble {
+  border-color: var(--lumina-error-color);
+  color: var(--lumina-error-color);
+}
+
+.chat-box .message .message-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background-color: var(--current-panel-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: calc(var(--spacing-unit) * 1.25); /* For agent messages */
+  box-shadow: 0 1px 3px rgba(var(--current-text-primary-rgb), 0.08);
+  transition: transform var(--transition-duration-light-pulse) ease;
+}
+.chat-box .message:hover .message-avatar {
+  transform: scale(1.05);
+}
+.chat-box .message .message-avatar i {
+  font-size: calc(var(--base-font-size) * 1.2);
+  color: var(--current-text-secondary);
+}
+
+.chat-box .message.message-user .message-avatar {
+  margin-right: 0;
+  margin-left: calc(var(--spacing-unit) * 1.25);
+  background-color: var(--current-accent-light);
+}
+.chat-box .message.message-user .message-avatar i {
+  color: var(--current-bg);
+}
+
+.chat-box .message.message-agent .message-avatar {
+  background-color: var(--current-accent-ink);
+}
+.chat-box .message.message-agent .message-avatar i {
+  color: var(--current-bg);
+}
+
+.chat-box .message.system-message .message-avatar {
+  display: none;
+}
+
+.chat-box .message .message-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 1.5);
+}
+
+.chat-box .message .message-thought-prefix {
+  margin-bottom: calc(var(--spacing-unit) * 1.5);
+  padding: calc(var(--spacing-unit) * 1.2);
+  background-color: rgba(var(--current-panel-bg-rgb), 0.4);
+  border-radius: var(--border-radius-slight);
+  border: var(--lumina-line-weight-thin) dashed rgba(var(--current-panel-border-rgb), 0.7);
+  font-size: 0.88em;
+  color: var(--current-text-secondary);
+}
+.chat-box .message .message-thought-prefix strong {
+  display: block;
+  margin-bottom: calc(var(--spacing-unit) * 0.75);
+  font-family: var(--font-family-title);
+  color: var(--current-accent-ink);
+  font-weight: 500;
+}
+.chat-box .message .message-thought-prefix strong i {
+  margin-right: var(--spacing-unit);
+}
+.chat-box .message .message-thought-prefix .think-bubble-content {
+  line-height: 1.5;
+  max-height: 200px; /* Allow scrolling for long thoughts */
+  overflow-y: auto;
+  padding-right: var(--spacing-unit); /* Space for scrollbar */
+}
+.chat-box .message .message-thought-prefix .think-bubble-content pre.embedded-json {
+  background-color: rgba(var(--current-bg-rgb), 0.3);
+  padding: calc(var(--spacing-unit) * 1);
+  border-radius: var(--border-radius-slight);
+  margin-top: var(--spacing-unit);
+  font-family: var(--font-family-code);
+  font-size: 0.92em;
+  color: var(--current-text-secondary);
+  border: 1px solid rgba(var(--current-panel-border-rgb), 0.3);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.chat-box .message .message-thought-prefix .think-bubble-content pre.embedded-json.error {
+  color: var(--lumina-error-color);
+  border-color: var(--lumina-error-color);
+}
+
+.chat-box .message .message-text-content {
+  line-height: 1.65;
+}
+.chat-box .message .message-text-content a.external-link i {
+  font-size: 0.82em;
+  margin-right: 4px;
+  opacity: 0.75;
+}
+
+/* Attachments in messages */
+.chat-box .message .message-attachments-summary {
+  margin-top: calc(var(--spacing-unit) * 1.2);
+  font-size: 0.82em;
+  opacity: 0.85;
+  color: var(--current-text-secondary);
+}
+.chat-box .message .message-attachments-summary i {
+  margin-right: calc(var(--spacing-unit) * 0.6);
+}
+.chat-box .message .message-attachments-summary .filename-chip {
+  display: inline-block;
+  background-color: rgba(var(--current-panel-border-rgb), 0.5);
+  color: var(--current-text-secondary);
+  padding: 3px calc(var(--spacing-unit) * 0.75);
+  border-radius: 12px; /* Chip-like */
+  font-size: 0.92em;
+  margin-right: calc(var(--spacing-unit) * 0.5);
+  margin-bottom: calc(var(--spacing-unit) * 0.5); /* Allow wrapping */
+}
+
+/* Welcome Message Specifics */
+.chat-box .message.system-message-initial.lumina-panel {
+  padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 3);
+  border-width: var(--lumina-line-weight-medium);
+}
+.chat-box .message.system-message-initial.lumina-panel .welcome-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: calc(var(--spacing-unit) * 1.5);
+}
+.chat-box .message.system-message-initial.lumina-panel .welcome-header .robot-icon {
+  color: var(--current-accent-light);
+  font-size: calc(var(--base-font-size) * 2.8);
+  margin-right: calc(var(--spacing-unit) * 1.5);
+  text-shadow: 0 0 12px var(--current-glow);
+}
+.chat-box .message.system-message-initial.lumina-panel .welcome-header h2 {
+  font-size: calc(var(--base-font-size) * 1.9);
+  margin-bottom: 0; /* Reset for header */
+  font-weight: 700;
+}
+.chat-box .message.system-message-initial.lumina-panel .welcome-header h2 .version-pro {
+  font-size: 0.6em;
+  color: var(--current-accent-ink);
+}
+.chat-box .message.system-message-initial.lumina-panel .welcome-header h2 .version-number {
+  opacity: 0.8;
+}
+.chat-box .message.system-message-initial.lumina-panel .welcome-subtitle {
+    font-size: calc(var(--base-font-size) * 0.95);
+    color: var(--current-text-secondary);
+    margin-bottom: calc(var(--spacing-unit) * 2);
+}
+.chat-box .message.system-message-initial.lumina-panel .capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing-unit) * 1.2);
+  margin-bottom: calc(var(--spacing-unit) * 2.5);
+}
+.chat-box .message.system-message-initial.lumina-panel .capabilities .capability {
+  background-color: rgba(var(--current-accent-light-rgb), 0.06);
+  border: var(--lumina-line-weight-thin) solid rgba(var(--current-accent-light-rgb), 0.2);
+  padding: calc(var(--spacing-unit) * 0.6) calc(var(--spacing-unit) * 1.2);
+  border-radius: 18px;
+  font-size: 0.88em;
+  display: inline-flex;
+  align-items: center;
+  color: var(--current-text-secondary);
+  transition: all var(--transition-duration-light-pulse) ease;
+}
+.chat-box .message.system-message-initial.lumina-panel .capabilities .capability:hover {
+  background-color: rgba(var(--current-accent-light-rgb), 0.12);
+  color: var(--current-text-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(var(--current-accent-light-rgb), 0.1);
+}
+.chat-box .message.system-message-initial.lumina-panel .capabilities .capability i {
+  color: var(--current-accent-light);
+  margin-right: calc(var(--spacing-unit) * 0.75);
+}
+
+.chat-box .message.system-message-initial.lumina-panel .quick-actions p {
+  font-weight: 500;
+  margin-bottom: calc(var(--spacing-unit) * 1.2);
+  color: var(--current-text-primary);
+}
+.chat-box .message.system-message-initial.lumina-panel .quick-actions ul {
+  list-style: none; padding: 0;
+  display: flex; flex-wrap: wrap;
+  gap: calc(var(--spacing-unit) * 1);
+}
+.chat-box .message.system-message-initial.lumina-panel .quick-actions ul li a.quick-action-btn.lumina-button {
+  padding: calc(var(--spacing-unit) * 0.8) calc(var(--spacing-unit) * 1.5);
+  font-size: calc(var(--base-font-size) * 0.85);
+}
+
+
+/* Typing Indicator */
+.chat-box .typing-indicator {
+  display: flex;
+  align-items: flex-start;
+}
+.chat-box .typing-indicator .message-bubble {
+  background-color: var(--current-panel-bg);
+  padding: calc(var(--spacing-unit) * 1.2) calc(var(--spacing-unit) * 1.8);
+}
+.chat-box .typing-indicator .message-bubble .typing-dots {
+  display: inline-flex;
+  align-items: center;
+}
+.chat-box .typing-indicator .message-bubble .typing-dots .typing-dot {
+  background-color: var(--current-accent-ink);
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  margin: 0 3px;
+  animation: luminaTypingDotBounce 1.3s infinite ease-in-out;
+}
+.chat-box .typing-indicator .message-bubble .typing-dots .typing-dot:nth-child(2) { animation-delay: 0.22s; }
+.chat-box .typing-indicator .message-bubble .typing-dots .typing-dot:nth-child(3) { animation-delay: 0.44s; }
+
+/* Copy Button */
+.message-bubble .copy-llm-response-btn {
+  position: absolute;
+  top: calc(var(--spacing-unit) * 1);
+  right: calc(var(--spacing-unit) * 1);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-duration-light-pulse) ease-in-out,
+              visibility 0s var(--transition-duration-light-pulse) ease-in-out, /* Delay visibility until opacity starts */
+              background-color var(--transition-duration-light-pulse) ease-in-out;
+  z-index: 10; /* Above message content */
+  cursor: pointer;
+}
+.message-bubble:hover .copy-llm-response-btn {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s, 0s; /* Remove delay on hover */
+}
+.message-bubble .copy-llm-response-btn:hover {
+  background-color: rgba(var(--current-text-primary-rgb), 0.1);
+  color: var(--current-text-primary);
+}
+.message-bubble .copy-llm-response-btn i {
+  pointer-events: none; /* Ensure icon click goes to button */
+}
+
+/* Suggestions in final response */
+.final-response-suggestions {
+    margin-top: calc(var(--spacing-unit) * 1.5);
+    padding-top: calc(var(--spacing-unit) * 1.5);
+    border-top: 1px dashed rgba(var(--current-panel-border-rgb), 0.5);
+}
+.final-response-suggestions strong {
+    display: block;
+    margin-bottom: var(--spacing-unit);
+    font-family: var(--font-family-title);
+    color: var(--current-accent-ink);
+}
+.final-response-suggestions ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-unit);
+}
+.final-response-suggestions ul li a.quick-action-btn.lumina-button {
+    padding: calc(var(--spacing-unit) * 0.7) var(--spacing-unit);
+    font-size: calc(var(--base-font-size) * 0.8);
+}
+/* ==========================================================================
+   [ END OF FILE components/_messages.css ]
+   ========================================================================== */

@@ -1,0 +1,224 @@
+/* ==========================================================================
+   [ START OF FILE components/_buttons.css ]
+   按钮样式 - 通用图标按钮和Lumina风格按钮
+   ========================================================================== */
+
+button { /* Base reset if not already in _reset.css */
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  outline: none; /* Common to remove default outline */
+}
+
+/* Generic Icon Button */
+.icon-btn {
+  color: var(--current-text-secondary);
+  padding: calc(var(--spacing-unit) * 0.85);
+  font-size: calc(var(--base-font-size) * 1.25);
+  line-height: 1;
+  border-radius: 50%;
+  width: calc(var(--base-font-size) * 2.5);
+  height: calc(var(--base-font-size) * 2.5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              background-color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              transform var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              box-shadow var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+}
+
+.icon-btn:hover,
+.icon-btn:focus {
+  color: var(--current-accent-light);
+  background-color: rgba(var(--current-accent-light-rgb), 0.1);
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(var(--current-accent-light-rgb), 0.2);
+}
+
+.icon-btn:focus-visible {
+  outline: 2px dashed var(--current-accent-ink);
+  outline-offset: 2px;
+}
+
+.icon-btn i { /* Ensure icon inside doesn't have the global icon shadow if not desired */
+  text-shadow: none;
+}
+
+/* Lumina Button Family */
+.lumina-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--spacing-unit) * 1.1) calc(var(--spacing-unit) * 2.2);
+  font-family: var(--font-family-title);
+  font-size: calc(var(--base-font-size) * 0.92);
+  font-weight: 500;
+  border-radius: var(--border-radius-slight);
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  border: var(--lumina-line-weight-thin) solid var(--current-accent-light);
+  color: var(--current-accent-light);
+  background-color: transparent;
+  box-shadow: inset 0 0 0 0 rgba(var(--current-accent-light-rgb), 0.15); /* For hover effect */
+}
+
+.lumina-button i {
+  margin-right: calc(var(--spacing-unit) * 0.8);
+  font-size: calc(var(--base-font-size) * 1.05);
+  line-height: 1;
+}
+
+.lumina-button::before { /* Glow effect */
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background-color: rgba(var(--current-accent-light-rgb), 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: width var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+              height var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+              opacity var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+}
+
+.lumina-button:hover,
+.lumina-button:focus {
+  color: var(--current-text-primary);
+  border-color: var(--current-accent-light);
+  box-shadow: 0 0 15px rgba(var(--current-accent-light-rgb), 0.3),
+              inset 0 0 10px rgba(var(--current-accent-light-rgb), 0.1);
+  transform: translateY(-2px);
+}
+
+body[data-theme='dark-crystal'] .lumina-button:hover,
+body[data-theme="auto-crystal"].dark-crystal-active .lumina-button:hover,
+body[data-theme='dark-crystal'] .lumina-button:focus,
+body[data-theme="auto-crystal"].dark-crystal-active .lumina-button:focus {
+    color: var(--current-bg); /* Text color becomes background on dark for contrast */
+}
+
+.lumina-button:hover::before {
+  width: 250%;
+  height: 250%;
+  opacity: 1;
+}
+
+.lumina-button:active {
+  transform: translateY(0px) scale(0.98);
+  box-shadow: inset 0 2px 5px rgba(var(--current-text-primary-rgb), 0.15);
+}
+
+.lumina-button:disabled,
+.lumina-button.disabled {
+  border-color: var(--current-text-secondary);
+  color: var(--current-text-secondary);
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background-color: transparent;
+}
+.lumina-button:disabled::before,
+.lumina-button.disabled::before {
+  display: none;
+}
+
+/* Lumina Primary Button (Accent Ink) */
+.lumina-button-primary {
+  border-color: var(--current-accent-ink);
+  color: var(--current-accent-ink);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(var(--current-accent-ink-rgb), 0.2);
+}
+
+.lumina-button-primary::before {
+  background-color: rgba(var(--current-accent-ink-rgb), 0.2);
+}
+
+.lumina-button-primary:hover,
+.lumina-button-primary:focus {
+  color: var(--current-text-primary); /* Default hover text color */
+  border-color: var(--current-accent-ink);
+  box-shadow: 0 0 18px rgba(var(--current-accent-ink-rgb), 0.35),
+              inset 0 0 12px rgba(var(--current-accent-ink-rgb), 0.1);
+  transform: none; /* Primary buttons usually don't "lift" as much */
+}
+
+body[data-theme='dark-crystal'] .lumina-button-primary:hover,
+body[data-theme="auto-crystal"].dark-crystal-active .lumina-button-primary:hover,
+body[data-theme='dark-crystal'] .lumina-button-primary:focus,
+body[data-theme="auto-crystal"].dark-crystal-active .lumina-button-primary:focus {
+    color: var(--current-bg); /* Text color becomes background on dark */
+}
+
+/* Lumina Sidebar Button */
+.lumina-button-sidebar {
+  justify-content: flex-start;
+  text-transform: none;
+  font-size: var(--base-font-size);
+  font-weight: 400;
+  border: none;
+  color: var(--current-text-secondary);
+  padding: calc(var(--spacing-unit) * 1.2) calc(var(--spacing-unit) * 1.8);
+  width: 100%;
+  border-radius: var(--border-radius-slight);
+  transition: background-color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              transform var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              box-shadow var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+}
+
+.lumina-button-sidebar i {
+  margin-right: calc(var(--spacing-unit) * 1.5);
+  width: 22px; /* For alignment */
+  text-align: center;
+  color: var(--current-accent-light);
+  transition: transform var(--transition-duration-light-pulse) ease;
+}
+
+.lumina-button-sidebar:hover,
+.lumina-button-sidebar:focus {
+  background-color: rgba(var(--current-accent-light-rgb), 0.08);
+  color: var(--current-text-primary);
+  transform: translateX(4px);
+  box-shadow: -4px 0 0 0 var(--current-accent-light) inset;
+}
+
+.lumina-button-sidebar:hover i,
+.lumina-button-sidebar:focus i {
+  transform: scale(1.15);
+}
+
+.lumina-button-sidebar.active {
+  background-color: rgba(var(--current-accent-light-rgb), 0.15);
+  color: var(--current-text-primary);
+  font-weight: 500;
+  box-shadow: -5px 0 0 0 var(--current-accent-light) inset,
+              0 0 10px rgba(var(--current-accent-light-rgb), 0.1);
+}
+
+.lumina-button-sidebar.active i {
+  color: var(--current-accent-light);
+  transform: scale(1.1);
+}
+
+/* Fixed Bottom Button (used for Create New Session) */
+.lumina-button-fixed-bottom {
+    /* Base styles will be combined with .lumina-button-primary */
+    /* Specific positioning and sizing handled in _sidebar.css or _layout.css */
+}
+/* ==========================================================================
+   [ END OF FILE components/_buttons.css ]
+   ========================================================================== */

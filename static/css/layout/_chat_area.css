@@ -1,0 +1,151 @@
+/* ==========================================================================
+   [ START OF FILE layout/_chat_area.css ]
+   聊天区域布局和主要面板样式
+   ========================================================================== */
+
+.chat-area {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: margin-right var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+}
+
+.chat-area-content.lumina-panel.main-chat-panel {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative; /* For file preview absolute positioning */
+}
+
+.chat-area-content.lumina-panel.main-chat-panel .chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-unit) calc(var(--spacing-unit) * 2.5);
+  border-bottom: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  flex-shrink: 0;
+  height: calc(var(--header-height) * 0.8);
+}
+
+.chat-area-content.lumina-panel.main-chat-panel .chat-header h2 {
+  font-size: calc(var(--base-font-size) * 1.15);
+  margin: 0;
+  font-weight: 500;
+  color: var(--current-text-primary);
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: none;
+}
+
+.chat-box {
+  flex-grow: 1;
+  padding: calc(var(--spacing-unit) * 2.5);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 2.5); /* Space between messages */
+  position: relative; /* For potential absolute positioned elements within */
+}
+
+/* Input Area */
+.input-area.lumina-panel {
+  border-radius: var(--border-radius-soft);
+  padding: calc(var(--spacing-unit) * 1.5);
+  display: flex;
+  align-items: flex-end; /* Align items to the bottom */
+  flex-shrink: 0;
+  z-index: 5;
+  border-top-width: var(--lumina-line-weight-thin);
+  position: relative; /* For file preview and other potential overlays */
+}
+
+.input-area.lumina-panel .input-action-btn {
+  margin-right: calc(var(--spacing-unit) * 1);
+  align-self: flex-end; /* Keep it at the bottom */
+  margin-bottom: calc(var(--spacing-unit) * 0.35); /* Align with textarea bottom */
+}
+
+.input-area.lumina-panel .input-wrapper {
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-area.lumina-panel .send-button.lumina-button-primary {
+  width: 56px;
+  height: 56px;
+  align-self: flex-end;
+  margin-left: var(--spacing-unit);
+  border-radius: 50%; /* Make it circular */
+  padding: 0; /* Reset padding for icon-only button */
+}
+
+.input-area.lumina-panel .send-button.lumina-button-primary .send-icon {
+  width: 26px;
+  height: 26px;
+  fill: var(--current-bg); /* Match text color logic for primary button */
+}
+
+.input-area.lumina-panel .send-button.lumina-button-primary .send-loading-icon {
+  font-size: 22px;
+  color: var(--current-bg);
+}
+
+.input-area.lumina-panel .send-button.lumina-button-primary.processing-active {
+    animation: luminaSendButtonProcessing 1.8s infinite ease-in-out;
+}
+
+/* Input Actions Overlay (mic, char counter) */
+.input-area.lumina-panel .input-actions-overlay {
+  position: absolute;
+  right: calc(var(--spacing-unit) * 1.25);
+  bottom: calc(var(--spacing-unit) * 1);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 0.75);
+}
+
+.input-area.lumina-panel .input-actions-overlay .overlay-btn {
+  padding: calc(var(--spacing-unit) * 0.6);
+  font-size: calc(var(--base-font-size) * 1.05);
+  color: var(--current-text-secondary);
+  opacity: 0.65;
+  background-color: transparent;
+  border-radius: var(--border-radius-slight);
+}
+.input-area.lumina-panel .input-actions-overlay .overlay-btn:hover {
+  opacity: 1;
+  color: var(--current-accent-light);
+  background-color: rgba(var(--current-accent-light-rgb), 0.08);
+}
+
+.input-area.lumina-panel .input-actions-overlay .char-counter {
+  font-size: 0.78em;
+  color: var(--current-text-secondary);
+  opacity: 0.55;
+  margin-right: var(--spacing-unit);
+}
+.input-area.lumina-panel .input-actions-overlay .char-counter.warn {
+  color: var(--current-accent-ink);
+  opacity: 0.8;
+}
+.input-area.lumina-panel .input-actions-overlay .char-counter.error {
+  color: var(--lumina-error-color);
+  opacity: 1;
+  font-weight: 500;
+}
+
+/* When input area is processing, visually indicate */
+.input-area.lumina-panel.processing textarea#user-input {
+  background-color: rgba(var(--current-panel-bg-rgb), 0.2); /* More subdued background */
+  cursor: wait;
+}
+
+/* ==========================================================================
+   [ END OF FILE layout/_chat_area.css ]
+   ========================================================================== */

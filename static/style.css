@@ -3698,6 +3698,11 @@ body[data-animation-level=none] .animate__animated {
   border-radius: inherit; /* Inherit border radius from container */
 }
 
+#idtTechComponentWrapper.black-hole-container.is-visible {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  /* 如果需要，这里还可以添加其他针对可见状态的样式或过渡效果 */
+}
 
 /* Keyframe animations */
 /* Subtle outer glow pulse */

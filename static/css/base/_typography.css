@@ -1,0 +1,84 @@
+/* ==========================================================================
+   [ START OF FILE base/_typography.css ]
+   基础排版样式 - 标题、链接、图标等
+   ========================================================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-title);
+  color: var(--current-text-primary);
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-shadow: 0 0 10px rgba(var(--current-accent-light-rgb), 0.15),
+               0 0 1px rgba(var(--current-text-primary-rgb), 0.2);
+  margin-bottom: calc(var(--spacing-unit) * 1.5); /* 默认标题下边距 */
+}
+
+h1 { font-size: calc(var(--base-font-size) * 2); }
+h2 { font-size: calc(var(--base-font-size) * 1.75); }
+h3 { font-size: calc(var(--base-font-size) * 1.5); }
+h4 { font-size: calc(var(--base-font-size) * 1.25); }
+h5 { font-size: calc(var(--base-font-size) * 1.1); }
+h6 { font-size: var(--base-font-size); }
+
+p {
+  margin-bottom: var(--spacing-unit); /* 段落下边距 */
+  line-height: var(--line-height-base);
+}
+
+a {
+  color: var(--current-accent-light);
+  text-decoration: none;
+  transition: color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              filter var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  font-weight: 500;
+}
+
+a:hover,
+a:focus {
+  color: color-mix(in srgb, var(--current-accent-light) 80%, var(--current-text-primary));
+  text-decoration: none;
+  filter: brightness(1.15);
+  outline: none;
+}
+
+a:focus-visible {
+  outline: 2px dashed var(--current-accent-ink);
+  outline-offset: 2px;
+}
+
+/* Font Awesome 图标基础样式 */
+i.fas, i.far, i.fal, i.fad, i.fab {
+  text-shadow: 0 0 6px rgba(var(--current-accent-light-rgb), 0.25);
+  transition: color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              text-shadow var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              transform var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+code, pre {
+  font-family: var(--font-family-code);
+  font-size: 0.9em;
+  background-color: rgba(var(--current-panel-bg-rgb), 0.5); /* 统一代码块背景 */
+  border: 1px solid rgba(var(--current-panel-border-rgb), 0.3);
+  border-radius: var(--border-radius-slight);
+  padding: calc(var(--spacing-unit) * 0.25) calc(var(--spacing-unit) * 0.75);
+}
+
+pre {
+  padding: var(--spacing-unit);
+  overflow-x: auto; /* 允许水平滚动 */
+  white-space: pre-wrap; /* 允许自动换行 */
+  word-break: break-all; /* 强制长单词换行 */
+}
+
+blockquote {
+  margin: var(--spacing-unit) 0 var(--spacing-unit) calc(var(--spacing-unit) * 2);
+  padding-left: calc(var(--spacing-unit) * 1.5);
+  border-left: 3px solid var(--current-accent-ink);
+  color: var(--current-text-secondary);
+  font-style: italic;
+}
+/* ==========================================================================
+   [ END OF FILE base/_typography.css ]
+   ========================================================================== */

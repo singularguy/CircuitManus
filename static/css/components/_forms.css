@@ -1,0 +1,150 @@
+/* ==========================================================================
+   [ START OF FILE components/_forms.css ]
+   表单元素样式 - 输入框、文本域、下拉框、滑块、开关
+   ========================================================================== */
+
+/* Generic input, textarea, select styles (can also be in _typography or _base) */
+input, textarea, select {
+  font-family: var(--font-family-body);
+  background-color: rgba(var(--current-bg-rgb), 0.5);
+  border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  color: var(--current-text-primary);
+  padding: calc(var(--spacing-unit) * 1.35) calc(var(--spacing-unit) * 1.5);
+  border-radius: var(--border-radius-slight);
+  transition: border-color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              box-shadow var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  width: 100%; /* Default to full width within their container */
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--current-accent-light);
+  box-shadow: 0 0 0 var(--lumina-line-weight-bold) rgba(var(--current-accent-light-rgb), 0.3),
+              0 0 8px rgba(var(--current-accent-light-rgb), 0.2);
+}
+
+/* User Input Textarea (specific for chat input) */
+textarea#user-input {
+  border-width: var(--lumina-line-weight-medium);
+  background-color: transparent; /* Default for chat input */
+  min-height: 56px; /* Align with send button */
+  max-height: 180px; /* Prevent excessive height */
+  padding-right: calc(var(--spacing-unit) * 9); /* Space for overlay buttons */
+  line-height: 1.6;
+  font-size: var(--base-font-size);
+  resize: none; /* Disable manual resize */
+  overflow-y: hidden; /* Default, JS will manage */
+}
+
+textarea#user-input:focus {
+  background-color: rgba(var(--current-panel-bg-rgb), 0.3); /* Focus background */
+}
+
+/* Select (Dropdown) specific styling for Lumina theme */
+.lumina-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right calc(var(--spacing-unit) * 1.5) center;
+  background-size: 1em;
+  padding-right: calc(var(--spacing-unit) * 4); /* Space for arrow */
+}
+/* For settings modal select, use the container's styles */
+.setting-item .lumina-select {
+    /* Uses the .setting-item .lumina-select defined in _modals.css */
+}
+
+/* Range Slider (input type=range) specific styling */
+.lumina-range { /* Apply to the input[type=range] directly */
+  -webkit-appearance: none; -moz-appearance: none; appearance: none;
+  width: 100%;
+  height: 6px;
+  background: rgba(var(--current-panel-border-rgb), 0.5);
+  border-radius: 3px;
+  outline: none;
+  border: none; /* Already reset, but ensure */
+  padding: 0; /* Override general input padding */
+}
+.lumina-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 18px; height: 18px;
+  background: var(--current-accent-light);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(var(--current-accent-light-rgb), 0.4);
+  border: 2px solid var(--current-panel-bg); /* Match panel bg for cutout effect */
+  transition: transform var(--transition-duration-light-pulse) ease;
+  margin-top: -6px; /* Vertical centering */
+}
+.lumina-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+.lumina-range::-moz-range-thumb {
+  width: 18px; height: 18px;
+  background: var(--current-accent-light);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 8px rgba(var(--current-accent-light-rgb), 0.4);
+  border: 2px solid var(--current-panel-bg);
+}
+.lumina-range::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* Switch (Toggle) specific styling */
+.lumina-switch { /* The label container */
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+.lumina-switch input { /* Hide the actual checkbox */
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.lumina-switch .slider { /* The track */
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(var(--current-panel-border-rgb), 0.6);
+  transition: background-color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+}
+.lumina-switch .slider.round {
+  border-radius: 24px;
+}
+.lumina-switch .slider.round:before { /* The knob */
+  border-radius: 50%;
+}
+.lumina-switch .slider:before { /* The knob */
+  content: "";
+  position: absolute;
+  height: 18px; width: 18px;
+  left: 3px; bottom: 3px;
+  background-color: var(--current-bg);
+  box-shadow: 0 1px 2px rgba(var(--current-text-primary-rgb), 0.2);
+  transition: transform var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+}
+.lumina-switch input:checked + .slider {
+  background-color: var(--current-accent-light);
+}
+.lumina-switch input:checked + .slider:before {
+  transform: translateX(24px);
+}
+.lumina-switch input:focus + .slider { /* Focus ring for accessibility */
+  box-shadow: 0 0 0 2px rgba(var(--current-accent-light-rgb), 0.3);
+}
+
+/* File input is visually hidden, triggered by a button */
+#file-input {
+  display: none;
+}
+
+/* ==========================================================================
+   [ END OF FILE components/_forms.css ]
+   ========================================================================== */

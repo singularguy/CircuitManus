@@ -1,0 +1,102 @@
+/* ==========================================================================
+   [ START OF FILE layout/_file_preview.css ]
+   文件预览区域样式
+   ========================================================================== */
+
+.file-preview.lumina-panel {
+  position: absolute;
+  bottom: calc(100% + var(--spacing-unit) * 1.25); /* Position above input area */
+  left: 0;
+  right: 0;
+  max-height: 160px;
+  display: none; /* Initially hidden */
+  flex-direction: column;
+  z-index: var(--z-index-file-preview);
+  overflow: hidden;
+  border-bottom-left-radius: 0; /* Align with input area */
+  border-bottom-right-radius: 0;
+  border-bottom-width: 0; /* No bottom border as it sits on top of input area */
+}
+
+.file-preview.lumina-panel.active {
+  display: flex;
+}
+
+.file-preview.lumina-panel .file-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 1.5);
+  border-bottom: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  flex-shrink: 0;
+}
+
+.file-preview.lumina-panel .file-preview-header h3 {
+  font-size: 0.95em;
+  margin: 0;
+  font-family: var(--font-family-title);
+  color: var(--current-text-primary);
+  font-weight: 500;
+}
+
+.file-preview.lumina-panel .file-preview-header h3 i {
+  color: var(--current-accent-light);
+  margin-right: var(--spacing-unit);
+}
+
+.file-preview.lumina-panel .file-preview-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: calc(var(--spacing-unit) * 1.25);
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing-unit) * 1);
+}
+
+.file-preview.lumina-panel .file-item {
+  background-color: rgba(var(--current-bg-rgb), 0.5);
+  border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  border-radius: 18px; /* Chip-like */
+  padding: calc(var(--spacing-unit) * 0.6) calc(var(--spacing-unit) * 1.2);
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85em;
+  color: var(--current-text-secondary);
+  transition: all var(--transition-duration-light-pulse) ease;
+}
+
+.file-preview.lumina-panel .file-item:hover {
+  border-color: var(--current-accent-light);
+  color: var(--current-text-primary);
+  box-shadow: 0 1px 4px rgba(var(--current-accent-light-rgb), 0.1);
+}
+
+.file-preview.lumina-panel .file-item .file-icon {
+  color: var(--current-accent-light);
+  margin-right: calc(var(--spacing-unit) * 0.75);
+  font-size: 1.1em;
+}
+
+.file-preview.lumina-panel .file-item .file-name {
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-preview.lumina-panel .file-item .file-remove {
+  font-size: 1em;
+  color: var(--lumina-error-color);
+  margin-left: calc(var(--spacing-unit) * 0.8);
+  opacity: 0.7;
+  padding: 2px; /* Increase clickable area */
+}
+
+.file-preview.lumina-panel .file-item .file-remove:hover,
+.file-preview.lumina-panel .file-item .file-remove:focus {
+  opacity: 1;
+  background-color: rgba(var(--lumina-error-color-rgb), 0.1);
+}
+/* ==========================================================================
+   [ END OF FILE layout/_file_preview.css ]
+   ========================================================================== */

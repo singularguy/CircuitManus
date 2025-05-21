@@ -1,0 +1,84 @@
+/* ==========================================================================
+   [ START OF FILE base/_reset.css ]
+   CSS Reset - 统一浏览器默认样式
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0 solid transparent; /* 更现代的重置，所有边框默认为透明实体，需要时再显式定义 */
+}
+
+html {
+  font-size: var(--base-font-size, 16px); /* Fallback if variable not loaded */
+  line-height: var(--line-height-base, 1.5);
+  -webkit-text-size-adjust: 100%; /* 防止iOS设备旋转时字体大小变化 */
+  -moz-tab-size: 4; /* 设置tab键宽度为4个空格 */
+  tab-size: 4;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family-body, sans-serif); /* Fallback if variable not loaded */
+  background-color: var(--current-bg, #fff);
+  color: var(--current-text-primary, #000);
+  overflow-x: hidden; /* 通常只在body上隐藏水平滚动条 */
+  overflow-y: auto; /* body层面允许垂直滚动，但通常内容会由内部容器控制滚动 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block; /* 移除图片等元素底部的空白间隙 */
+  max-width: 100%; /* 防止图片等元素超出容器 */
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit; /* 继承父元素的字体样式 */
+  color: inherit; /* 继承父元素的文本颜色 */
+  background-color: transparent; /* 默认透明背景 */
+  border-radius: 0; /* 移除默认圆角 */
+}
+
+button {
+  cursor: pointer; /* 鼠标悬停时显示手型光标 */
+  outline: none; /* 移除默认轮廓 */
+}
+
+textarea {
+  resize: vertical; /* 通常只允许垂直方向调整大小 */
+  overflow: auto; /* 确保内容过多时可以滚动 */
+}
+
+table {
+  border-collapse: collapse; /* 合并表格边框 */
+  border-spacing: 0; /* 移除单元格间距 */
+}
+
+ul,
+ol {
+  list-style: none; /* 移除列表默认标记 */
+}
+
+a {
+  text-decoration: none; /* 移除链接下划线 */
+  color: inherit; /* 继承父元素的文本颜色 */
+}
+
+/* 隐藏屏幕阅读器不可见的元素 */
+[hidden] {
+  display: none !important;
+}
+/* ==========================================================================
+   [ END OF FILE base/_reset.css ]
+   ========================================================================== */

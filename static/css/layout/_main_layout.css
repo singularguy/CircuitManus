@@ -1,0 +1,44 @@
+/* ==========================================================================
+   [ START OF FILE layout/_main_layout.css ]
+   主要布局容器和结构样式
+   ========================================================================== */
+
+.main-container {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity var(--transition-duration-ink-flow) var(--transition-timing-function-lumina),
+              transform var(--transition-duration-ink-flow) var(--transition-timing-function-lumina);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+.main-container.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.app-body-container {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+  position: relative;
+  padding: var(--spacing-unit);
+  gap: var(--spacing-unit);
+}
+
+/* 当日志侧边栏打开时，调整聊天区域的右边距 */
+.app-body-container.with-process-log-open .chat-area {
+  margin-right: calc(var(--process-log-sidebar-width) + var(--spacing-unit));
+  transition: margin-right var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+}
+
+/* 当日志侧边栏折叠时，调整聊天区域的右边距 */
+.app-body-container.with-process-log-open.log-sidebar-collapsed .chat-area {
+  margin-right: calc(var(--process-log-sidebar-width-collapsed) + var(--spacing-unit));
+}
+
+/* ==========================================================================
+   [ END OF FILE layout/_main_layout.css ]
+   ========================================================================== */

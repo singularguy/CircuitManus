@@ -1,0 +1,68 @@
+/* ==========================================================================
+   [ START OF FILE layout/_header.css ]
+   头部区域样式
+   ========================================================================== */
+
+.header.lumina-panel {
+  border-radius: 0 0 var(--border-radius-soft) var(--border-radius-soft);
+  border-width: 0 0 var(--lumina-line-weight-thin) 0;
+  border-bottom-color: var(--current-panel-border);
+  padding: 0 calc(var(--spacing-unit) * 2.5);
+  z-index: var(--z-index-header);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  height: var(--header-height);
+  position: relative; /* For ::before pseudo-element */
+}
+
+.header.lumina-panel .logo {
+  display: flex;
+  align-items: center;
+}
+
+.header.lumina-panel .logo .logo-icon i {
+  color: var(--current-accent-light);
+  font-size: calc(var(--base-font-size) * 1.9);
+  margin-right: calc(var(--spacing-unit) * 1.2);
+  text-shadow: 0 0 8px var(--current-glow);
+}
+
+.header.lumina-panel .logo h1 {
+  font-size: calc(var(--base-font-size) * 1.6);
+  color: var(--current-text-primary);
+  font-weight: 700;
+  margin: 0;
+  text-shadow: none;
+}
+
+.header.lumina-panel .logo h1 .version-pro {
+  font-size: 0.65em;
+  color: var(--current-accent-ink);
+  margin-left: var(--spacing-unit);
+  font-weight: 500;
+}
+
+.header.lumina-panel .logo h1 .version-pro .version-number {
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+
+.header.lumina-panel .header-buttons {
+  display: flex;
+  gap: calc(var(--spacing-unit) * 0.75);
+}
+
+.header.lumina-panel .header-buttons .header-btn.icon-btn {
+  width: calc(var(--header-height) * 0.6);
+  height: calc(var(--header-height) * 0.6);
+  font-size: calc(var(--base-font-size) * 1.15);
+}
+
+.header.lumina-panel .header-buttons .header-btn.icon-btn span {
+  display: none; /* Hide text in header icon buttons */
+}
+/* ==========================================================================
+   [ END OF FILE layout/_header.css ]
+   ========================================================================== */

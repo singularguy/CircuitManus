@@ -1,0 +1,40 @@
+/* ==========================================================================
+   [ START OF FILE style.css / main.css ]
+   CircuitManus Pro - Lumina Script / 光绘墨迹 主题 - CSS 入口文件
+   版本: 1.1.7_LogLayoutFix_BlackHoleRevise_RefactoredCSS
+   描述: 此文件通过 @import 规则引入所有模块化的CSS文件。
+   ========================================================================== */
+
+/* 基础与全局样式 */
+@import url("base/_reset.css");
+@import url("base/_variables.css");
+@import url("base/_typography.css");
+@import url("base/_theme_application.css");
+
+/* 布局样式 */
+@import url("layout/_main_layout.css");
+@import url("layout/_header.css");
+@import url("layout/_sidebar.css");
+@import url("layout/_chat_area.css");
+@import url("layout/_process_log_sidebar.css");
+@import url("layout/_file_preview.css");
+
+/* 组件样式 */
+@import url("components/_panels.css"); /* 面板基础样式需要较早引入 */
+@import url("components/_buttons.css");
+@import url("components/_modals.css");
+@import url("components/_loader.css");
+@import url("components/_toast.css");
+@import url("components/_messages.css");
+@import url("components/_forms.css");
+
+/* 动画与特效 */
+@import url("animations/_keyframes.css");
+@import url("animations/_visual_effects.css"); /* 包含黑洞等视觉特效 */
+
+/* 工具类 (如果将来有) */
+/* @import url("utils/_utilities.css"); */
+
+/* ==========================================================================
+   [ END OF FILE style.css / main.css ]
+   ========================================================================== */

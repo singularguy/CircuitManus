@@ -1,263 +1,212 @@
 <!DOCTYPE html>
-<html lang="zh-CN"> <!-- 文档语言设置为中文 -->
+<html lang="zh-CN">
 
 <head>
-    <meta charset="UTF-8"> <!-- 字符编码为UTF-8 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 配置视口，确保页面在不同设备上正常显示 -->
-    <title>CircuitManus Pro - 光绘墨迹终端 (V1.0.0 - Lumina Script)</title> <!-- 页面标题，包含应用名称、核心代号及版本 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CircuitManus Pro - 光绘墨迹终端 (V1.0.0 - Lumina Script Refactored)</title>
 
-    <!-- 引入必要的外部字体 -->
+    <!-- Google Fonts Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Fonts Stylesheets -->
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap"
         rel="stylesheet">
-    <!-- Noto Sans SC 是为了优化中文字体显示，提供更好的排版和兼容性 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
         rel="stylesheet">
-
-    <!-- 引入 Font Awesome 图标库，用于显示各种UI图标 -->
+    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <!-- 引入 Animate.css 动画库，用于实现元素的进出场动画效果 -->
+    <!-- Animate.css for Animations -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
-    <!-- 引入应用的自定义样式表 -->
-    <link rel="stylesheet" href="/static/style.css">
+    <!-- 主 CSS 文件入口 (style.css 会 @import 其他CSS模块) -->
+    <link rel="stylesheet" href="static/css/style.css">
 
-    <!-- 引入 Three.js 库，用于渲染3D黑洞特效 -->
+    <!-- Three.js 库 (如果需要，可以考虑本地化或通过npm管理) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
-<body data-theme="light-crystal" data-animation-level="full"> <!-- body元素的data属性用于CSS主题和动画级别的控制 -->
+<body data-theme="light-crystal" data-animation-level="full">
 
-    <!-- 动态背景层：提供页面的视觉背景效果 -->
-    <div class="dynamic-crystal-background"> <!-- 类名保持，具体效果由style.css中的新样式定义 -->
-        <div class="background-grid-pattern"></div> <!-- 背景纹理/网格层 -->
-        <div class="background-particle-field"></div> <!-- 背景粒子/光点层 -->
+    <!-- Dynamic Crystal Background (CSS driven) -->
+    <div class="dynamic-crystal-background">
+        <div class="background-grid-pattern"></div>
+        <!-- Particles can be added via JS or CSS if needed -->
+        <!-- <div class="background-particle-field"></div> -->
     </div>
 
-    <!-- 3D科技组件 - 黑洞效果容器：由Three.js渲染的视觉元素 -->
-    <!-- class="component-wrapper" 提供基础定位和尺寸控制 -->
-    <!-- class="is-visible" 控制组件的显示/隐藏状态 -->
-    <!-- 新增 class="black-hole-container" 用于 CSS 定位和新样式 -->
+    <!-- IDT Tech Component / Black Hole Effect Wrapper (CSS & JS driven) -->
     <div id="idtTechComponentWrapper" class="component-wrapper is-visible black-hole-container">
-        <!-- 新增的内部元素，用于配合 CSS 实现分层吸积盘、光晕和模拟恒星效果 -->
-        <!-- 这些层将位于 Three.js Canvas 之下或之上，具体由 CSS z-index 控制 -->
-        <div class="bh-effect bh-outer-glow"></div> <!-- 外围光晕/引力透镜提示层 -->
-        <div class="bh-effect bh-accretion-disk-outer"></div> <!-- 吸积盘外层 (CSS) -->
-        <div class="bh-effect bh-accretion-disk-middle"></div> <!-- 吸积盘中层 (CSS) -->
-        <div class="bh-effect bh-accretion-disk-inner"></div> <!-- 吸积盘内层 (CSS) -->
-        <div class="bh-effect bh-core-shadow"></div> <!-- 核心阴影/暗区层 (CSS) -->
-
-        <!-- 模拟环绕的恒星元素 (CSS) -->
+        <div class="bh-effect bh-outer-glow"></div>
+        <div class="bh-effect bh-accretion-disk-outer"></div>
+        <div class="bh-effect bh-accretion-disk-middle"></div>
+        <div class="bh-effect bh-accretion-disk-inner"></div>
+        <div class="bh-effect bh-core-shadow"></div>
         <div class="bh-effect bh-orbiting-star"></div>
-
-        <!-- Three.js Canvas 将由 script.js 动态创建并添加到这个容器中 -->
-        <!-- Three.js Canvas 将负责渲染黑洞球体和 3D 吸积盘环 -->
+        <!-- Canvas for Three.js will be appended here by three_visuals.js -->
     </div>
 
-    <!-- 加载动画容器：在应用初始化和WebSocket连接建立前显示 -->
+    <!-- Loader -->
     <div class="loader-container" id="loader">
-        <!-- Lumina风格加载核心动画结构 -->
-        <div class="lumina-loader-core"> <!-- 新的加载核心类名 -->
-            <div class="lumina-loader-center-pulse"></div> <!-- 中心脉动光点 -->
+        <div class="lumina-loader-core">
+            <div class="lumina-loader-center-pulse"></div>
         </div>
-        <!-- 应用Logo文本 -->
-        <div class="loader-logo-text"> <!-- 类名保持，样式已在style.css中更新 -->
+        <div class="loader-logo-text">
             <span>CIRCUIT</span>MANUS<span class="loader-version-pro">PRO</span>
         </div>
-        <!-- 加载状态文本 -->
-        <p class="loading-text">同步光绘墨迹流 (V1.0.0 Lumina)...</p> <!-- 更新加载文本，同步版本和核心名 -->
+        <p class="loading-text">同步光绘墨迹流 (V1.0.0 Lumina)...</p>
     </div>
 
-    <!-- 主应用容器：包含应用的核心界面元素 -->
+    <!-- Main Application Container -->
     <div class="main-container" id="main-container">
-        <!-- 应用头部：包含Logo、应用名称和快捷操作按钮 -->
-        <header class="header lumina-panel" id="app-header"> <!-- 使用 lumina-panel 类名 -->
-            <div class="logo"> <!-- Logo区域 -->
-                <div class="logo-icon"><i class="fas fa-network-wired"></i></div> <!-- Logo图标，更新为画笔 -->
+        <!-- Header -->
+        <header class="header lumina-panel" id="app-header">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-network-wired"></i></div>
                 <h1>CircuitManus <span class="version-pro">Lumina <span class="version-number">v1.0.0</span></span></h1>
-                <!-- 应用名称及版本，更新核心名 -->
             </div>
-            <div class="header-buttons"> <!-- 头部右侧的按钮组 -->
-                <!-- 按钮类名更新为 icon-btn，具体样式由style.css中的.icon-btn和.header-btn定义 -->
+            <div class="header-buttons">
                 <button id="toggleIdtComponentBtn" class="header-btn icon-btn" title="切换核心投影 (黑洞)"><i
-                        class="fas fa-atom"></i></button> <!-- 切换3D组件可见性按钮 -->
+                        class="fas fa-atom"></i></button>
                 <button id="theme-toggle" class="header-btn icon-btn" title="切换显示模式"><i
-                        class="fas fa-palette"></i></button> <!-- 切换主题按钮，图标更新为调色板 -->
+                        class="fas fa-palette"></i></button>
                 <button id="clear-chat" class="header-btn icon-btn" title="清空当前墨迹"><i
-                        class="fas fa-eraser"></i></button> <!-- 清空聊天按钮，更新提示文本 -->
+                        class="fas fa-eraser"></i></button>
                 <button id="toggle-process-log-visibility" class="header-btn icon-btn" title="切换处理日志侧栏"><i
-                        class="fas fa-scroll"></i></button> <!-- 切换处理日志侧栏可见性按钮 -->
+                        class="fas fa-scroll"></i></button>
             </div>
         </header>
 
-        <!-- 聊天界面主体容器：包含左侧边栏和主聊天区域 -->
+        <!-- App Body (Sidebar + Main Chat Area + Process Log Sidebar) -->
         <div class="app-body-container" id="appBodyContainer">
-            <!-- 左侧边栏：包含模式切换按钮和会话管理 -->
-            <aside class="sidebar lumina-panel left-sidebar" id="sidebar"> <!-- 使用 lumina-panel 类名 -->
-                <!-- 侧边栏展开/收起开关 -->
+            <!-- Left Sidebar -->
+            <aside class="sidebar lumina-panel left-sidebar" id="sidebar">
                 <button id="left-sidebar-toggle" class="sidebar-toggle-btn icon-btn" title="展开/收起侧边栏">
-                    <i class="fas fa-bars"></i> <!-- 菜单图标 -->
+                    <i class="fas fa-bars"></i>
                 </button>
-                <!-- 侧边栏内容包装器，用于内部滚动 -->
                 <div class="sidebar-content-wrapper">
-                    <!-- 主功能按钮区：用于切换应用模式 -->
                     <div class="sidebar-main-actions">
-                        <!-- 按钮类名更新为 lumina-button-sidebar -->
                         <button class="sidebar-button lumina-button-sidebar active" data-mode="chat" title="灵感交流"><i
-                                class="fas fa-comments"></i><span>灵感交流</span></button> <!-- 聊天模式按钮 -->
+                                class="fas fa-comments"></i><span>灵感交流</span></button>
                         <button class="sidebar-button lumina-button-sidebar" data-mode="code" title="代码绘卷"><i
-                                class="fas fa-code-branch"></i><span>代码绘卷</span></button> <!-- 代码模式按钮 -->
+                                class="fas fa-code-branch"></i><span>代码绘卷</span></button>
                         <button class="sidebar-button lumina-button-sidebar" data-mode="circuit" title="电路拓印"><i
-                                class="fas fa-sitemap"></i><span>电路拓印</span></button> <!-- 电路模式按钮 -->
+                                class="fas fa-sitemap"></i><span>电路拓印</span></button>
                         <button class="sidebar-button lumina-button-sidebar" data-mode="settings" title="参数调校"><i
-                                class="fas fa-sliders-h"></i><span>参数调校</span></button> <!-- 设置模式按钮 -->
+                                class="fas fa-sliders-h"></i><span>参数调校</span></button>
                     </div>
-                    <!-- 会话历史区：管理和切换用户会话 -->
                     <div class="session-manager" id="session-manager">
-                        <!-- 会话历史头部，包含折叠开关 -->
                         <div class="session-manager-header" id="session-manager-toggle">
-                            <span><i class="fas fa-stream"></i> 会话流</span> <!-- 更新图标和文本 -->
-                            <i class="fas fa-caret-down toggle-icon"></i> <!-- 折叠指示图标 -->
+                            <span><i class="fas fa-stream"></i> 会话流</span>
+                            <i class="fas fa-caret-down toggle-icon"></i>
                         </div>
-                        <!-- 会话列表容器，用于内部滚动 -->
                         <div class="session-list-container" id="session-list-container">
                             <ul class="session-list" id="session-list">
-                                <!-- 会话列表项将由 script.js 动态填充 -->
+                                <!-- Session items will be populated by JavaScript -->
                             </ul>
                         </div>
                     </div>
-                </div> <!-- .sidebar-content-wrapper 结束 -->
-                <!-- 新建会话按钮，固定在侧边栏底部 -->
-                <!-- 类名更新为 lumina-button, lumina-button-primary, lumina-button-fixed-bottom -->
+                </div>
                 <button id="create-new-session" class="lumina-button lumina-button-primary lumina-button-fixed-bottom"
-                    title="创建新光绘项目"><i class="fas fa-edit"></i><span>新建光绘</span></button> <!-- 更新提示和文本 -->
+                    title="创建新光绘项目"><i class="fas fa-edit"></i><span>新建光绘</span></button>
             </aside>
 
-            <!-- 主聊天区域：显示消息和输入框 -->
+            <!-- Main Chat Area -->
             <main class="chat-area" id="chat-area">
-                <!-- 聊天内容面板 -->
-                <div class="chat-area-content lumina-panel main-chat-panel"> <!-- 使用 lumina-panel 类名 -->
-                    <!-- 聊天头部：显示当前会话名称和编辑按钮 -->
+                <div class="chat-area-content lumina-panel main-chat-panel">
                     <div class="chat-header" id="chat-header">
-                        <h2 id="current-session-name">默认光绘项目</h2> <!-- 当前会话名称显示区域 -->
-                        <!-- 重命名会话按钮，类名更新为 icon-btn -->
+                        <h2 id="current-session-name">默认光绘项目</h2>
                         <button id="edit-session-name-btn" class="icon-btn" title="重命名光绘项目"><i
-                                class="fas fa-pencil-alt"></i></button> <!-- 更新提示 -->
+                                class="fas fa-pencil-alt"></i></button>
                     </div>
-                    <!-- 聊天消息显示区域 -->
                     <div class="chat-box" id="chat-box">
-                        <!-- 消息将由 script.js 动态填充 -->
+                        <!-- Chat messages will be populated by JavaScript -->
                     </div>
-                    <!-- 文件预览区域：显示已选择待上传的文件 -->
-                    <div class="file-preview lumina-panel" id="file-preview"> <!-- 使用 lumina-panel 类名 -->
-                        <div class="file-preview-header"> <!-- 文件预览头部 -->
-                            <h3><i class="fas fa-folder-open"></i> 附件预览</h3> <!-- 头部标题 -->
-                            <!-- 关闭预览按钮，类名更新为 icon-btn -->
+                    <div class="file-preview lumina-panel" id="file-preview">
+                        <div class="file-preview-header">
+                            <h3><i class="fas fa-folder-open"></i> 附件预览</h3>
                             <button id="close-preview" class="icon-btn" title="关闭预览"><i
                                     class="fas fa-times"></i></button>
                         </div>
-                        <!-- 文件预览内容区 -->
                         <div class="file-preview-content" id="file-preview-content">
-                            <!-- 文件预览项将由 script.js 动态填充 -->
+                            <!-- File preview items will be populated by JavaScript -->
                         </div>
                     </div>
-                    <!-- 输入区域：包含文本输入框、附件按钮、语音按钮和发送按钮 -->
-                    <div class="input-area lumina-panel" id="input-area"> <!-- 使用 lumina-panel 类名 -->
-                        <!-- 添加附件按钮，类名更新为 icon-btn -->
+                    <div class="input-area lumina-panel" id="input-area">
                         <button id="attach-button" class="input-action-btn icon-btn" title="添加附件"><i
                                 class="fas fa-paperclip"></i></button>
-                        <!-- 输入包装器：包含文本框和覆盖在其上的操作按钮 -->
                         <div class="input-wrapper">
-                            <!-- 用户输入文本框 -->
                             <textarea id="user-input" placeholder="向Lumina核心发送指令 (Shift+Enter换行)..."
-                                rows="1"></textarea> <!-- 更新占位符 -->
-                            <!-- 覆盖在输入框上的操作按钮和字符计数器 -->
+                                rows="1"></textarea>
                             <div class="input-actions-overlay">
-                                <!-- 语音输入按钮，类名更新为 icon-btn -->
                                 <button id="mic-button" class="overlay-btn icon-btn" title="语音墨迹 (开发中)"><i
-                                        class="fas fa-microphone-alt"></i></button> <!-- 更新提示和图标 -->
-                                <!-- 字符计数器 -->
+                                        class="fas fa-microphone-alt"></i></button>
                                 <span id="char-counter" class="char-counter">0/8000</span>
                             </div>
                         </div>
-                        <!-- 发送按钮 -->
-                        <!-- 类名更新为 lumina-button, lumina-button-primary -->
                         <button id="send-button" class="send-button lumina-button lumina-button-primary" title="发送指令">
                             <svg viewBox="0 0 24 24" fill="currentColor" class="send-icon">
                                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                            </svg> <!-- 发送图标 -->
+                            </svg>
                             <i class="fas fa-spinner fa-spin send-loading-icon" style="display: none;"></i>
-                            <!-- 加载中图标 -->
                         </button>
-                        <!-- 隐藏的文件输入框，用于触发文件选择 -->
                         <input type="file" id="file-input" multiple style="display: none">
                     </div>
                 </div>
             </main>
 
-            <!-- 右侧Agent处理过程日志侧边栏：显示Agent的思考和工具执行过程 -->
-            <aside class="process-log-sidebar lumina-panel" id="agent-process-sidebar"> <!-- 使用 lumina-panel 类名 -->
-                <div class="process-log-header"> <!-- 日志侧边栏头部 -->
-                    <span><i class="fas fa-route"></i> Agent 执行轨迹</span> <!-- 更新图标和文本 -->
-                    <!-- 折叠/展开按钮，类名更新为 icon-btn -->
+            <!-- Right Agent Process Log Sidebar -->
+            <aside class="process-log-sidebar lumina-panel" id="agent-process-sidebar">
+                <div class="process-log-header">
+                    <span><i class="fas fa-route"></i> Agent 执行轨迹</span>
                     <button class="icon-btn" id="toggle-process-log-sidebar-collapse" title="折叠/展开轨迹日志">
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <!-- 关闭按钮，类名更新为 icon-btn -->
-                    <!-- 注意：这个关闭按钮在JS中默认是隐藏的，以便在侧边栏收起时只显示折叠按钮 -->
                     <button class="icon-btn" id="close-process-log-sidebar" title="关闭轨迹日志" style="display:none;">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <!-- 日志内容区域 -->
                 <div class="process-log-content" id="process-log-content-sidebar">
-                    <!-- 日志项将由 script.js 动态填充 -->
+                    <!-- Log items will be populated by JavaScript -->
                 </div>
             </aside>
-        </div> <!-- /app-body-container 结束 -->
-    </div> <!-- /main-container 结束 -->
-
-    <!-- Toast通知容器：显示短暂的通知消息 -->
-    <div class="toast-container" id="toast-container">
-        <!-- Toast通知项将由 script.js 动态填充 -->
+        </div>
     </div>
 
-    <!-- 设置模态框：用于配置应用参数 -->
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container">
+        <!-- Toast messages will be populated by JavaScript -->
+    </div>
+
+    <!-- Settings Modal -->
     <div class="modal" id="settings-modal">
-        <!-- 模态框内容面板 -->
-        <div class="modal-content animate__animated lumina-panel"> <!-- 使用 lumina-panel 类名 -->
-            <div class="modal-header"> <!-- 模态框头部 -->
-                <h2><i class="fas fa-sliders-h"></i> 参数调校台</h2> <!-- 更新图标和文本 -->
-                <!-- 关闭模态框按钮，类名更新为 icon-btn -->
+        <div class="modal-content animate__animated lumina-panel">
+            <div class="modal-header">
+                <h2><i class="fas fa-sliders-h"></i> 参数调校台</h2>
                 <button id="close-settings" class="icon-btn" title="关闭配置"><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-body"> <!-- 模态框主体内容 -->
-                <div class="setting-group"> <!-- 设置分组：界面风格 -->
-                    <h3><i class="fas fa-fill-drip"></i> 界面风格</h3> <!-- 更新图标 -->
-                    <div class="setting-item"> <!-- 设置项：界面主题 -->
+            <div class="modal-body">
+                <div class="setting-group">
+                    <h3><i class="fas fa-fill-drip"></i> 界面风格</h3>
+                    <div class="setting-item">
                         <label for="theme-select">界面主题</label>
-                        <!-- 选择框，类名更新为 lumina-select -->
                         <select id="theme-select" class="lumina-select">
                             <option value="light-crystal">月白宣纸 (亮色)</option>
                             <option value="dark-crystal">墨黑星空 (暗色)</option>
                             <option value="auto-crystal">随境而变 (自动)</option>
                         </select>
                     </div>
-                    <div class="setting-item"> <!-- 设置项：文本字号 -->
+                    <div class="setting-item">
                         <label for="font-size">文本字号</label>
-                        <!-- 范围滑块容器，类名更新为 lumina-range-container -->
                         <div class="lumina-range-container">
-                            <!-- 范围滑块，类名更新为 lumina-range -->
                             <input type="range" id="font-size" min="12" max="20" value="16" step="1"
                                 class="lumina-range">
-                            <span id="font-size-value">16px</span> <!-- 字号值显示 -->
+                            <span id="font-size-value">16px</span>
                         </div>
                     </div>
-                    <div class="setting-item"> <!-- 设置项：动态效果等级 -->
+                    <div class="setting-item">
                         <label for="animation-level">动态效果等级</label>
-                        <!-- 选择框，类名更新为 lumina-select -->
                         <select id="animation-level" class="lumina-select">
                             <option value="full">流畅光绘</option>
                             <option value="basic">简约墨迹</option>
@@ -265,32 +214,30 @@
                         </select>
                     </div>
                 </div>
-                <div class="setting-group"> <!-- 设置分组：交互行为 -->
+                <div class="setting-group">
                     <h3><i class="fas fa-mouse-pointer"></i> 交互行为</h3>
-                    <div class="setting-item"> <!-- 设置项：信息流自动滚动 -->
+                    <div class="setting-item">
                         <label for="auto-scroll">信息流自动滚动</label>
-                        <!-- 开关容器，类名更新为 lumina-switch-container -->
                         <div class="lumina-switch-container">
-                            <!-- 开关控件，类名更新为 lumina-switch -->
                             <label class="lumina-switch"><input type="checkbox" id="auto-scroll" checked><span
                                     class="slider round"></span></label>
                         </div>
                     </div>
-                    <div class="setting-item"> <!-- 设置项：声音反馈 -->
+                    <div class="setting-item">
                         <label for="sound-enabled">声音反馈 (实验性)</label>
                         <div class="lumina-switch-container">
                             <label class="lumina-switch"><input type="checkbox" id="sound-enabled"><span
                                     class="slider round"></span></label>
                         </div>
                     </div>
-                    <div class="setting-item"> <!-- 设置项：消息气泡内显示思考 -->
+                    <div class="setting-item">
                         <label for="show-chat-bubbles-think">消息气泡内显示思考</label>
                         <div class="lumina-switch-container">
                             <label class="lumina-switch"><input type="checkbox" id="show-chat-bubbles-think"
                                     checked><span class="slider round"></span></label>
                         </div>
                     </div>
-                    <div class="setting-item"> <!-- 设置项：处理日志中显示思考 -->
+                    <div class="setting-item">
                         <label for="show-log-bubbles-think">处理日志中显示思考</label>
                         <div class="lumina-switch-container">
                             <label class="lumina-switch"><input type="checkbox" id="show-log-bubbles-think"
@@ -298,16 +245,16 @@
                         </div>
                     </div>
                 </div>
-                <div class="setting-group"> <!-- 设置分组：Agent核心 -->
-                    <h3><i class="fas fa-brain"></i> Agent 核心</h3> <!-- 更新图标 -->
-                    <div class="setting-item"> <!-- 设置项：快捷指令自动提交 -->
+                <div class="setting-group">
+                    <h3><i class="fas fa-brain"></i> Agent 核心</h3>
+                    <div class="setting-item">
                         <label for="auto-submit-quick-actions">快捷指令自动提交</label>
                         <div class="lumina-switch-container">
                             <label class="lumina-switch"><input type="checkbox" id="auto-submit-quick-actions"
                                     checked><span class="slider round"></span></label>
                         </div>
                     </div>
-                    <div class="setting-item"> <!-- 设置项：3D核心投影默认可见 -->
+                    <div class="setting-item">
                         <label for="component-visibility-toggle">3D核心投影默认可见</label>
                         <div class="lumina-switch-container">
                             <label class="lumina-switch"><input type="checkbox" id="component-visibility-toggle"
@@ -316,19 +263,42 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer"> <!-- 模态框底部按钮 -->
-                <!-- 类名更新为 lumina-button -->
+            <div class="modal-footer">
                 <button id="reset-settings" class="lumina-button"><i class="fas fa-undo-alt"></i>恢复默认</button>
-                <!-- 类名更新为 lumina-button lumina-button-primary -->
                 <button id="save-settings" class="lumina-button lumina-button-primary"><i class="fas fa-save"></i>
                     保存参数</button>
             </div>
-        </div> <!-- .modal-content 结束 -->
-    </div> <!-- .modal 结束 -->
+        </div>
+    </div>
 
-    <!-- 引入应用的JavaScript文件 -->
-    <script src="/static/script.js"></script>
+    <!-- JavaScript Modules - CRITICAL: type="module" is required for ES6 imports/exports -->
+    <!-- Order is important: utils -> core -> modules -> app -->
 
-</body> <!-- body 结束 -->
+    <!-- Utils (no internal dependencies among themselves, but core/modules depend on them) -->
+    <script type="module" src="static/js/utils/dom_elements.js"></script>
+    <script type="module" src="static/js/utils/helpers.js"></script>
 
-</html> <!-- html 结束 -->
+    <!-- Core (state might be needed by ui_updater, websocket_manager by others) -->
+    <script type="module" src="static/js/core/state.js"></script>
+    <script type="module" src="static/js/core/ui_updater.js"></script>
+    <script type="module" src="static/js/core/websocket_manager.js"></script>
+    <!-- event_listener_setup often depends on many handlers from modules, so it might come after modules or be part of app.js init -->
+
+    <!-- Modules (can have inter-dependencies or dependencies on core/utils) -->
+    <script type="module" src="static/js/modules/theme_handler.js"></script>
+    <script type="module" src="static/js/modules/layout_handler.js"></script>
+    <script type="module" src="static/js/modules/session_handler.js"></script> <!-- Depends on state, ui_updater, helpers, websocket_manager -->
+    <script type="module" src="static/js/modules/settings_handler.js"></script> <!-- Depends on state, theme_handler, ui_updater, three_visuals -->
+    <script type="module" src="static/js/modules/file_handler.js"></script>
+    <script type="module" src="static/js/modules/three_visuals.js"></script>
+    <script type="module" src="static/js/modules/copy_handler.js"></script>
+    <script type="module" src="static/js/modules/quick_actions_handler.js"></script>
+
+    <!-- Event Listener Setup (depends on many of the above) -->
+    <script type="module" src="static/js/core/event_listener_setup.js"></script>
+
+    <!-- Main Application Entry Point (must be last or use defer if in head) -->
+    <script type="module" src="static/js/app.js"></script>
+
+</body>
+</html>

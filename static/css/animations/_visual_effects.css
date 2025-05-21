@@ -1,0 +1,124 @@
+/* ==========================================================================
+   [ START OF FILE animations/_visual_effects.css ]
+   3D组件 (黑洞) CSS层叠视觉样式
+   ========================================================================== */
+
+#idtTechComponentWrapper.black-hole-container {
+  position: fixed;
+  top: var(--idt-offset-top-percentage, 2.5%);
+  left: var(--idt-offset-left-percentage, 1.8%);
+  width: var(--idt-component-width, 280px);
+  height: var(--idt-component-height, 280px);
+  z-index: var(--z-index-component-wrapper);
+  transition: opacity var(--transition-duration-ink-flow) var(--transition-timing-function-lumina),
+              transform var(--transition-duration-ink-flow) var(--transition-timing-function-lumina);
+  opacity: 0; /* Initial: hidden */
+  transform: scale(0.6) rotate(-15deg); /* Initial: small and tilted */
+  cursor: grab;
+  overflow: visible; /* Allow glow/star to extend */
+  border-radius: 50%; /* Main circular shape */
+  background-color: #05050a; /* Very dark core for the black hole */
+  box-shadow: 0 0 60px 10px rgba(30, 30, 50, 0.2); /* Faint outer space shadow */
+}
+
+#idtTechComponentWrapper.black-hole-container.is-visible {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Common styles for all inner effect layers */
+#idtTechComponentWrapper.black-hole-container .bh-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center the layers */
+  border-radius: 50%; /* Make them circular */
+  box-sizing: border-box;
+  pointer-events: none; /* Layers should not interfere with mouse events */
+}
+
+/* Outer glow / Gravitational lensing hint layer */
+.bh-outer-glow {
+  width: 110%;
+  height: 110%;
+  box-shadow: 0 0 40px 15px rgba(100, 100, 120, 0.15), /* Faint blueish glow */
+              0 0 80px 30px rgba(50, 50, 70, 0.1);   /* More diffuse outer glow */
+  z-index: 1; /* Farthest back CSS layer */
+  animation: subtle-glow-pulse 6s infinite ease-in-out;
+}
+
+/* CSS Accretion Disk Layers */
+.bh-accretion-disk-outer,
+.bh-accretion-disk-middle,
+.bh-accretion-disk-inner {
+   box-shadow: 0 0 1px 1px rgba(255,255,255,0.1); /* Base subtle shimmer */
+   opacity: 0.7;
+   z-index: 3; /* Above outer glow but below core/star */
+   animation-timing-function: linear;
+   animation-iteration-count: infinite;
+}
+
+.bh-accretion-disk-outer {
+  width: 95%; height: 95%;
+  box-shadow:
+    0 0 20px 8px rgba(100, 100, 255, 0.3),
+    0 0 35px 12px rgba(50, 50, 180, 0.2),
+    inset 0 0 8px 3px rgba(150, 150, 255, 0.2);
+  animation-name: spin-clockwise, pulse-disk-outer;
+  animation-duration: 20s, 5s;
+}
+
+.bh-accretion-disk-middle {
+  width: 80%; height: 80%;
+  box-shadow:
+    0 0 15px 6px rgba(255, 165, 0, 0.6),
+    0 0 30px 10px rgba(255, 140, 0, 0.4),
+    inset 0 0 10px 4px rgba(255, 190, 50, 0.4);
+   transform: translate(-50%, -50%) rotateX(10deg); /* Slight tilt */
+  animation-name: spin-counter-clockwise, pulse-disk-middle;
+  animation-duration: 15s, 4s;
+}
+
+.bh-accretion-disk-inner {
+  width: 65%; height: 65%;
+  box-shadow:
+    0 0 10px 5px rgba(255, 255, 200, 0.8),
+    0 0 20px 8px rgba(255, 255, 150, 0.6),
+    inset 0 0 12px 5px rgba(255, 255, 255, 0.7);
+   transform: translate(-50%, -50%) rotateX(-15deg); /* Different tilt */
+  animation-name: spin-clockwise, pulse-disk-inner;
+  animation-duration: 10s, 3s;
+}
+
+/* Core shadow layer - reinforces the black hole's darkness */
+.bh-core-shadow {
+  width: 40%;
+  height: 40%;
+  background-color: #000; /* Pure black */
+  box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.8); /* Shadow for depth */
+  z-index: 4; /* Above accretion disks */
+}
+
+/* Simulated Orbiting Star */
+.bh-orbiting-star {
+  width: 6px; height: 6px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.7); /* White glow */
+  z-index: 5; /* Above core shadow */
+  animation: orbit-around-bh 18s linear infinite, pulse-star 2s infinite ease-in-out;
+}
+
+/* Three.js canvas (if used for more complex effects on top of CSS layers) */
+#idtTechComponentWrapper.black-hole-container > canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100% !important; /* Override any Three.js internal sizing */
+  height: 100% !important;
+  z-index: 10; /* Highest layer if 3D models are used */
+  background-color: transparent !important; /* Ensure canvas is transparent */
+  border-radius: inherit; /* Match container shape */
+}
+/* ==========================================================================
+   [ END OF FILE animations/_visual_effects.css ]
+   ========================================================================== */

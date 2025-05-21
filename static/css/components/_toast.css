@@ -1,0 +1,74 @@
+/* ==========================================================================
+   [ START OF FILE components/_toast.css ]
+   Toast通知样式
+   ========================================================================== */
+
+.toast-container {
+  position: fixed;
+  top: calc(var(--header-height) + var(--spacing-unit) * 1.5);
+  right: calc(var(--spacing-unit) * 1.5);
+  z-index: var(--z-index-toast);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 1.2);
+  max-width: 380px;
+}
+
+.toast.lumina-panel {
+  padding: calc(var(--spacing-unit) * 1.4) calc(var(--spacing-unit) * 1.8);
+  border-left-width: var(--lumina-line-weight-bold);
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--spacing-unit) * 1.2);
+  animation-duration: var(--transition-duration-ink-subtle) !important; /* Override Animate.css default */
+  border-radius: var(--border-radius-slight);
+  background-image: none; /* Toasts typically don't need texture */
+  position: relative; /* For close button */
+}
+
+.toast.lumina-panel .toast-icon {
+  font-size: calc(var(--base-font-size) * 1.35);
+  margin-top: 1px; /* Fine-tune alignment */
+  flex-shrink: 0;
+}
+
+.toast.lumina-panel .toast-message {
+  flex-grow: 1;
+  font-size: calc(var(--base-font-size) * 0.92);
+  line-height: 1.5;
+  color: var(--current-text-primary);
+  padding-right: calc(var(--spacing-unit) * 3); /* Space for close button */
+}
+
+.toast.lumina-panel .toast-close {
+  position: absolute;
+  top: calc(var(--spacing-unit) * 0.75);
+  right: calc(var(--spacing-unit) * 0.75);
+  padding: calc(var(--spacing-unit) * 0.5);
+  font-size: 0.9em;
+  color: var(--current-text-secondary);
+  background: transparent;
+  border: none;
+  line-height: 1;
+}
+.toast.lumina-panel .toast-close:hover {
+  color: var(--current-text-primary);
+  background-color: rgba(var(--current-text-primary-rgb), 0.1);
+}
+
+/* Toast types */
+.toast.lumina-panel.toast-info { border-left-color: var(--current-accent-light); }
+.toast.lumina-panel.toast-info .toast-icon { color: var(--current-accent-light); }
+
+.toast.lumina-panel.toast-success { border-left-color: var(--lumina-success-color); }
+.toast.lumina-panel.toast-success .toast-icon { color: var(--lumina-success-color); }
+
+.toast.lumina-panel.toast-warning { border-left-color: var(--current-accent-ink); }
+.toast.lumina-panel.toast-warning .toast-icon { color: var(--current-accent-ink); }
+
+.toast.lumina-panel.toast-error { border-left-color: var(--lumina-error-color); }
+.toast.lumina-panel.toast-error .toast-icon { color: var(--lumina-error-color); }
+
+/* ==========================================================================
+   [ END OF FILE components/_toast.css ]
+   ========================================================================== */

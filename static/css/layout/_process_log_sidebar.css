@@ -1,0 +1,226 @@
+/* ==========================================================================
+   [ START OF FILE layout/_process_log_sidebar.css ]
+   右侧Agent执行轨迹侧边栏样式
+   ========================================================================== */
+
+.process-log-sidebar.lumina-panel {
+  position: fixed;
+  top: calc(var(--header-height) + var(--spacing-unit));
+  right: var(--spacing-unit);
+  /* bottom: calc(var(--input-area-height) + var(--spacing-unit) * 2); Dynamically set by JS or CSS calc potentially */
+  /* The 'bottom' needs to react to input-area-height. This can be complex with pure CSS if input-area-height is dynamic.
+     JS solution is in place (updateInputAreaHeightVar), ensure CSS can use it or has a fallback.
+     For pure CSS, if input-area-height is set as a CSS var, we can use it.
+  */
+  bottom: calc(var(--input-area-height, 75px) + var(--spacing-unit) * 2); /* Fallback to 75px if var not set */
+  width: var(--process-log-sidebar-width);
+  z-index: var(--z-index-process-log);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateX(calc(100% + var(--spacing-unit) * 2)); /* Initially off-screen */
+  opacity: 0;
+  transition: transform var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+              opacity var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+              width var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+}
+
+.process-log-sidebar.lumina-panel.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.process-log-sidebar.lumina-panel.collapsed {
+  width: var(--process-log-sidebar-width-collapsed);
+}
+
+.process-log-sidebar.lumina-panel .process-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--spacing-unit) * 1.2) calc(var(--spacing-unit) * 1.5);
+  border-bottom: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  flex-shrink: 0;
+  font-family: var(--font-family-title);
+  color: var(--current-text-primary);
+  font-size: calc(var(--base-font-size) * 0.95);
+}
+
+.process-log-sidebar.lumina-panel .process-log-header span i {
+  margin-right: calc(var(--spacing-unit) * 0.8);
+  color: var(--current-accent-ink);
+}
+
+.process-log-sidebar.lumina-panel .process-log-header .icon-btn {
+  font-size: calc(var(--base-font-size) * 1); /* Slightly smaller icons */
+  width: calc(var(--base-font-size) * 2);
+  height: calc(var(--base-font-size) * 2);
+}
+
+.process-log-sidebar.lumina-panel.collapsed .process-log-content,
+.process-log-sidebar.lumina-panel.collapsed .process-log-header span {
+  display: none;
+}
+
+.process-log-sidebar.lumina-panel.collapsed .process-log-header {
+  justify-content: center;
+}
+
+/* Icon rotation for collapse toggle */
+.process-log-sidebar.lumina-panel.collapsed #toggle-process-log-sidebar-collapse i.fa-chevron-left {
+  transform: rotate(180deg);
+}
+.process-log-sidebar.lumina-panel.collapsed #toggle-process-log-sidebar-collapse i.fa-chevron-right {
+  transform: rotate(0deg);
+}
+.process-log-sidebar.lumina-panel:not(.collapsed) #toggle-process-log-sidebar-collapse i.fa-chevron-left {
+  transform: rotate(0deg);
+}
+.process-log-sidebar.lumina-panel:not(.collapsed) #toggle-process-log-sidebar-collapse i.fa-chevron-right {
+  transform: rotate(180deg);
+}
+
+
+/* Process Log Content and Items */
+.process-log-content {
+  overflow-y: auto;
+  padding: calc(var(--spacing-unit) * 1.5);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 1.5); /* Space between log items */
+  flex-grow: 1; /* Fill available space */
+}
+
+.process-log-content .log-item {
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--spacing-unit) * 1);
+  padding: calc(var(--spacing-unit) * 0.8) calc(var(--spacing-unit) * 1);
+  border-radius: var(--border-radius-slight);
+  border: 1px solid transparent; /* For status highlighting */
+  transition: all var(--transition-duration-light-pulse) ease;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.process-log-content .log-item > i.fas,
+.process-log-content .log-item > i.far {
+  flex-shrink: 0;
+  font-size: calc(var(--base-font-size) * 1.1);
+  margin-top: 2px;
+  text-shadow: none;
+  color: var(--current-text-secondary);
+}
+
+/* Status specific icon colors */
+.process-log-content .log-item.status-started > i,
+.process-log-content .log-item.status-running > i,
+.process-log-content .log-item.status-retrying > i,
+.process-log-content .log-item.status-llm_retry_needed > i,
+.process-log-content .log-item.status-llm_error_retrying > i {
+  color: var(--current-accent-ink);
+}
+
+.process-log-content .log-item.status-completed > i,
+.process-log-content .log-item.status-succeeded > i,
+.process-log-content .log-item.status-received > i,
+.process-log-content .log-item.status-completed_and_validated > i {
+  color: var(--lumina-success-color);
+}
+
+.process-log-content .log-item.status-failed > i,
+.process-log-content .log-item.status-error > i,
+.process-log-content .log-item.status-failed_after_llm_retries > i,
+.process-log-content .log-item.status-tool_failure_detected > i,
+.process-log-content .log-item.status-fatal_error_handler > i,
+.process-log-content .log-item.status-fatal_error_capture > i,
+.process-log-content .log-item.status-aborted_due_to_previous_failure > i {
+  color: var(--lumina-error-color);
+}
+
+.process-log-content .log-item.status-ignored > i,
+.process-log-content .log-item.status-muted > i {
+  color: var(--current-text-secondary);
+  opacity: 0.7;
+}
+
+.process-log-content .log-item.type-thinking_log > i {
+  color: var(--current-accent-light);
+}
+
+.process-log-content .log-item-content-area {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: calc(var(--spacing-unit) * 0.8);
+}
+
+.process-log-content .log-item-message {
+  font-size: calc(var(--base-font-size) * 0.9);
+  color: var(--current-text-primary);
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.process-log-content .log-item-details,
+.process-log-content .log-think-content {
+  margin-top: calc(var(--spacing-unit) * 0.8);
+  padding: calc(var(--spacing-unit) * 1);
+  background-color: rgba(var(--current-panel-bg-rgb), 0.4);
+  border: 1px dashed rgba(var(--current-panel-border-rgb), 0.6);
+  border-radius: var(--border-radius-slight);
+  font-size: 0.85em;
+  color: var(--current-text-secondary);
+  line-height: 1.5;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+.process-log-content .log-item-details strong.log-detail-key,
+.process-log-content .log-think-content strong {
+  font-family: var(--font-family-title);
+  font-weight: 500;
+  color: var(--current-accent-ink);
+  margin-right: calc(var(--spacing-unit) * 0.5);
+}
+
+.process-log-content .log-item-details span.log-detail-value {
+  color: var(--current-text-primary);
+  opacity: 0.9;
+}
+.process-log-content .log-item-details .log-detail-object-header {
+    margin-top: calc(var(--spacing-unit) * 0.5);
+    margin-bottom: calc(var(--spacing-unit) * 0.5);
+}
+
+.process-log-content .log-item-details pre.log-detail-raw-json,
+.process-log-content .log-think-content pre code { /* Combined for thinking log embedded JSON */
+    background-color: rgba(var(--current-bg-rgb), 0.3);
+    padding: calc(var(--spacing-unit) * 0.8);
+    border-radius: var(--border-radius-slight);
+    margin-top: calc(var(--spacing-unit) * 0.8);
+    font-family: var(--font-family-code);
+    font-size: 0.9em;
+    color: var(--current-text-secondary);
+    border: 1px solid rgba(var(--current-panel-border-rgb), 0.3);
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-x: auto;
+}
+
+.process-log-content .log-item-details pre.log-detail-raw-json.error,
+.process-log-content .log-think-content pre code.error {
+    color: var(--lumina-error-color);
+    border-color: var(--lumina-error-color);
+}
+
+.process-log-content .log-item-details em.log-arg-key {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--current-accent-light);
+}
+
+
+/* ==========================================================================
+   [ END OF FILE layout/_process_log_sidebar.css ]
+   ========================================================================== */

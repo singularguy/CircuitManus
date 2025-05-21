@@ -1,0 +1,281 @@
+/* ==========================================================================
+   [ START OF FILE layout/_sidebar.css ]
+   左侧边栏样式
+   ========================================================================== */
+
+.sidebar.lumina-panel.left-sidebar {
+  border-radius: var(--border-radius-soft);
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 1.5);
+  transition: width var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+              padding var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+  overflow: hidden;
+  z-index: var(--z-index-sidebar);
+  position: relative; /* For fixed bottom button */
+  padding-bottom: calc(var(--spacing-unit) * 8); /* Space for fixed bottom button */
+}
+
+.sidebar.lumina-panel.left-sidebar:not(.expanded) {
+  width: calc(var(--header-height) - var(--spacing-unit));
+  padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 0.75);
+}
+
+.sidebar.lumina-panel.left-sidebar:not(.expanded) .sidebar-button span,
+.sidebar.lumina-panel.left-sidebar:not(.expanded) .session-manager-header span,
+.sidebar.lumina-panel.left-sidebar:not(.expanded) #create-new-session span,
+.sidebar.lumina-panel.left-sidebar:not(.expanded) .session-list {
+  display: none;
+}
+
+.sidebar.lumina-panel.left-sidebar:not(.expanded) .sidebar-button i {
+  margin-right: 0;
+}
+
+.sidebar-toggle-btn {
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  align-self: flex-start;
+}
+
+.sidebar.left-sidebar:not(.expanded) .sidebar-toggle-btn {
+  align-self: center;
+}
+
+.sidebar.lumina-panel.left-sidebar .sidebar-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 2.5);
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: calc(var(--spacing-unit) * 0.5); /* For custom scrollbar */
+  margin-right: calc(var(--spacing-unit) * -0.5); /* Offset padding */
+}
+
+.sidebar.lumina-panel.left-sidebar .sidebar-main-actions {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 0.75);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-manager .session-manager-header {
+  color: var(--current-text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--spacing-unit) * 1.2) 0;
+  cursor: pointer;
+  font-family: var(--font-family-title);
+  font-size: calc(var(--base-font-size) * 1.05);
+  border-bottom: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  margin-bottom: var(--spacing-unit);
+  transition: color var(--transition-duration-light-pulse) ease;
+}
+
+.sidebar.lumina-panel.left-sidebar .session-manager .session-manager-header:hover {
+  color: var(--current-accent-light);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-manager .session-manager-header span i {
+  margin-right: var(--spacing-unit);
+  color: var(--current-accent-ink);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-manager .session-manager-header .toggle-icon {
+  transition: transform var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  color: var(--current-text-secondary);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-manager.collapsed .session-manager-header .toggle-icon.fa-caret-down {
+  transform: rotate(-90deg);
+}
+.sidebar.lumina-panel.left-sidebar .session-manager:not(.collapsed) .session-manager-header .toggle-icon.fa-caret-right {
+  transform: rotate(0deg); /* Ensure it resets if class was added then removed */
+}
+
+
+.sidebar.lumina-panel.left-sidebar .session-list-container {
+  max-height: 280px;
+  overflow-y: auto;
+  transition: max-height var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+              padding var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+              opacity var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+  padding-bottom: var(--spacing-unit);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-manager.collapsed .session-list-container {
+  max-height: 0;
+  padding-bottom: 0;
+  opacity: 0;
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item {
+  color: var(--current-text-secondary);
+  padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 1.2);
+  border-radius: var(--border-radius-slight);
+  margin-bottom: calc(var(--spacing-unit) * 0.6);
+  cursor: pointer;
+  transition: background-color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              color var(--transition-duration-light-pulse) var(--transition-timing-function-lumina),
+              box-shadow var(--transition-duration-light-pulse) var(--transition-timing-function-lumina);
+  font-size: calc(var(--base-font-size) * 0.88);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  background-color: var(--current-accent-ink);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: opacity var(--transition-duration-light-pulse) ease, transform var(--transition-duration-light-pulse) ease;
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item:hover {
+  background-color: rgba(var(--current-panel-bg-rgb), 0.6);
+  color: var(--current-text-primary);
+  box-shadow: 0 2px 8px rgba(var(--current-text-primary-rgb), 0.05);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item:hover::before {
+  opacity: 0.7;
+  transform: scaleX(1);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item.active-session {
+  background-color: rgba(var(--current-accent-light-rgb), 0.1);
+  color: var(--current-text-primary);
+  font-weight: 500;
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item.active-session::before {
+  background-color: var(--current-accent-light);
+  opacity: 1;
+  transform: scaleX(1);
+  box-shadow: 0 0 5px var(--current-glow);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-item-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  margin-right: var(--spacing-unit);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-time {
+  font-size: 0.82em;
+  opacity: 0.75;
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-delete-btn {
+  color: var(--lumina-error-color);
+  opacity: 0.6;
+  width: auto; height: auto;
+  font-size: calc(var(--base-font-size) * 0.95);
+  padding: calc(var(--spacing-unit) * 0.5);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-delete-btn:hover,
+.sidebar.lumina-panel.left-sidebar .session-list-item .session-delete-btn:focus {
+  opacity: 1;
+  background-color: rgba(var(--lumina-error-color-rgb), 0.1);
+  color: var(--lumina-error-color);
+}
+
+.sidebar.lumina-panel.left-sidebar .session-list-item.session-list-empty {
+  text-align: center;
+  opacity: 0.6;
+  cursor: default;
+  font-style: italic;
+}
+.sidebar.lumina-panel.left-sidebar .session-list-item.session-list-empty i {
+  margin-right: var(--spacing-unit);
+}
+.sidebar.lumina-panel.left-sidebar .session-list-item.session-list-empty:hover {
+  background-color: transparent;
+}
+.sidebar.lumina-panel.left-sidebar .session-list-item.session-list-empty::before {
+  display: none;
+}
+
+#create-new-session.lumina-button-primary.lumina-button-fixed-bottom {
+  position: absolute;
+  bottom: calc(var(--spacing-unit) * 2);
+  left: calc(var(--spacing-unit) * 1.5);
+  right: calc(var(--spacing-unit) * 1.5);
+  width: auto; /* Let flexbox or parent width dictate */
+  max-width: calc(100% - var(--spacing-unit) * 3); /* ensure it fits */
+  z-index: 10;
+  box-shadow: 0 3px 10px rgba(var(--current-accent-ink-rgb), 0.25),
+              0 0 8px rgba(var(--current-accent-ink-rgb), 0.15);
+  padding-top: calc(var(--spacing-unit) * 1.25);
+  padding-bottom: calc(var(--spacing-unit) * 1.25);
+  margin-top: 0; /* override any default */
+}
+
+/* Light Theme: Create Session Button */
+body[data-theme="light-crystal"] #create-new-session.lumina-button-primary.lumina-button-fixed-bottom,
+body[data-theme="auto-crystal"].light-crystal-active #create-new-session.lumina-button-primary.lumina-button-fixed-bottom {
+  background-color: var(--current-accent-ink);
+  color: var(--lumina-bg-light);
+  border-color: var(--current-accent-ink);
+}
+
+/* Dark Theme: Create Session Button */
+body[data-theme="dark-crystal"] #create-new-session.lumina-button-primary.lumina-button-fixed-bottom,
+body[data-theme="auto-crystal"].dark-crystal-active #create-new-session.lumina-button-primary.lumina-button-fixed-bottom {
+  background-color: var(--current-accent-ink);
+  color: var(--lumina-bg-dark);
+  border-color: var(--current-accent-ink);
+}
+
+
+#create-new-session.lumina-button-primary.lumina-button-fixed-bottom:hover,
+#create-new-session.lumina-button-primary.lumina-button-fixed-bottom:focus {
+  filter: brightness(1.1);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(var(--current-accent-ink-rgb), 0.35),
+              0 0 15px rgba(var(--current-accent-ink-rgb), 0.25);
+}
+
+.sidebar.lumina-panel.left-sidebar:not(.expanded) #create-new-session.lumina-button-fixed-bottom {
+  width: calc(100% - var(--spacing-unit) * 1.5);
+  left: calc(var(--spacing-unit) * 0.75);
+  right: calc(var(--spacing-unit) * 0.75);
+  bottom: calc(var(--spacing-unit) * 1.5);
+  padding: calc(var(--spacing-unit) * 1);
+}
+
+.sidebar.lumina-panel.left-sidebar:not(.expanded) #create-new-session.lumina-button-fixed-bottom span {
+  display: none;
+}
+.sidebar.lumina-panel.left-sidebar:not(.expanded) #create-new-session.lumina-button-fixed-bottom i {
+  margin-right: 0;
+}
+/* ==========================================================================
+   [ END OF FILE layout/_sidebar.css ]
+   ========================================================================== */

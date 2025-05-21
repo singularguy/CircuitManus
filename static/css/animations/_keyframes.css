@@ -1,0 +1,82 @@
+/* ==========================================================================
+   [ START OF FILE animations/_keyframes.css ]
+   CSS Animation Keyframes
+   ========================================================================== */
+
+@keyframes subtleTextureShift {
+  to { background-position: 400px 400px; }
+}
+
+@keyframes floatLuminaParticle { /* Example, if used */
+  0% { transform: translate(0, 0) scale(0.5); opacity: 0.1; }
+  25% { opacity: 0.6; }
+  50% { transform: translate(35px, -45px) scale(1.2); opacity: 0.8; }
+  75% { opacity: 0.5; }
+  100% { transform: translate(-25px, 30px) scale(0.6); opacity: 0.15; }
+}
+
+@keyframes luminaLoaderSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes luminaLoaderPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.7; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+}
+
+@keyframes luminaErrorPulseBorder {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes luminaTypingDotBounce {
+  0%, 70%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+  35% { transform: translateY(-5px) scale(1.1); opacity: 1; }
+}
+
+@keyframes luminaSendButtonProcessing {
+  0%, 100% { box-shadow: 0 0 10px rgba(var(--current-accent-ink-rgb), 0.3); transform: scale(1); }
+  50% { box-shadow: 0 0 20px rgba(var(--current-accent-ink-rgb), 0.5); transform: scale(1.08); }
+}
+
+/* Black Hole CSS Layer Animations (from visual_effects, but keyframes are global) */
+@keyframes subtle-glow-pulse { /* For outer glow */
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes spin-clockwise {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes spin-counter-clockwise {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+@keyframes pulse-disk-outer {
+  0%, 100% { box-shadow: 0 0 20px 8px rgba(100, 100, 255, 0.3), 0 0 35px 12px rgba(50, 50, 180, 0.2), inset 0 0 8px 3px rgba(150, 150, 255, 0.2); }
+  50% { box-shadow: 0 0 30px 12px rgba(120, 120, 255, 0.4), 0 0 50px 18px rgba(70, 70, 200, 0.3), inset 0 0 12px 5px rgba(180, 180, 255, 0.3); }
+}
+@keyframes pulse-disk-middle {
+  0%, 100% { box-shadow: 0 0 15px 6px rgba(255, 165, 0, 0.6), 0 0 30px 10px rgba(255, 140, 0, 0.4), inset 0 0 10px 4px rgba(255, 190, 50, 0.4); }
+  50% { box-shadow: 0 0 22px 9px rgba(255, 180, 30, 0.7), 0 0 40px 14px rgba(255, 150, 10, 0.5), inset 0 0 14px 6px rgba(255, 200, 60, 0.5); }
+}
+@keyframes pulse-disk-inner {
+  0%, 100% { box-shadow: 0 0 10px 5px rgba(255, 255, 200, 0.8), 0 0 20px 8px rgba(255, 255, 150, 0.6), inset 0 0 12px 5px rgba(255, 255, 255, 0.7); }
+  50% { box-shadow: 0 0 15px 7px rgba(255, 255, 220, 0.9), 0 0 25px 10px rgba(255, 255, 180, 0.7), inset 0 0 16px 7px rgba(255, 255, 255, 0.9); }
+}
+
+@keyframes orbit-around-bh {
+  0% { transform: translate(-50%, -50%) rotate(0deg) translateX(140px) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg) translateX(140px) rotate(-360deg); }
+}
+
+@keyframes pulse-star {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+/* ==========================================================================
+   [ END OF FILE animations/_keyframes.css ]
+   ========================================================================== */

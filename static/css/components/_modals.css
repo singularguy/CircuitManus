@@ -1,0 +1,137 @@
+/* ==========================================================================
+   [ START OF FILE components/_modals.css ]
+   设置模态框样式
+   ========================================================================== */
+
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(var(--lumina-bg-dark-rgb, 22, 24, 29), 0.65); /* Fallback if dark var not loaded */
+  backdrop-filter: blur(10px) brightness(0.8);
+  -webkit-backdrop-filter: blur(10px) brightness(0.8);
+  display: none; /* Initially hidden, shown by JS */
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-modal);
+}
+
+.modal .modal-content.lumina-panel {
+  max-width: 680px;
+  width: 92%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Content scrolling is handled by modal-body */
+  box-shadow: 0 10px 40px rgba(var(--current-text-primary-rgb), 0.1),
+              0 0 0 1px rgba(var(--current-panel-border-rgb), 0.5);
+}
+
+.modal .modal-content.lumina-panel .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--spacing-unit) * 1.8) calc(var(--spacing-unit) * 2.5);
+  border-bottom: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.modal .modal-content.lumina-panel .modal-header h2 {
+  font-size: calc(var(--base-font-size) * 1.35);
+  margin: 0;
+  font-weight: 500;
+  color: var(--current-text-primary);
+}
+
+.modal .modal-content.lumina-panel .modal-header h2 i {
+  color: var(--current-accent-light);
+  margin-right: calc(var(--spacing-unit) * 1.2);
+}
+
+.modal .modal-content.lumina-panel .modal-body {
+  padding: calc(var(--spacing-unit) * 2.5);
+  overflow-y: auto; /* Allow body to scroll if content overflows */
+  flex-grow: 1; /* Take remaining vertical space */
+}
+
+.modal .modal-content.lumina-panel .modal-body .setting-group {
+  margin-bottom: calc(var(--spacing-unit) * 3);
+}
+.modal .modal-content.lumina-panel .modal-body .setting-group:last-child {
+  margin-bottom: 0;
+}
+
+.modal .modal-content.lumina-panel .modal-body .setting-group h3 {
+  font-size: calc(var(--base-font-size) * 1.1);
+  border-bottom: var(--lumina-line-weight-thin) solid rgba(var(--current-panel-border-rgb), 0.7);
+  padding-bottom: calc(var(--spacing-unit) * 1.2);
+  margin-bottom: calc(var(--spacing-unit) * 1.8);
+  color: var(--current-text-primary);
+  font-weight: 500;
+}
+
+.modal .modal-content.lumina-panel .modal-body .setting-group h3 i {
+  color: var(--current-accent-ink);
+  margin-right: var(--spacing-unit);
+}
+
+.modal .modal-content.lumina-panel .modal-body .setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: calc(var(--spacing-unit) * 1.8);
+  font-size: calc(var(--base-font-size) * 0.92);
+  color: var(--current-text-secondary);
+}
+
+.modal .modal-content.lumina-panel .modal-body .setting-item label:first-child {
+  flex-basis: 55%; /* Allow label to take more space */
+  margin-right: var(--spacing-unit);
+  color: var(--current-text-primary);
+}
+
+.modal .modal-content.lumina-panel .modal-footer {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: var(--spacing-unit); /* Space between buttons */
+  padding: calc(var(--spacing-unit) * 1.8) calc(var(--spacing-unit) * 2.5);
+  border-top: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  flex-shrink: 0; /* Prevent footer from shrinking */
+}
+
+/* Ensure modal control containers have base styles defined here or in _forms.css */
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-select,
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-range-container,
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-switch-container {
+  flex-grow: 1;
+  max-width: 240px;
+  border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  border-radius: var(--border-radius-slight);
+  padding: calc(var(--spacing-unit) * 0.9);
+  background-color: rgba(var(--current-bg-rgb), 0.4);
+}
+
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-switch-container {
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  display: flex; /* For switch alignment if needed */
+  justify-content: flex-end;
+}
+
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-range-container {
+  display: flex;
+  align-items: center;
+  padding-right: 0; /* Value text is separate */
+}
+
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-range-container #font-size-value {
+  margin-left: var(--spacing-unit);
+  width: 40px; /* Fixed width for value display */
+  text-align: right;
+  color: var(--current-text-primary);
+}
+
+/* ==========================================================================
+   [ END OF FILE components/_modals.css ]
+   ========================================================================== */

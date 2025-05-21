@@ -1,0 +1,98 @@
+/* ==========================================================================
+   [ START OF FILE base/_variables.css ]
+   CSS Custom Properties (Variables) - Lumina Theme
+   ========================================================================== */
+
+:root {
+  /* Lumina Script - 浅色模式 (月白宣纸 / Moon White Rice Paper) 变量定义 */
+  --lumina-bg-light: #F9F8F6;
+  --lumina-panel-bg-light: rgba(251, 250, 248, 0.9);
+  --lumina-panel-border-light: rgba(120, 115, 110, 0.25);
+  --lumina-text-primary-light: #4A4642;
+  --lumina-text-secondary-light: #88827C;
+  --lumina-accent-ink-light: #A0522D; /* 赭石色/印章红 */
+  --lumina-accent-light-light: #5E8BC9; /* 天青蓝 */
+  --lumina-glow-light: rgba(94, 139, 201, 0.35); /* 天青蓝辉光 */
+  --lumina-ink-texture-light: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseTextureLight'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 .2 0 0 0 0 .19 0 0 0 0 .18 0 0 0 .015 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseTextureLight)' opacity='0.3'/%3E%3C/svg%3E");
+  --lumina-bg-light-rgb: 249, 248, 246;
+  --lumina-panel-bg-light-rgb: 251, 250, 248;
+  --lumina-panel-border-light-rgb: 120, 115, 110;
+  --lumina-text-primary-light-rgb: 74, 70, 66;
+  --lumina-text-secondary-light-rgb: 136, 130, 124;
+  --lumina-accent-ink-light-rgb: 160, 82, 45;
+  --lumina-accent-light-light-rgb: 94, 139, 201;
+
+  /* Lumina Script - 深色模式 (墨黑星空 / Ink Black Starry Sky) 变量定义 */
+  --lumina-bg-dark: #16181D;
+  --lumina-panel-bg-dark: rgba(22, 24, 29, 0.88);
+  --lumina-panel-border-dark: rgba(180, 195, 230, 0.3);
+  --lumina-text-primary-dark: #E0D8CE;
+  --lumina-text-secondary-dark: #A09A90;
+  --lumina-accent-ink-dark: #E6C37F; /* 璨金色 */
+  --lumina-accent-light-dark: #7AB8F5; /* 星河蓝 */
+  --lumina-glow-dark: rgba(122, 184, 245, 0.4); /* 星河蓝辉光 */
+  --lumina-ink-texture-dark: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseTextureDark'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 .9 0 0 0 0 .85 0 0 0 0 .8 0 0 0 .02 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseTextureDark)' opacity='0.4'/%3E%3C/svg%3E");
+  --lumina-bg-dark-rgb: 22, 24, 29;
+  --lumina-panel-bg-dark-rgb: 22, 24, 29; /* Note: panel is also dark, but slightly transparent */
+  --lumina-panel-border-dark-rgb: 180, 195, 230;
+  --lumina-text-primary-dark-rgb: 224, 216, 206;
+  --lumina-text-secondary-dark-rgb: 160, 154, 144;
+  --lumina-accent-ink-dark-rgb: 230, 195, 127;
+  --lumina-accent-light-dark-rgb: 122, 184, 245;
+
+  /* 字体定义 */
+  --font-family-title: "Orbitron", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --font-family-body: "Roboto", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --font-family-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+
+  /* 尺寸与间距基础单位 */
+  --base-font-size: 16px; /* 主脚本会从localStorage加载并覆盖此值 */
+  --line-height-base: 1.75;
+  --spacing-unit: 8px;
+
+  /* 圆角定义 */
+  --border-radius-soft: 12px;
+  --border-radius-slight: 6px;
+
+  /* 过渡与动画时长及缓动函数 */
+  --transition-duration-ink-subtle: 0.45s;
+  --transition-duration-ink-flow: 0.65s;
+  --transition-duration-light-pulse: 0.35s;
+  --transition-timing-function-lumina: cubic-bezier(0.35, 0, 0.25, 1);
+
+  /* Z-轴层级定义 */
+  --z-index-loader: 1000;
+  --z-index-modal: 900;
+  --z-index-toast: 950;
+  --z-index-sidebar: 100;
+  --z-index-header: 150;
+  --z-index-component-wrapper: 50;
+  --z-index-process-log: 60;
+  --z-index-file-preview: 55;
+
+  /* 组件特定尺寸定义 */
+  --idt-offset-top-percentage: 2.5%; /* 主脚本会从localStorage加载并覆盖 */
+  --idt-offset-left-percentage: 1.8%; /* 主脚本会从localStorage加载并覆盖 */
+  --idt-component-width: 280px;
+  --idt-component-height: 280px;
+  --header-height: 70px;
+  --process-log-sidebar-width: 350px;
+  --process-log-sidebar-width-collapsed: 55px;
+  --input-area-height: 75px; /* 主脚本会动态更新此值 */
+
+  /* 光绘线条粗细定义 */
+  --lumina-line-weight-thin: 1px;
+  --lumina-line-weight-medium: 1.5px;
+  --lumina-line-weight-bold: 2.5px;
+
+  /* 错误与成功状态颜色 (通用，不带主题后缀) */
+  --lumina-error-color: #D9534F;
+  --lumina-error-glow: rgba(217, 83, 79, 0.4);
+  --lumina-success-color: #5CB85C;
+  --lumina-success-glow: rgba(92, 184, 92, 0.4);
+  --lumina-error-color-rgb: 217, 83, 79;
+  --lumina-success-color-rgb: 92, 184, 92;
+}
+/* ==========================================================================
+   [ END OF FILE base/_variables.css ]
+   ========================================================================== */

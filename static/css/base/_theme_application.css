@@ -1,0 +1,89 @@
+/* ==========================================================================
+   [ START OF FILE base/_theme_application.css ]
+   Theme Application Logic - 将Lumina变量映射到通用的 --current-* 变量
+   ========================================================================== */
+
+body[data-theme='light-crystal'],
+body[data-theme="auto-crystal"].light-crystal-active {
+  --current-bg: var(--lumina-bg-light);
+  --current-panel-bg: var(--lumina-panel-bg-light);
+  --current-panel-border: var(--lumina-panel-border-light);
+  --current-text-primary: var(--lumina-text-primary-light);
+  --current-text-secondary: var(--lumina-text-secondary-light);
+  --current-accent-ink: var(--lumina-accent-ink-light);
+  --current-accent-light: var(--lumina-accent-light-light);
+  --current-glow: var(--lumina-glow-light);
+  --current-ink-texture: var(--lumina-ink-texture-light);
+
+  --current-bg-rgb: var(--lumina-bg-light-rgb);
+  --current-panel-bg-rgb: var(--lumina-panel-bg-light-rgb);
+  --current-panel-border-rgb: var(--lumina-panel-border-light-rgb);
+  --current-text-primary-rgb: var(--lumina-text-primary-light-rgb);
+  --current-text-secondary-rgb: var(--lumina-text-secondary-light-rgb);
+  --current-accent-ink-rgb: var(--lumina-accent-ink-light-rgb);
+  --current-accent-light-rgb: var(--lumina-accent-light-light-rgb);
+  --current-error-color-rgb: var(--lumina-error-color-rgb);
+  --current-success-color-rgb: var(--lumina-success-color-rgb);
+}
+
+body[data-theme='dark-crystal'],
+body[data-theme="auto-crystal"].dark-crystal-active {
+  --current-bg: var(--lumina-bg-dark);
+  --current-panel-bg: var(--lumina-panel-bg-dark);
+  --current-panel-border: var(--lumina-panel-border-dark);
+  --current-text-primary: var(--lumina-text-primary-dark);
+  --current-text-secondary: var(--lumina-text-secondary-dark);
+  --current-accent-ink: var(--lumina-accent-ink-dark);
+  --current-accent-light: var(--lumina-accent-light-dark);
+  --current-glow: var(--lumina-glow-dark);
+  --current-ink-texture: var(--lumina-ink-texture-dark);
+
+  --current-bg-rgb: var(--lumina-bg-dark-rgb);
+  --current-panel-bg-rgb: var(--lumina-panel-bg-dark-rgb);
+  --current-panel-border-rgb: var(--lumina-panel-border-dark-rgb);
+  --current-text-primary-rgb: var(--lumina-text-primary-dark-rgb);
+  --current-text-secondary-rgb: var(--lumina-text-secondary-dark-rgb);
+  --current-accent-ink-rgb: var(--lumina-accent-ink-dark-rgb);
+  --current-accent-light-rgb: var(--lumina-accent-light-dark-rgb);
+  --current-error-color-rgb: var(--lumina-error-color-rgb);
+  --current-success-color-rgb: var(--lumina-success-color-rgb);
+}
+
+/* 全局背景和文本颜色过渡，用于主题切换 */
+body {
+  background-color: var(--current-bg);
+  color: var(--current-text-primary);
+  transition: background-color var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina),
+              color var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+}
+
+/* 动态水晶背景的全局样式 */
+.dynamic-crystal-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2; /* 确保在所有内容之下 */
+    overflow: hidden;
+    background-color: var(--current-bg); /* 确保背景有底色 */
+    transition: background-color var(--transition-duration-ink-subtle) var(--transition-timing-function-lumina);
+}
+
+.background-grid-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%; /* 放大网格以允许动画 */
+    height: 200%;
+    background-image:
+        linear-gradient(to right, rgba(var(--current-panel-border-rgb), 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(var(--current-panel-border-rgb), 0.08) 1px, transparent 1px);
+    background-size: 40px 40px; /* 网格大小 */
+    animation: subtleTextureShift 60s linear infinite; /* 应用微妙的偏移动画 */
+    opacity: 0.7;
+    z-index: -1; /* 在粒子之下 */
+}
+/* ==========================================================================
+   [ END OF FILE base/_theme_application.css ]
+   ========================================================================== */

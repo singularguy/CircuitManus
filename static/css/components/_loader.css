@@ -1,0 +1,138 @@
+/* ==========================================================================
+   [ START OF FILE components/_loader.css ]
+   加载动画样式
+   ========================================================================== */
+
+.loader-container {
+  background-color: var(--current-bg);
+  opacity: 1;
+  transition: opacity var(--transition-duration-ink-flow) var(--transition-timing-function-lumina);
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-loader);
+}
+
+.loader-container.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lumina-loader-core {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  margin-bottom: calc(var(--spacing-unit) * 3.5);
+}
+
+.lumina-loader-core::before,
+.lumina-loader-core::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: transparent;
+  animation: luminaLoaderSpin 2.5s linear infinite;
+}
+
+.lumina-loader-core::before {
+  width: 100%; height: 100%;
+  border-width: var(--lumina-line-weight-bold);
+  border-top-color: var(--current-accent-light);
+  border-left-color: var(--current-accent-light);
+  opacity: 0.8;
+}
+
+.lumina-loader-core::after {
+  width: 70%; height: 70%;
+  top: 15%; left: 15%;
+  border-width: var(--lumina-line-weight-medium);
+  border-bottom-color: var(--current-accent-ink);
+  border-right-color: var(--current-accent-ink);
+  animation-direction: reverse;
+  animation-duration: 2s;
+  opacity: 0.7;
+}
+
+.lumina-loader-center-pulse {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px; height: 12px;
+  background-color: var(--current-accent-light);
+  border-radius: 50%;
+  box-shadow: 0 0 15px 3px var(--current-glow);
+  animation: luminaLoaderPulse 1.5s infinite ease-in-out;
+}
+
+/* Fatal Error Loader */
+.loader-container.loader-fatal-error .lumina-loader-core::before {
+  border-top-color: var(--lumina-error-color);
+  border-left-color: var(--lumina-error-color);
+  animation: luminaLoaderSpin 3s linear infinite, luminaErrorPulseBorder 1.5s infinite ease-in-out;
+}
+.loader-container.loader-fatal-error .lumina-loader-core::after {
+  border-bottom-color: var(--lumina-error-color);
+  border-right-color: var(--lumina-error-color);
+  opacity: 0.5;
+}
+.loader-container.loader-fatal-error .lumina-loader-center-pulse {
+  background-color: var(--lumina-error-color);
+  box-shadow: 0 0 15px 3px var(--lumina-error-glow);
+}
+
+.loader-logo-text {
+  font-family: var(--font-family-title);
+  font-size: calc(var(--base-font-size) * 2.2);
+  font-weight: 500;
+  color: var(--current-text-primary);
+  letter-spacing: 1.5px;
+  margin-bottom: calc(var(--spacing-unit) * 3.5);
+  text-shadow: 0 1px 1px rgba(var(--current-bg-rgb), 0.5);
+}
+
+.loader-logo-text span { /* "CIRCUIT" */
+  color: var(--current-accent-light);
+  font-weight: 700;
+}
+.loader-logo-text .loader-version-pro { /* "PRO" */
+  font-size: 0.55em;
+  margin-left: 4px;
+  vertical-align: super;
+  color: var(--current-accent-ink);
+  opacity: 0.9;
+}
+
+.loading-text {
+  font-family: var(--font-family-body);
+  font-size: var(--base-font-size);
+  color: var(--current-text-secondary);
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+}
+
+.loader-container.loader-fatal-error .loader-logo-text {
+  color: var(--lumina-error-color);
+}
+.loader-container.loader-fatal-error .loading-text { /* Main error heading */
+  color: var(--current-text-primary);
+}
+.loader-container.loader-fatal-error .error-details-text { /* Sub-details */
+  color: var(--current-text-secondary);
+  font-size: 0.9em;
+  margin-top: var(--spacing-unit);
+  max-width: 80%;
+  text-align: center;
+  line-height: 1.5;
+}
+.loader-container.loader-fatal-error .refresh-button {
+  margin-top: calc(var(--spacing-unit) * 2.5);
+}
+
+/* ==========================================================================
+   [ END OF FILE components/_loader.css ]
+   ========================================================================== */
