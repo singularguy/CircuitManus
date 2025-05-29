@@ -4,12 +4,15 @@
 // ==========================================================================
 
 import dom from '../utils/dom_elements.js';
-import state from './state.js'; // Access to global state
-import { attachQuickActionButtonListeners } from '../modules/quick_actions_handler.js'; // For welcome message & final response suggestions
-import { formatLogDetails, parseItemClasses } from '../utils/helpers.js'; // Helper for formatting log details
+import state from './state.js'; 
+import { attachQuickActionButtonListeners } from '../modules/quick_actions_handler.js'; 
+import { formatLogDetails, parseItemClasses } from '../utils/helpers.js'; 
+// 【老板，重要！】确保从 session_handler.js 导入 showHistoricalLogsForRequest
+import { showHistoricalLogsForRequest } from '../modules/session_handler.js';
 
 /**
  * Appends a new message to the chat box.
+ * 【老板，重大修改！】为Agent的最终回复添加一个清晰的“查看执行轨迹”按钮。
  * @param {string} content - The message content.
  * @param {string} sender - 'user', 'agent', 'system-info', 'error-system'.
  * @param {boolean} [isHTML=false] - Is the content HTML?
@@ -17,8 +20,10 @@ import { formatLogDetails, parseItemClasses } from '../utils/helpers.js'; // Hel
  * @param {boolean} [isSwitchingSession=false] - Is this for loading history?
  * @param {Array} [attachments=[]] - Message attachments.
  * @param {string|null} [errorType=null] - Specific error type for styling.
+ * @param {string|null} [clientRequestId=null] - The client-side request ID for this interaction.
+ * @param {string|null} [agentRequestId=null] - The agent-side request ID for this interaction.
  */
-export function appendMessage(content, sender, isHTML = false, thinkContent = null, isSwitchingSession = false, attachments = [], errorType = null) {
+export function appendMessage(content, sender, isHTML = false, thinkContent = null, isSwitchingSession = false, attachments = [], errorType = null, clientRequestId = null, agentRequestId = null) {
     const messageDiv = document.createElement('div');
     const messageSenderClass = `message-${sender}`;
     messageDiv.classList.add('message', messageSenderClass);
@@ -68,7 +73,7 @@ export function appendMessage(content, sender, isHTML = false, thinkContent = nu
             try {
                 const parsedJson = JSON.parse(trimmedJson);
                 const escapedJsonString = JSON.stringify(parsedJson, null, 2)
-                    .replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
+                    .replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">"); // 更安全的HTML转义
                 return `<pre class="embedded-json"><code>${escapedJsonString}</code></pre>`;
             } catch (e) {
                 console.warn("Chat bubble: JSON parsing for pretty print failed within thought:", e);
@@ -87,7 +92,7 @@ export function appendMessage(content, sender, isHTML = false, thinkContent = nu
     } else {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
         const linkedContent = String(content)
-            .replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">")
+            .replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">") // 更安全的HTML转义
             .replace(/"/g, "'").replace(/'/g, "'")
             .replace(/\n/g, '<br>')
             .replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="external-link"><i class="fas fa-external-link-alt"></i> ${url}</a>`);
@@ -110,6 +115,32 @@ export function appendMessage(content, sender, isHTML = false, thinkContent = nu
     }
 
     messageBubbleDiv.appendChild(messageContentWrapper);
+    
+    // 【老板，这是本次修改的核心！】
+    // 只有当消息是Agent的最终回复，并且有关联的请求ID时，才添加“查看执行轨迹”按钮
+    // 我们假设 clientRequestId 总是存在于用户发起的请求对应的Agent回复中
+    // isSwitchingSession 为 true 时，表示正在加载历史消息，此时也应该创建按钮（如果历史消息有关联ID）
+    if (sender === 'agent' && (clientRequestId || agentRequestId)) { 
+        const bubbleControls = document.createElement('div');
+        bubbleControls.className = 'message-bubble-controls'; // 用于按钮容器的样式
+
+        const viewLogsButton = document.createElement('button');
+        // 使用 'lumina-button' 和 'lumina-button-secondary' (或自定义一个更小的按钮样式)
+        viewLogsButton.className = 'view-execution-logs-btn lumina-button lumina-button-outline'; // 改为更明显的按钮样式
+        viewLogsButton.innerHTML = '<i class="fas fa-history"></i> 查看执行轨迹'; // 按钮文本和图标
+        viewLogsButton.title = '查看本次交互的详细执行轨迹';
+        
+        // 确保即使ID是null也存储为空字符串，避免dataset中出现"null"字符串
+        viewLogsButton.dataset.clientRequestId = clientRequestId || ''; 
+        viewLogsButton.dataset.agentRequestId = agentRequestId || '';
+
+        // 点击事件的监听器将在 event_listener_setup.js 中通过事件委托添加到 dom.chatBox
+        
+        bubbleControls.appendChild(viewLogsButton);
+        messageBubbleDiv.appendChild(bubbleControls); // 添加到气泡底部
+    }
+
+
     messageDiv.appendChild(messageBubbleDiv);
 
     if (sender === 'user') {
@@ -117,14 +148,11 @@ export function appendMessage(content, sender, isHTML = false, thinkContent = nu
     }
 
     dom.chatBox.appendChild(messageDiv);
-    attachQuickActionButtonListeners(messageDiv); // For suggestions in agent messages
+    attachQuickActionButtonListeners(messageDiv); 
     if (!isSwitchingSession) { scrollToBottom(); }
 }
 
 
-/**
- * Appends the initial welcome message to the chat box.
- */
 export function appendWelcomeMessage() {
     const lastMessage = dom.chatBox.lastElementChild;
     if (lastMessage && lastMessage.classList.contains('system-message-initial')) { return; }
@@ -133,7 +161,7 @@ export function appendWelcomeMessage() {
         <div class="message-content">
             <div class="welcome-header">
                 <i class="fas fa-dna robot-icon animate__animated animate__pulse animate__infinite" style="--animate-duration: 3.5s;"></i>
-                <h2>CircuitManus <span class="version-pro">Lumina <span class="version-number">v1.0.0</span></span></h2>
+                <h2>CircuitManus <span class="version-pro">Lumina <span class="version-number">v1.1.1</span></span></h2>
             </div>
             <p class="welcome-subtitle">您的光绘墨迹交互界面，赋能创意与构想。Lumina核心已激活，请挥洒您的灵感。</p>
             <div class="capabilities">
@@ -170,10 +198,6 @@ export function appendWelcomeMessage() {
     attachQuickActionButtonListeners(welcomeDiv);
 }
 
-/**
- * Scrolls the chat box to the bottom.
- * @param {boolean} [instant=false] - Scroll instantly.
- */
 export function scrollToBottom(instant = false) {
     if (state.autoScroll) {
         const behavior = instant || state.animationLevel === 'none' ? 'auto' : 'smooth';
@@ -181,9 +205,6 @@ export function scrollToBottom(instant = false) {
     }
 }
 
-/**
- * Shows the typing indicator.
- */
 export function showTypingIndicator() {
     if (state.isAgentTyping) return;
     state.isAgentTyping = true;
@@ -218,9 +239,6 @@ export function showTypingIndicator() {
     scrollToBottom();
 }
 
-/**
- * Hides the typing indicator.
- */
 export function hideTypingIndicator() {
     if (!state.isAgentTyping) return;
     state.isAgentTyping = false;
@@ -238,9 +256,6 @@ export function hideTypingIndicator() {
     }
 }
 
-/**
- * Adjusts the height of the user input textarea.
- */
 export function adjustTextareaHeight() {
     dom.userInput.style.height = 'auto';
     let scrollHeight = dom.userInput.scrollHeight;
@@ -261,9 +276,6 @@ export function adjustTextareaHeight() {
     }
 }
 
-/**
- * Updates the character counter.
- */
 export function updateCharCounter() {
     const currentLength = dom.userInput.value.length;
     dom.charCounter.textContent = `${currentLength}/${state.maxInputChars}`;
@@ -275,13 +287,6 @@ export function updateCharCounter() {
     }
 }
 
-
-/**
- * Displays a Toast notification.
- * @param {string} message - The message text.
- * @param {string} [type='info'] - 'info', 'success', 'warning', 'error'.
- * @param {number} [duration=3500] - Duration in ms, 0 for no auto-dismiss.
- */
 export function showToast(message, type = 'info', duration = 3500) {
     if (!dom.toastContainer) { console.error("Toast container element not found."); return; }
 
@@ -323,12 +328,6 @@ export function showToast(message, type = 'info', duration = 3500) {
     }
 }
 
-/**
- * Removes a Toast notification.
- * @param {HTMLElement} toast - The Toast DOM element.
- * @param {string} animOut - The animation class for fading out.
- * @param {boolean} [isManualClose=false] - If closed manually.
- */
 export function removeToast(toast, animOut, isManualClose = false) {
     if (toast.parentElement) {
         if (isManualClose && toast.dataset.timeoutId) {
@@ -347,10 +346,6 @@ export function removeToast(toast, animOut, isManualClose = false) {
     }
 }
 
-/**
- * Sets the global loading state of the application.
- * @param {boolean} isLoading - True if loading, false otherwise.
- */
 export function setLoadingState(isLoading) {
     state.isLoading = isLoading;
     if (dom.sendButton) dom.sendButton.disabled = isLoading;
@@ -362,15 +357,6 @@ export function setLoadingState(isLoading) {
     if (dom.sendButton) dom.sendButton.classList.toggle('processing-active', isLoading);
 }
 
-
-/**
- * Appends a new log item to the process log sidebar.
- * @param {string} messageText - Main text for the log item.
- * @param {string} iconClass - FontAwesome icon class.
- * @param {string} [itemClasses=''] - Additional CSS classes for the item.
- * @param {object|null} [details=null] - Details object to display.
- * @returns {HTMLElement|null} The created log item element or null.
- */
 export function appendLogItem(messageText, iconClass, itemClasses = '', details = null) {
     if (!dom.processLogSidebarContent) {
         console.error("日志侧栏内容元素 (processLogSidebarContent) 未找到。");
@@ -384,7 +370,7 @@ export function appendLogItem(messageText, iconClass, itemClasses = '', details 
     }
 
     const iconEl = document.createElement('i');
-    iconEl.className = iconClass; // This will be like 'fas fa-info-circle log-info'
+    iconEl.className = iconClass; 
     logItemDiv.appendChild(iconEl);
 
     const contentAreaWrapper = document.createElement('div');
@@ -407,7 +393,7 @@ export function appendLogItem(messageText, iconClass, itemClasses = '', details 
              detailsEl.innerHTML = `<span class="log-detail-item"><strong class="log-detail-key">详细信息:</strong> <span class="log-detail-value">(无或格式化失败)</span></span>`;
             try {
                 let rawDetailsStr = typeof details === 'object' ? JSON.stringify(details, null, 2) : String(details);
-                detailsEl.innerHTML += `<pre class="log-detail-raw-json error"><code>${rawDetailsStr.replace(/</g, "<").replace(/>/g, ">")}<br>(原始数据)</code></pre>`;
+                detailsEl.innerHTML += `<pre class="log-detail-raw-json error"><code>${rawDetailsStr.replace(/</g, "<").replace(/>/g, ">")}<br>(原始数据)</code></pre>`; // 更安全的HTML转义
             } catch (e_raw) {
                  detailsEl.innerHTML += `<span class="log-detail-item error"><strong class="log-detail-key">原始数据错误:</strong> <span class="log-detail-value">${e_raw.message}</span></span>`;
             }
@@ -415,20 +401,22 @@ export function appendLogItem(messageText, iconClass, itemClasses = '', details 
         contentAreaWrapper.appendChild(detailsEl);
     }
     logItemDiv.appendChild(contentAreaWrapper);
+
+    if (state.currentRequestLogCollection && state.currentRequestLogCollection.logItems) {
+        state.currentRequestLogCollection.logItems.push({
+            timestamp: Date.now(),
+            messageText,
+            iconClass,
+            itemClasses, 
+            details 
+        });
+    }
+
     dom.processLogSidebarContent.appendChild(logItemDiv);
     scrollToProcessLogBottom();
     return logItemDiv;
 }
 
-/**
- * Appends a log item with a dedicated thinking process bubble.
- * @param {string} headerText - Header text for the log item.
- * @param {string} headerIconClass - FontAwesome icon class for the header.
- * @param {string} itemClasses - Additional CSS classes for the item.
- * @param {string} thinkContent - The thinking process content.
- * @param {string} [thinkBubbleLabel="详细思考投影"] - Label for the thinking bubble.
- * @returns {HTMLElement|null} The created log item element or null.
- */
 export function appendLogItemWithThink(headerText, headerIconClass, itemClasses, thinkContent, thinkBubbleLabel = "详细思考投影") {
     if (!dom.processLogSidebarContent) {
         console.error("日志侧栏内容元素 (processLogSidebarContent) 未找到。");
@@ -453,7 +441,7 @@ export function appendLogItemWithThink(headerText, headerIconClass, itemClasses,
 
     if (thinkContent) {
         const thinkDiv = document.createElement('div');
-        thinkDiv.classList.add('log-think-content'); // For specific styling of the think bubble
+        thinkDiv.classList.add('log-think-content'); 
         let formattedThink = String(thinkContent).replace(/\n/g, '<br>');
         const jsonBlockRegex = /```json\s*([\s\S]*?)\s*```/gi;
         formattedThink = formattedThink.replace(jsonBlockRegex, (match, jsonContentStr) => {
@@ -461,7 +449,7 @@ export function appendLogItemWithThink(headerText, headerIconClass, itemClasses,
             try {
                 const parsedJson = JSON.parse(trimmedJson);
                 const escapedJsonString = JSON.stringify(parsedJson, null, 2)
-                    .replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
+                    .replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">"); // 更安全的HTML转义
                 return `<pre class="log-detail-raw-json"><code>${escapedJsonString}</code></pre>`;
             } catch (jsonErr) {
                 console.warn("Log item with think: JSON parsing for pretty print failed within thought:", jsonErr);
@@ -473,15 +461,22 @@ export function appendLogItemWithThink(headerText, headerIconClass, itemClasses,
         contentAreaWrapper.appendChild(thinkDiv);
     }
     logItemDiv.appendChild(contentAreaWrapper);
+
+    if (state.currentRequestLogCollection && state.currentRequestLogCollection.logItems) {
+        state.currentRequestLogCollection.logItems.push({
+            timestamp: Date.now(),
+            messageText: headerText, 
+            iconClass: headerIconClass,
+            itemClasses,
+            details: { thinkContent: thinkContent, thinkBubbleLabel: thinkBubbleLabel } 
+        });
+    }
+
     dom.processLogSidebarContent.appendChild(logItemDiv);
     scrollToProcessLogBottom();
     return logItemDiv;
 }
 
-/**
- * Scrolls the process log sidebar to the bottom.
- * @param {boolean} [instant=false] - Scroll instantly.
- */
 export function scrollToProcessLogBottom(instant = false) {
     if (!dom.processLogSidebarContent) {
         console.error("日志侧栏内容元素 (processLogSidebarContent) 未找到，无法滚动。");
@@ -491,16 +486,6 @@ export function scrollToProcessLogBottom(instant = false) {
     const behavior = instant || state.animationLevel === 'none' ? 'auto' : 'smooth';
     container.scrollTo({ top: container.scrollHeight, behavior: behavior });
 }
-
-    /**
-     * 格式化日志项的详细信息对象为HTML字符串。
-     * @param {object} details - 包含详细信息的对象。
-     * @param {string|null} type - 日志项类型。
-     * @param {string|null} stage - 日志项阶段。
-     * @param {string|null} status - 日志项状态。
-     * @returns {string|null} 格式化后的HTML字符串，如果无有效细节则返回null。
-     */
-
 // ==========================================================================
 // [ END OF FILE core/ui_updater.js ]
 // ==========================================================================

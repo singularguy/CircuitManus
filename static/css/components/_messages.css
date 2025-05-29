@@ -5,17 +5,17 @@
 
 .chat-box .message {
   display: flex;
-  align-items: flex-start; /* Avatar and bubble top-aligned */
+  align-items: flex-start; 
   max-width: 90%;
 }
 
 .chat-box .message.message-user {
-  align-self: flex-end; /* User messages on the right */
-  flex-direction: row-reverse; /* Avatar on the right */
+  align-self: flex-end; 
+  flex-direction: row-reverse; 
 }
 
 .chat-box .message.message-agent {
-  align-self: flex-start; /* Agent messages on the left */
+  align-self: flex-start; 
 }
 
 .chat-box .message.system-message {
@@ -26,12 +26,12 @@
   text-align: center;
   color: var(--current-text-secondary);
   opacity: 0.8;
-  display: block; /* Not part of the flex flow for user/agent */
+  display: block; 
 }
 
 .chat-box .message.system-message-initial.lumina-panel {
   align-self: stretch;
-  width: auto; /* Let content decide */
+  width: auto; 
   max-width: 95%;
   margin: var(--spacing-unit) auto;
   text-align: left;
@@ -48,12 +48,12 @@
   max-width: 100%;
   word-break: break-word;
   overflow-wrap: break-word;
-  position: relative; /* For copy button */
-  background-blend-mode: multiply; /* Or overlay, depending on texture */
+  position: relative; 
+  background-blend-mode: multiply; 
   transition: transform var(--transition-duration-light-pulse) ease,
               box-shadow var(--transition-duration-light-pulse) ease;
-  flex-grow: 0; /* Don't grow */
-  flex-shrink: 1; /* Allow to shrink */
+  flex-grow: 0; 
+  flex-shrink: 1; 
 }
 
 .chat-box .message:hover .message-bubble {
@@ -90,7 +90,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-right: calc(var(--spacing-unit) * 1.25); /* For agent messages */
+  margin-right: calc(var(--spacing-unit) * 1.25); 
   box-shadow: 0 1px 3px rgba(var(--current-text-primary-rgb), 0.08);
   transition: transform var(--transition-duration-light-pulse) ease;
 }
@@ -149,9 +149,9 @@
 }
 .chat-box .message .message-thought-prefix .think-bubble-content {
   line-height: 1.5;
-  max-height: 200px; /* Allow scrolling for long thoughts */
+  max-height: 200px; 
   overflow-y: auto;
-  padding-right: var(--spacing-unit); /* Space for scrollbar */
+  padding-right: var(--spacing-unit); 
 }
 .chat-box .message .message-thought-prefix .think-bubble-content pre.embedded-json {
   background-color: rgba(var(--current-bg-rgb), 0.3);
@@ -179,7 +179,6 @@
   opacity: 0.75;
 }
 
-/* Attachments in messages */
 .chat-box .message .message-attachments-summary {
   margin-top: calc(var(--spacing-unit) * 1.2);
   font-size: 0.82em;
@@ -194,13 +193,12 @@
   background-color: rgba(var(--current-panel-border-rgb), 0.5);
   color: var(--current-text-secondary);
   padding: 3px calc(var(--spacing-unit) * 0.75);
-  border-radius: 12px; /* Chip-like */
+  border-radius: 12px; 
   font-size: 0.92em;
   margin-right: calc(var(--spacing-unit) * 0.5);
-  margin-bottom: calc(var(--spacing-unit) * 0.5); /* Allow wrapping */
+  margin-bottom: calc(var(--spacing-unit) * 0.5); 
 }
 
-/* Welcome Message Specifics */
 .chat-box .message.system-message-initial.lumina-panel {
   padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 3);
   border-width: var(--lumina-line-weight-medium);
@@ -218,7 +216,7 @@
 }
 .chat-box .message.system-message-initial.lumina-panel .welcome-header h2 {
   font-size: calc(var(--base-font-size) * 1.9);
-  margin-bottom: 0; /* Reset for header */
+  margin-bottom: 0; 
   font-weight: 700;
 }
 .chat-box .message.system-message-initial.lumina-panel .welcome-header h2 .version-pro {
@@ -277,7 +275,6 @@
 }
 
 
-/* Typing Indicator */
 .chat-box .typing-indicator {
   display: flex;
   align-items: flex-start;
@@ -300,7 +297,6 @@
 .chat-box .typing-indicator .message-bubble .typing-dots .typing-dot:nth-child(2) { animation-delay: 0.22s; }
 .chat-box .typing-indicator .message-bubble .typing-dots .typing-dot:nth-child(3) { animation-delay: 0.44s; }
 
-/* Copy Button */
 .message-bubble .copy-llm-response-btn {
   position: absolute;
   top: calc(var(--spacing-unit) * 1);
@@ -308,23 +304,58 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity var(--transition-duration-light-pulse) ease-in-out,
-              visibility 0s var(--transition-duration-light-pulse) ease-in-out, /* Delay visibility until opacity starts */
+              visibility 0s var(--transition-duration-light-pulse) ease-in-out, 
               background-color var(--transition-duration-light-pulse) ease-in-out;
-  z-index: 10; /* Above message content */
+  z-index: 10; 
   cursor: pointer;
 }
 .message-bubble:hover .copy-llm-response-btn {
   opacity: 1;
   visibility: visible;
-  transition-delay: 0s, 0s; /* Remove delay on hover */
+  transition-delay: 0s, 0s; 
 }
 .message-bubble .copy-llm-response-btn:hover {
   background-color: rgba(var(--current-text-primary-rgb), 0.1);
   color: var(--current-text-primary);
 }
 .message-bubble .copy-llm-response-btn i {
-  pointer-events: none; /* Ensure icon click goes to button */
+  pointer-events: none; 
 }
+
+/* 【老板，新增样式！】用于查看历史日志按钮的容器和按钮本身 */
+.message-bubble .message-bubble-controls {
+    margin-top: calc(var(--spacing-unit) * 1.25); /* 与上方内容保持间距 */
+    padding-top: calc(var(--spacing-unit) * 1); /* 顶部内边距 */
+    border-top: 1px dashed rgba(var(--current-panel-border-rgb), 0.3); /* 分隔线 */
+    display: flex;
+    justify-content: flex-end; /* 按钮靠右 */
+}
+.message-bubble .view-execution-logs-btn.lumina-button { /* 继承Lumina按钮样式 */
+    padding: calc(var(--spacing-unit) * 0.6) var(--spacing-unit); /* 较小的内边距 */
+    font-size: calc(var(--base-font-size) * 0.82); /* 较小的字体 */
+    line-height: 1.2;
+    min-height: auto; /* 覆盖可能存在的min-height */
+    color: var(--current-text-secondary);
+    border-color: var(--current-panel-border); /* 边框颜色与面板边框一致 */
+}
+.message-bubble .view-execution-logs-btn.lumina-button i {
+    margin-right: calc(var(--spacing-unit) * 0.6); /* 图标与文本间距 */
+    font-size: 0.95em; /* 图标大小略小于文本 */
+}
+.message-bubble .view-execution-logs-btn.lumina-button:hover,
+.message-bubble .view-execution-logs-btn.lumina-button:focus {
+    color: var(--current-accent-light); /* 悬停时颜色变为光强调色 */
+    border-color: var(--current-accent-light);
+    background-color: rgba(var(--current-accent-light-rgb), 0.08); /* 悬停背景 */
+    transform: none; /* 移除默认的按钮悬停抬升效果，使其更像内嵌控件 */
+    box-shadow: inset 0 0 8px rgba(var(--current-accent-light-rgb), 0.1); /* 细微内阴影 */
+}
+/* 在深色主题下，按钮的悬停文本颜色可能需要调整以保证对比度 */
+body[data-theme='dark-crystal'] .message-bubble .view-execution-logs-btn.lumina-button:hover,
+body[data-theme="auto-crystal"].dark-crystal-active .message-bubble .view-execution-logs-btn.lumina-button:hover {
+    color: var(--lumina-bg-dark); /* 例如，使用背景色作为文本色 */
+}
+
 
 /* Suggestions in final response */
 .final-response-suggestions {

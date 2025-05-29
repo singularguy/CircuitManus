@@ -5,13 +5,11 @@
 
 import dom from '../utils/dom_elements.js';
 import state from './state.js';
-// 从 session_handler.js 导入会话管理函数 (确保 saveSessions 导入为 saveSessionData 以避免与 state.js 中的冲突，如果那里也有的话)
-import { initializeCurrentSessionUI, addMessageToCurrentSession, renderSessionList, saveSessions as saveSessionData } from '../modules/session_handler.js'; 
+// 【老板，修改！】从 session_handler.js 导入的函数现在包含 showHistoricalLogsForRequest
+import { initializeCurrentSessionUI, addMessageToCurrentSession, renderSessionList, saveSessions as saveSessionData, showHistoricalLogsForRequest } from '../modules/session_handler.js'; 
 import { appendMessage, appendWelcomeMessage, showToast, hideTypingIndicator, setLoadingState, appendLogItem, appendLogItemWithThink } from './ui_updater.js';
 import { showProcessLogSidebar } from '../modules/layout_handler.js';
-// 从 helpers.js 导入 APP_PREFIX 和其他辅助函数，包括 formatLogDetails
 import { generateClientRequestId, summarizeArguments, parseItemClasses, APP_PREFIX, formatLogDetails } from '../utils/helpers.js'; 
-// 从 settings_handler.js 导入 populateLLMModelSelect 和 updateChineseDeepThinkingToggleState
 import { populateLLMModelSelect, updateChineseDeepThinkingToggleState } from '../modules/settings_handler.js';
 
 
@@ -19,7 +17,7 @@ let websocket = null;
 const websocketUrl = `ws://${window.location.host}/ws/chat`;
 let wsReconnectAttempts = 0;
 const MAX_WS_RECONNECT_ATTEMPTS = 3; 
-const WS_RECONNECT_INTERVAL = 3000; // ms
+const WS_RECONNECT_INTERVAL = 3000; 
 
 export function connectWebSocket() {
     if (websocket && (websocket.readyState === WebSocket.OPEN || websocket.readyState === WebSocket.CONNECTING)) {
@@ -29,7 +27,7 @@ export function connectWebSocket() {
     console.log(`WebSocket: 尝试连接 (第 ${wsReconnectAttempts + 1} 次) 到 ${websocketUrl}`);
     if (dom.loader && wsReconnectAttempts === 0 && !dom.loader.classList.contains('loader-fatal-error')) {
         const loadingText = dom.loader.querySelector('.loading-text');
-        if (loadingText) loadingText.textContent = "同步光绘墨迹流 (V1.1.1 Lumina)..."; // 版本更新
+        if (loadingText) loadingText.textContent = "同步光绘墨迹流 (V1.1.1 Lumina)..."; 
     }
 
     websocket = new WebSocket(websocketUrl);
@@ -37,7 +35,7 @@ export function connectWebSocket() {
     websocket.onopen = (event) => {
         console.log("WebSocket: 连接已建立。", event);
         wsReconnectAttempts = 0;
-        showToast("光绘墨迹数据流 ACTIVE (V1.1.1 Lumina).", "success", 4000); // 版本更新
+        showToast("光绘墨迹数据流 ACTIVE (V1.1.1 Lumina).", "success", 4000); 
         sendWebSocketMessage({
             type: 'init',
             session_id: state.currentSessionId 
@@ -118,10 +116,9 @@ export function connectWebSocket() {
 }
 
 export function sendWebSocketMessage(message) {
-    // 当发送用户聊天消息 (type: 'message') 时，自动附加当前选择的LLM和语言偏好
     if (message.type === 'message') {
-        message.selected_llm = state.selectedLLM; // 从全局 state 获取
-        message.enable_chinese_thinking = state.enableChineseDeepThinking; // 从全局 state 获取
+        message.selected_llm = state.selectedLLM; 
+        message.enable_chinese_thinking = state.enableChineseDeepThinking; 
     }
 
     if (websocket && websocket.readyState === WebSocket.OPEN) {
@@ -150,29 +147,22 @@ function handleWebSocketMessage(message) {
                     localStorage.setItem(APP_PREFIX + 'lastSessionId', state.currentSessionId);
 
                     if (message.agent_default_settings) {
-                        // 合并后端传来的默认设置到 state.agentDefaultSettings
-                        // 后端传来的 detailed_available_llms 会被正确设置
                         state.agentDefaultSettings = { ...state.agentDefaultSettings, ...message.agent_default_settings };
-                        
-                        // 使用后端传来的默认值或localStorage中的值来初始化当前选择
                         state.selectedLLM = localStorage.getItem(APP_PREFIX + 'selectedLLM') || state.agentDefaultSettings.default_llm_identifier;
-                        
                         if (state.agentDefaultSettings.globally_enable_chinese_thinking === false) {
                             state.enableChineseDeepThinking = false;
                         } else {
                             state.enableChineseDeepThinking = (localStorage.getItem(APP_PREFIX + 'enableChineseDeepThinking') || state.agentDefaultSettings.default_enable_chinese_thinking.toString()) === 'true';
                         }
-                        console.log("从后端同步了Agent默认设置: ", JSON.parse(JSON.stringify(state.agentDefaultSettings))); // 深拷贝打印
+                        console.log("从后端同步了Agent默认设置: ", JSON.parse(JSON.stringify(state.agentDefaultSettings))); 
                         console.log("初始化后当前选择的模型:", state.selectedLLM, "中文思考:", state.enableChineseDeepThinking);
-
-                        // 【关键】调用这两个函数来更新设置模态框中的UI
-                        populateLLMModelSelect(); // 这个函数现在会使用 state.agentDefaultSettings.detailed_available_llms
-                        updateChineseDeepThinkingToggleState(); // 这个函数会使用 state.agentDefaultSettings.globally_enable_chinese_thinking 和 state.enableChineseDeepThinking
+                        populateLLMModelSelect(); 
+                        updateChineseDeepThinkingToggleState(); 
                     }
                     
                     const agentStatusMessage = message.agent_available === false
-                        ? 'Lumina AI核心 OFFLINE. 功能受限. (V1.1.1 Lumina)' // 版本更新
-                        : 'Lumina核心 (V1.1.1 Lumina) 已同步到光绘网络!'; // 版本更新
+                        ? 'Lumina AI核心 OFFLINE. 功能受限. (V1.1.1 Lumina)' 
+                        : 'Lumina核心 (V1.1.1 Lumina) 已同步到光绘网络!'; 
                     const agentStatusType = message.agent_available === false ? 'warning' : 'success';
                     showToast(agentStatusMessage, agentStatusType, message.agent_available ? 4500 : 8000);
 
@@ -184,6 +174,7 @@ function handleWebSocketMessage(message) {
                             messages: [],
                             createdAt: now,
                             lastActivity: now,
+                            executionLogs: [], // 确保新会话也有此属性
                         };
                         saveSessionData(); 
                     }
@@ -249,24 +240,34 @@ function handleWebSocketMessage(message) {
 }
 
 function handleGeneralStatus(msg) {
-    const { stage, status, message: msgText, details } = msg;
+    const { stage, status, message: msgText, details, request_id } = msg; // 【老板，新增！】获取 request_id
     let logIconClass = 'fas fa-info-circle log-info';
     let logItemClasses = `type-general_status stage-${stage} status-${status}`;
 
     if (status === 'started' || status === 'llm_retry_needed' || status === 'llm_error_retrying') logIconClass = 'fas fa-sync-alt fa-spin log-processing';
     else if (status === 'completed' || status === 'received' || status === 'completed_and_validated') logIconClass = 'fas fa-check-circle log-success';
-    else if (status === 'error' || status === 'failed' || status === 'failed_after_llm_retries' || status === 'tool_failure_detected' || status === 'fatal_error_handler' || status === 'fatal_error_capture' || status === 'llm_selection_override') { // Added llm_selection_override
+    else if (status === 'error' || status === 'failed' || status === 'failed_after_llm_retries' || status === 'tool_failure_detected' || status === 'fatal_error_handler' || status === 'fatal_error_capture' || status === 'llm_selection_override') { 
         logIconClass = 'fas fa-exclamation-triangle log-error';
-        if (status === 'llm_selection_override') logIconClass = 'fas fa-random log-warning'; // Or a warning icon for override
+        if (status === 'llm_selection_override') logIconClass = 'fas fa-random log-warning'; 
     }
     else if (status === 'ignored') logIconClass = 'fas fa-eye-slash log-muted';
 
     appendLogItem(msgText, logIconClass, logItemClasses, details);
+    
+    // 【老板，新增！】如果 general_status 消息中包含 request_id，且与当前处理的请求匹配，则更新日志集合的 agentRequestId
+    if (request_id && state.currentRequestLogCollection && state.currentRequestLogCollection.clientRequestId === request_id && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id; // 通常 clientRequestId 和 agentRequestId 相同，但这里做了区分
+    } else if (request_id && state.currentRequestLogCollection && !state.currentRequestLogCollection.agentRequestId) {
+        // 如果 clientRequestId 不匹配，但 agentRequestId 尚未设置，也尝试设置 (预防万一)
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    }
+
+
     if (!state.isProcessLogSidebarVisible) showProcessLogSidebar(false);
 }
 
 function handleLlmCommStatus(msg) {
-    const { llm_phase, status, message: msgText, details } = msg;
+    const { llm_phase, status, message: msgText, details, request_id } = msg; // 【老板，新增！】获取 request_id
     let logIconClass = 'fas fa-brain log-processing';
     let logItemClasses = `type-llm_communication_status phase-${llm_phase} status-${status}`;
 
@@ -275,11 +276,19 @@ function handleLlmCommStatus(msg) {
     else if (status === 'error') logIconClass = 'fas fa-bolt log-error';
 
     appendLogItem(msgText, logIconClass, logItemClasses, details);
+    
+    // 【老板，新增！】更新 agentRequestId
+    if (request_id && state.currentRequestLogCollection && state.currentRequestLogCollection.clientRequestId === request_id && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    } else if (request_id && state.currentRequestLogCollection && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    }
+
     if (!state.isProcessLogSidebarVisible) showProcessLogSidebar(false);
 }
 
 function handleThinkingLog(msg) {
-    const { stage, content, llm_interaction_id } = msg;
+    const { stage, content, llm_interaction_id, request_id } = msg; // 【老板，新增！】获取 request_id
     if (content) {
         state.lastResponseThinking = content;
     }
@@ -289,11 +298,19 @@ function handleThinkingLog(msg) {
     } else {
         appendLogItem(`思维墨迹收到 (${stage}, LLM_ID: ${llm_interaction_id}) - ${String(content).substring(0, 80)}...`, 'fas fa-comment-dots log-muted', `type-thinking_log stage-${stage} muted`);
     }
+    
+    // 【老板，新增！】更新 agentRequestId
+    if (request_id && state.currentRequestLogCollection && state.currentRequestLogCollection.clientRequestId === request_id && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    } else if (request_id && state.currentRequestLogCollection && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    }
+
     if (!state.isProcessLogSidebarVisible) showProcessLogSidebar(false);
 }
 
 function handlePlanDetails(msg) {
-    const { plan } = msg;
+    const { plan, request_id, llm_interaction_id } = msg; // 【老板，新增！】获取 request_id 和 llm_interaction_id
     state.pendingToolCalls = {}; 
     if (Array.isArray(plan)) { 
         plan.forEach(toolCall => {
@@ -324,9 +341,8 @@ function handlePlanDetails(msg) {
             const logItem = appendLogItem(
                 logMessageText, 
                 'fas fa-tasks log-info', 
-                // 确保tool-call-id-xxx类也被添加，用于后续查找
                 `type-plan_details tool-${toolName} status-pending tool-call-id-${toolCallId}`, 
-                { arguments: toolArguments, tool_call_id: toolCallId, ui_hints: uiHints } 
+                { arguments: toolArguments, tool_call_id: toolCallId, ui_hints: uiHints, llm_interaction_id_plan: llm_interaction_id } // 添加llm_interaction_id
             );
             if (logItem) logItem.dataset.toolCallId = toolCallId; 
         });
@@ -336,15 +352,23 @@ function handlePlanDetails(msg) {
            `收到无效计划详情 (Plan不是数组).`,
            'fas fa-exclamation-circle log-error',
            'type-plan_details status-invalid',
-           { raw_plan_data: plan }
+           { raw_plan_data: plan, llm_interaction_id_plan: llm_interaction_id }
        );
     }
+    
+    // 【老板，新增！】更新 agentRequestId
+    if (request_id && state.currentRequestLogCollection && state.currentRequestLogCollection.clientRequestId === request_id && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    } else if (request_id && state.currentRequestLogCollection && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    }
+
     showProcessLogSidebar(true); 
 }
 
 
 function handleToolStatusUpdate(msg) {
-    const { tool_call_id, tool_name, status, message: msgText, details } = msg;
+    const { tool_call_id, tool_name, status, message: msgText, details, request_id } = msg; // 【老板，新增！】获取 request_id
     if (!tool_call_id || !tool_name || status === undefined || msgText === undefined) {
          console.warn("Received invalid tool_status_update message (missing essential fields):", msg);
           appendLogItem(
@@ -375,7 +399,6 @@ function handleToolStatusUpdate(msg) {
     let existingLogItem = dom.processLogSidebarContent.querySelector(`.log-item[data-tool-call-id="${tool_call_id}"]`);
 
     if (existingLogItem) {
-        // 更新类时，确保包含 tool-call-id-xxx 用于后续查找
         existingLogItem.className = `log-item animate__animated type-tool_status_update tool-${tool_name} ${itemStatusClass} tool-call-id-${tool_call_id}`; 
         existingLogItem.dataset.toolCallId = tool_call_id; 
         existingLogItem.style.setProperty('--animate-duration', '0.5s');
@@ -419,7 +442,6 @@ function handleToolStatusUpdate(msg) {
         else existingLogItem.classList.add('animate__flash');
 
     } else {
-        // 新建时也添加 tool-call-id-xxx 类
         const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass} tool-call-id-${tool_call_id}`, details);
         if (logItemDiv) logItemDiv.dataset.toolCallId = tool_call_id; 
 
@@ -432,6 +454,14 @@ function handleToolStatusUpdate(msg) {
             logItemDiv.style.setProperty('--animate-duration', '0.5s');
         }
     }
+    
+    // 【老板，新增！】更新 agentRequestId
+    if (request_id && state.currentRequestLogCollection && state.currentRequestLogCollection.clientRequestId === request_id && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    } else if (request_id && state.currentRequestLogCollection && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    }
+
 
     if (!state.isProcessLogSidebarVisible) showProcessLogSidebar(false);
 
@@ -443,24 +473,29 @@ function handleToolStatusUpdate(msg) {
 }
 
 function handleInterimResponse(msg) {
-    const { content, llm_interaction_id } = msg;
+    const { content, llm_interaction_id, request_id } = msg; // 【老板，新增！】获取 request_id
     appendLogItem(
         `AI意图墨迹: "${String(content).substring(0, 180)}${String(content).length > 180 ? '...' : ''}"`,
         'fas fa-feather-alt log-info',
         'type-agent_intention',
         { llm_interaction_id: llm_interaction_id, full_content: content }
     );
+
+    // 【老板，新增！】更新 agentRequestId
+    if (request_id && state.currentRequestLogCollection && state.currentRequestLogCollection.clientRequestId === request_id && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    } else if (request_id && state.currentRequestLogCollection && !state.currentRequestLogCollection.agentRequestId) {
+        state.currentRequestLogCollection.agentRequestId = request_id;
+    }
+
     if (!state.isProcessLogSidebarVisible) showProcessLogSidebar(false);
 }
 
 function handleFinalResponse(msg) {
     hideTypingIndicator();
     setLoadingState(false);
-    state.currentClientRequestId = null;
-    state.pendingToolCalls = {};
-
-    const { content, llm_interaction_id } = msg;
-    // 【修改】兼容后端可能发送的 v1.3.2 或通用 final_camelcase_json_if_success
+    
+    const { content, llm_interaction_id, request_id } = msg; // 【老板，新增！】获取 request_id (这通常是Agent后端的 request_id)
     const finalCamelCaseJson = msg.final_camelcase_json_if_success || msg.final_v1_3_2_camelcase_json_if_success;
 
 
@@ -489,17 +524,17 @@ function handleFinalResponse(msg) {
                 });
                 suggestionsText += "</ul></div>";
                 actualContentForBubble += suggestionsText;
-                appendMessage(actualContentForBubble, 'agent', true, thinkingForBubble, false, [], null);
+                appendMessage(actualContentForBubble, 'agent', true, thinkingForBubble, false, [], null, state.currentClientRequestId, request_id);
             } else {
                 if (!actualContentForBubble.trim()) {
                      actualContentForBubble = "(Agent返回的回复内容为空)";
                      console.warn("Final response JSON has empty content and no suggestions. Using fallback message.");
                 }
-                appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], null);
+                appendMessage(actualContentForBubble, 'agent', false, thinkingForBubble, false, [], null, state.currentClientRequestId, request_id);
             }
         } else {
             console.warn("Final response JSON structure missing decision.responseToUser.content or nested objects are invalid. Using fallback content.", finalCamelCaseJson);
-            appendMessage(content || "(Agent返回的原始内容为空)", 'agent', false, thinkingForBubble, false, [], "ContentMissingIn_V1_PCP_JSON_Or_Structure_Invalid");
+            appendMessage(content || "(Agent返回的原始内容为空)", 'agent', false, thinkingForBubble, false, [], "ContentMissingIn_V1_PCP_JSON_Or_Structure_Invalid", state.currentClientRequestId, request_id);
             actualContentForBubble = content || "(Agent返回的原始内容为空)";
         }
     } else {
@@ -508,7 +543,7 @@ function handleFinalResponse(msg) {
             ? `JSON status is not 'success' (is '${finalCamelCaseJson.status}') or JSON is not an object (is '${typeof finalCamelCaseJson}').`
             : "final_camelcase_json_if_success (or versioned key) is missing.";
         console.warn(`Final response: ${reasonForFallback} Using fallback content and cached thinking. Raw message content: "${content}"`, finalCamelCaseJson);
-        appendMessage(content || "(Agent返回的原始内容为空)", 'agent', false, thinkingForBubble, false, [], `ErrorResponseOrNo_V1_PCP_JSON_Reason:_${reasonForFallback.replace(/\s/g, '_').substring(0, 50)}`);
+        appendMessage(content || "(Agent返回的原始内容为空)", 'agent', false, thinkingForBubble, false, [], `ErrorResponseOrNo_V1_PCP_JSON_Reason:_${reasonForFallback.replace(/\s/g, '_').substring(0, 50)}`, state.currentClientRequestId, request_id);
         actualContentForBubble = content || "(Agent返回的原始内容为空)";
     }
 
@@ -517,12 +552,35 @@ function handleFinalResponse(msg) {
         sender: 'agent',
         timestamp: Date.now(),
         isHTML: (actualContentForBubble.includes('<div class="final-response-suggestions">')),
-        // 【修改】使用与后端一致的键名 (如果后端发送的是 final_v1_3_2_camelcase_json_if_success，则这里应该对应)
-        // 为了通用性，可以检查 message 对象中哪个键存在
         rawResponseV1_PCP_CamelCase: finalCamelCaseJson, 
         thinking: thinkingForBubble,
+        clientRequestId: state.currentClientRequestId, // 【老板，新增！】存储 clientRequestId
+        agentRequestId: request_id // 【老板，新增！】存储 agentRequestId
     });
+    
+    // 【老板，关键！】当收到最终回复时，将当前请求的日志集合移到会话的永久日志中
+    if (state.currentRequestLogCollection) {
+        if (state.currentRequestLogCollection.clientRequestId === state.currentClientRequestId) { // 确保是同一个请求
+            state.currentRequestLogCollection.finalStatus = (finalCamelCaseJson && finalCamelCaseJson.status === 'success') ? 'success' : 'failure';
+            // 如果 agentRequestId 之前没有通过其他status消息获得，尝试从 final_response 的 request_id 获取
+            if (!state.currentRequestLogCollection.agentRequestId && request_id) {
+                state.currentRequestLogCollection.agentRequestId = request_id;
+            }
+            if (state.sessions[state.currentSessionId] && state.sessions[state.currentSessionId].executionLogs) {
+                state.sessions[state.currentSessionId].executionLogs.push(state.currentRequestLogCollection);
+                saveSessionData(); // 保存会话数据，现在包含了这次的执行日志
+            }
+        } else {
+            console.warn("currentRequestLogCollection 的 clientRequestId 与当前的 state.currentClientRequestId 不匹配，日志可能未正确保存。");
+        }
+        state.currentRequestLogCollection = null; // 清空，为下一个请求做准备
+    }
+
+
     state.lastResponseThinking = null;
+    state.currentClientRequestId = null; // 【老板，重要！】在最终响应后清空当前客户端请求ID
+    state.pendingToolCalls = {};
+
 
     if (state.sessions[state.currentSessionId]) {
         state.sessions[state.currentSessionId].lastActivity = Date.now();

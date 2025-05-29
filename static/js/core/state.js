@@ -23,7 +23,7 @@ let state = {
     isProcessLogSidebarVisible: false, 
     isProcessLogSidebarCollapsed: true, 
     maxInputChars: 8000,
-    currentClientRequestId: null, 
+    currentClientRequestId: null, // 前端为当前用户请求生成的唯一ID
     lastResponseThinking: null, 
     autoSubmitQuickActions: true, 
     isIdtComponentVisible: true, 
@@ -51,12 +51,13 @@ let state = {
         default_llm_identifier: 'zhipu-ai', 
         default_enable_chinese_thinking: false, 
         globally_enable_chinese_thinking: true, 
-        // 【修改】键名改为 detailed_available_llms，并期望其值为对象数组
-        detailed_available_llms: [ 
-            // { id: "zhipu-ai", name: "智谱清言 (GLM)", available: true }, // 示例结构
-            // { id: "deepseek", name: "DeepSeek 大模型", available: false }
-        ]
-    }
+        detailed_available_llms: []
+    },
+
+    // 【老板，新增属性！】 用于存储当前正在处理的用户请求的日志条目集合
+    // 当一个新请求开始时，我们会在这里创建一个新的日志集合对象。
+    // 当请求结束时（收到 final_response），此对象会被移入到 sessions[sessionId].executionLogs 中。
+    currentRequestLogCollection: null 
 };
 
 export function savePersistentSettings() {
@@ -110,9 +111,6 @@ export function loadPersistentSettings() {
     const savedFontSize = localStorage.getItem(APP_PREFIX + 'fontSize') || '16'; 
     document.documentElement.style.setProperty('--base-font-size', `${savedFontSize}px`);
 
-    // 加载 selectedLLM 和 enableChineseDeepThinking 时，使用 agentDefaultSettings 中的默认值作为后备
-    // 注意：agentDefaultSettings 此刻可能还未被后端数据填充，所以这里的 || state.agentDefaultSettings... 仍然会是JS层面最初始的定义
-    // 真正的后端默认值会在 init_success 消息处理时覆盖这些。
     state.selectedLLM = localStorage.getItem(APP_PREFIX + 'selectedLLM') || state.agentDefaultSettings.default_llm_identifier; 
     state.enableChineseDeepThinking = (localStorage.getItem(APP_PREFIX + 'enableChineseDeepThinking') || state.agentDefaultSettings.default_enable_chinese_thinking.toString()) === 'true';
 

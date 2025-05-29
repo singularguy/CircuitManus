@@ -9,13 +9,12 @@ import { sendWebSocketMessage } from './websocket_manager.js';
 import { adjustTextareaHeight, updateCharCounter, showToast, setLoadingState, appendWelcomeMessage, appendMessage } from './ui_updater.js';
 import { applyTheme, applyAnimationLevel, applyFontSize } from '../modules/theme_handler.js';
 import { openSettingsModal, closeSettingsModal, collectAndSaveSettings, resetToDefaultSettings } from '../modules/settings_handler.js';
-// 修正：从 session_handler.js 导入会话管理函数
-import { createNewSession, handleEditSessionName, saveSessions, renderSessionList, addMessageToCurrentSession } from '../modules/session_handler.js';
+// 【老板，修改！】从 session_handler.js 导入的函数现在包含 showHistoricalLogsForRequest
+import { createNewSession, handleEditSessionName, saveSessions, renderSessionList, addMessageToCurrentSession, showHistoricalLogsForRequest } from '../modules/session_handler.js';
 import { updateSidebarState, updateSessionManagerState, updateInputAreaHeightVar, applyFixedLogSidebarLayout, toggleProcessLogSidebarCollapse, hideProcessLogSidebar, showProcessLogSidebar } from '../modules/layout_handler.js';
 import { handleFileSelection, closeFilePreview } from '../modules/file_handler.js';
 import { toggleThreeBlackHoleVisibility, handleComponentMouseDown } from '../modules/three_visuals.js';
 import { handleChatBoxMouseOver, handleChatBoxMouseOut } from '../modules/copy_handler.js';
-// APP_PREFIX 现在从 helpers.js 导入
 import { generateClientRequestId, getThemeDisplayName, getModeDisplayName, APP_PREFIX } from '../utils/helpers.js';
 
 
@@ -90,7 +89,6 @@ export function setupEventListeners() {
         dom.idtComponentToggleBtn.setAttribute('title', state.isIdtComponentVisible ? '停用核心投影' : '激活核心投影');
         const idtIcon = dom.idtComponentToggleBtn.querySelector('i');
         if (idtIcon) idtIcon.className = state.isIdtComponentVisible ? 'fas fa-eye-slash' : 'fas fa-atom';
-        // Persist this specific setting
         localStorage.setItem(APP_PREFIX + 'isIdtComponentVisible', state.isIdtComponentVisible.toString());
     });
 
@@ -133,9 +131,24 @@ export function setupEventListeners() {
 
     dom.chatBox.addEventListener('mouseover', handleChatBoxMouseOver);
     dom.chatBox.addEventListener('mouseout', handleChatBoxMouseOut);
+
+    // 【老板，新增事件委托！】为聊天框添加事件委托，用于处理动态添加的“查看执行日志”按钮
+    dom.chatBox.addEventListener('click', function(event) {
+        const target = event.target.closest('.view-execution-logs-btn');
+        if (target) {
+            event.stopPropagation(); // 阻止事件冒泡到其他消息气泡的监听器（如果存在）
+            const clientReqId = target.dataset.clientRequestId;
+            const agentReqId = target.dataset.agentRequestId;
+            if (clientReqId || agentReqId) { // 确保至少有一个ID
+                showHistoricalLogsForRequest(state.currentSessionId, clientReqId, agentReqId);
+            } else {
+                console.warn("查看历史日志按钮被点击，但未能获取到有效的请求ID。");
+                showToast("无法加载历史日志：缺少请求标识。", "warning");
+            }
+        }
+    });
 }
 
-// Moved from script.js main body, now part of event_listener_setup.js's scope
 function handleSendMessage() {
     if (state.isLoading) {
         showToast("Lumina核心正在处理上一指令. 请稍候...", "warning");
@@ -152,20 +165,49 @@ function handleSendMessage() {
         showToast(`指令缓冲区溢出. 最大 ${state.maxInputChars} 字符.`, "error");
         return;
     }
+    
+    // WebSocket 检查移到 sendWebSocketMessage 内部
 
     setLoadingState(true);
-    state.currentClientRequestId = generateClientRequestId();
+    state.currentClientRequestId = generateClientRequestId(); // 【老板，关键！】生成并存储当前请求的客户端ID
     state.lastResponseThinking = null;
+
+    // 【老板，关键！】为当前请求初始化一个日志集合
+    if (state.sessions[state.currentSessionId] && state.sessions[state.currentSessionId].executionLogs) {
+        state.currentRequestLogCollection = {
+            userRequestContent: messageText, // 存储用户原始请求文本
+            clientRequestId: state.currentClientRequestId,
+            agentRequestId: null, // Agent的ID将在稍后从服务器响应中获取
+            timestamp: Date.now(),
+            logItems: [], // 用于收集此请求的所有日志条目
+            finalStatus: "pending"
+        };
+        // 不立即推入 session.executionLogs，在请求结束时再推
+    } else {
+        console.error("当前会话或其 executionLogs 未初始化，无法记录请求日志。");
+        state.currentRequestLogCollection = null; //确保它为空
+    }
+
 
     const currentUserMessage = {
         content: messageText,
         sender: 'user',
         timestamp: Date.now(),
         isHTML: false,
-        attachments: filesToSend.map(f => ({ name: f.name, size: f.size, type: f.type }))
+        attachments: filesToSend.map(f => ({ name: f.name, size: f.size, type: f.type })),
+        clientRequestId: state.currentClientRequestId // 【老板，新增！】将客户端请求ID与用户消息关联
     };
     addMessageToCurrentSession(currentUserMessage);
-    appendMessage(messageText, 'user', false, null, false, currentUserMessage.attachments);
+    appendMessage(
+        messageText, 
+        'user', 
+        false, // isHTML
+        null,  // thinkContent
+        false, // isSwitchingSession
+        currentUserMessage.attachments,
+        null, // errorType
+        state.currentClientRequestId // 【老板，新增！】传递 clientRequestId
+    );
 
     const currentSession = state.sessions[state.currentSessionId];
     if (currentSession && currentSession.name.startsWith("光绘墨迹项目 ") && currentSession.messages.filter(m => m.sender === 'user').length === 1) {
@@ -181,8 +223,8 @@ function handleSendMessage() {
     closeFilePreview();
     state.uploadedFiles = [];
 
-    if (dom.processLogSidebarContent) dom.processLogSidebarContent.innerHTML = '';
-    showProcessLogSidebar(true);
+    if (dom.processLogSidebarContent) dom.processLogSidebarContent.innerHTML = ''; // 清空实时日志显示区域
+    showProcessLogSidebar(true); // 显示并展开实时日志
 
     let backendMessageContent = messageText;
     if (filesToSend.length > 0) {
@@ -192,7 +234,7 @@ function handleSendMessage() {
     sendWebSocketMessage({
         type: 'message',
         session_id: state.currentSessionId,
-        request_id: state.currentClientRequestId,
+        request_id: state.currentClientRequestId, // 【老板，修改！】发送前端生成的请求ID
         content: backendMessageContent,
         mode: state.currentMode
     });
@@ -207,14 +249,15 @@ function handleUserInputKeypress(event) {
 
 function handleClearCurrentChat() {
     if (!state.currentSessionId || !state.sessions[state.currentSessionId]) return;
-    if (!confirm(`清空当前光绘墨迹项目 "${state.sessions[state.currentSessionId].name}"? 这将清除所有消息记录.`)) {
+    if (!confirm(`清空当前光绘墨迹项目 "${state.sessions[state.currentSessionId].name}"? 这将清除所有消息和执行日志记录.`)) {
         return;
     }
     state.sessions[state.currentSessionId].messages = [];
+    state.sessions[state.currentSessionId].executionLogs = []; // 【老板，新增！】同时清空执行日志
     state.sessions[state.currentSessionId].lastActivity = Date.now();
-    saveSessions(); // saveSessions from session_handler
+    saveSessions(); 
     dom.chatBox.innerHTML = '';
-    appendWelcomeMessage(); // appendWelcomeMessage from ui_updater
+    appendWelcomeMessage(); 
     if (dom.processLogSidebarContent) dom.processLogSidebarContent.innerHTML = '';
     if (state.isProcessLogSidebarVisible) {
         showProcessLogSidebar(false);
@@ -222,7 +265,7 @@ function handleClearCurrentChat() {
         hideProcessLogSidebar();
     }
     showToast('当前光绘墨迹项目已清空!', 'info');
-    renderSessionList(); // renderSessionList from session_handler
+    renderSessionList(); 
 }
 
 function handleModeChange(newMode) {
