@@ -1,108 +1,151 @@
-# IDT_AGENT_NATIVE/circuitmanus/llm/interface.py (尝试兼容旧版 zhipuai SDK)
+# IDT_AGENT_NATIVE/circuitmanus/llm/interface.py
 import time
 import json
 import asyncio
 import logging
 from typing import List, Dict, Any, Optional, Callable, Awaitable
 
-import httpx # ZhipuAI 内部使用 httpx, 可以用来配置超时
-
-# --- ZhipuAI SDK 导入和兼容性处理 ---
 try:
-    from zhipuai import ZhipuAI, ZhipuAIAPIError # 尝试导入新版的特定API错误
+    from zhipuai import ZhipuAI, ZhipuAIError
+    ZHIPUAI_SDK_AVAILABLE = True
 except ImportError:
-    logger_compat = logging.getLogger(__name__) # 获取logger实例
-    logger_compat.warning(
-        "Failed to import 'ZhipuAIAPIError' from 'zhipuai'. "
-        "This might be due to an older version of the zhipuai SDK. "
-        "Specific ZhipuAI API error handling will be limited. "
-        "Consider upgrading the 'zhipuai' package (pip install --upgrade zhipuai)."
-    )
-    # 如果 ZhipuAIAPIError 不存在，我们定义一个假的占位符，
-    # 或者在 except 块中捕获更通用的 Exception。
-    # 为了让代码结构不变，我们定义一个假的，但实际捕获时，
-    # 这个假的不会被匹配到，而是由更通用的 Exception 捕获。
-    # 或者，更好的是，我们用一个变量来标记是否可用。
-    try:
-        from zhipuai import ZhipuAI # 确保 ZhipuAI 本身能导入
-        ZhipuAIAPIError_AVAILABLE = False # 标记 ZhipuAIAPIError 不可用
-        class ZhipuAIAPIError(Exception): # 定义一个假的，避免NameError，但它不会是真正的SDK错误
-            pass 
-    except ImportError: # 如果连 ZhipuAI 都导入不了，那是更严重的问题
-        logger_compat.critical("CRITICAL: Failed to import 'ZhipuAI' base class. ZhipuAI SDK is not installed correctly or missing.")
-        raise # 直接抛出原始的 ImportError
+    logging.getLogger(__name__).warning("无法导入 'zhipuai' SDK。智谱AI模型功能将不可用。")
+    ZHIPUAI_SDK_AVAILABLE = False
+    class ZhipuAI: pass
+    class ZhipuAIAPIError(Exception): pass 
+
+try:
+    from openai import OpenAI, APIError as OpenAIApiError
+    OPENAI_SDK_AVAILABLE = True
+except ImportError:
+    logging.getLogger(__name__).warning("无法导入 'openai' SDK。DeepSeek 模型功能将不可用。")
+    OPENAI_SDK_AVAILABLE = False
+    class OpenAI: pass
+    class OpenAIApiError(Exception): pass 
+
+import httpx 
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..agent import CircuitAgent 
 
-logger = logging.getLogger(__name__) # 模块级 logger
+logger = logging.getLogger(__name__)
 
 class LLMInterface:
-    # ... ( __init__ 方法保持不变，它仍然会尝试使用配置的超时初始化 ZhipuAI ) ...
     def __init__(self, 
                  agent_instance: 'CircuitAgent', 
-                 model_name: str = "glm-z1-flash", 
                  default_temperature: float = 0.01, 
                  default_max_tokens: int = 8190,
                  api_timeout_seconds: int = 120, 
                  enable_detailed_llm_message_logging: bool = False 
                  ):
-        logger.info(f"[LLMInterface V1.0.0 Configurable] 初始化 LLM 接口, 目标模型: {model_name}, API超时: {api_timeout_seconds}s.")
-        
-        if not agent_instance or not hasattr(agent_instance, 'api_key'):
-             logger.critical("[LLMInterface V1.0.0 Configurable] agent_instance 无效或缺少 'api_key' 属性。")
-             raise ValueError("LLMInterface 需要一个包含 'api_key' 属性的 Agent 实例。")
         
         self.agent_instance: 'CircuitAgent' = agent_instance
-        api_key = self.agent_instance.api_key
-        if not api_key:
-            logger.critical("[LLMInterface V1.0.0 Configurable] 智谱 AI API Key 未提供或为空。")
-            raise ValueError("智谱 AI API Key 不能为空。")
-
-        self.api_timeout_seconds = api_timeout_seconds
-        self.enable_detailed_llm_message_logging = enable_detailed_llm_message_logging
-        self._zhipuai_api_error_available = 'ZhipuAIAPIError' in globals() and not (globals()['ZhipuAIAPIError'] is Exception and ZhipuAIAPIError.__name__ == 'ZhipuAIAPIError')
-
-
-        try:
-            effective_timeout = float(self.api_timeout_seconds)
-            self.client = ZhipuAI(api_key=api_key, timeout=effective_timeout) # type: ignore
-            logger.info(f"[LLMInterface V1.0.0 Configurable] 智谱 AI 客户端初始化成功，全局超时设置为 {effective_timeout} 秒。")
-        except Exception as e:
-            logger.critical(f"[LLMInterface V1.0.0 Configurable] 初始化智谱 AI 客户端失败: {e}", exc_info=True)
-            raise ConnectionError(f"初始化智谱 AI 客户端失败: {e}") from e
-
-        self.model_name: str = model_name
-        self.default_temperature: float = default_temperature
-        self.default_max_tokens: int = default_max_tokens
+        self.config_loader = self.agent_instance.config_loader 
         
-        logger.info(f"[LLMInterface V1.0.0 Configurable] LLM 接口初始化完成 (模型: {model_name}, 温度: {default_temperature}, 最大Token数: {default_max_tokens})。")
+        self.default_temperature: float = self.config_loader.get_config("agent_settings.llm.default_temperature", default_temperature)
+        self.default_max_tokens: int = self.config_loader.get_config("agent_settings.llm.default_max_tokens", default_max_tokens)
+        self.api_timeout_seconds: float = float(self.config_loader.get_config("agent_settings.llm.api_timeout_seconds", api_timeout_seconds))
+        self.enable_detailed_llm_message_logging: bool = self.config_loader.get_config("agent_settings.feature_flags.enable_detailed_llm_message_logging", enable_detailed_llm_message_logging)
 
+        logger.info(f"[LLMInterface V1.1.1 DynamicAvailability] 初始化LLM接口。通用设置 - 温度: {self.default_temperature}, 最大Tokens: {self.default_max_tokens}, API超时: {self.api_timeout_seconds}s。")
+
+        # 新增：用于存储各模型客户端的可用状态
+        self.model_client_availability: Dict[str, bool] = {
+            "zhipu-ai": False,
+            "deepseek": False
+            # 将来可以扩展更多模型
+        }
+
+        # 初始化 ZhipuAI 客户端
+        self.zhipu_client: Optional[ZhipuAI] = None
+        if ZHIPUAI_SDK_AVAILABLE:
+            zhipu_api_key = self.agent_instance.api_key 
+            if zhipu_api_key:
+                try:
+                    self.zhipu_client = ZhipuAI(api_key=zhipu_api_key, timeout=self.api_timeout_seconds) # type: ignore
+                    logger.info(f"智谱AI客户端初始化成功 (Key: ...{zhipu_api_key[-4:] if len(zhipu_api_key) > 4 else '****'})。")
+                    self.model_client_availability["zhipu-ai"] = True # 标记智谱客户端可用
+                except Exception as e:
+                    logger.error(f"初始化智谱AI客户端失败: {e}", exc_info=True)
+            else:
+                logger.warning("未找到ZHIPUAI_API_KEY，智谱AI模型将不可用。")
+        
+        # 初始化 DeepSeek (OpenAI) 客户端
+        self.deepseek_client: Optional[OpenAI] = None
+        if OPENAI_SDK_AVAILABLE:
+            deepseek_api_key = self.config_loader.get_env_var("DEEPSEEK_API_KEY")
+            deepseek_base_url = self.config_loader.get_config("agent_settings.llm.deepseek_settings.base_url", "https://api.deepseek.com/v1")
+            if deepseek_api_key:
+                try:
+                    self.deepseek_client = OpenAI(api_key=deepseek_api_key, base_url=deepseek_base_url, timeout=self.api_timeout_seconds) # type: ignore
+                    logger.info(f"DeepSeek客户端初始化成功 (Base URL: {deepseek_base_url}, Key: ...{deepseek_api_key[-4:] if len(deepseek_api_key) > 4 else '****'})。")
+                    self.model_client_availability["deepseek"] = True # 标记DeepSeek客户端可用
+                except Exception as e:
+                    logger.error(f"初始化DeepSeek客户端失败: {e}", exc_info=True)
+            else:
+                logger.warning("未找到DEEPSEEK_API_KEY，DeepSeek模型将不可用。")
+
+        if not any(self.model_client_availability.values()): # 检查是否有任何一个客户端可用
+            logger.critical("LLMInterface: 没有任何LLM客户端成功初始化！Agent将无法调用任何大模型。")
+
+    def get_model_availability(self) -> Dict[str, bool]:
+        """新增方法：返回各模型客户端的可用状态。"""
+        return self.model_client_availability
 
     async def call_llm(self, 
                        messages: List[Dict[str, Any]], 
                        execution_phase: str, 
-                       status_callback: Optional[Callable[[Dict], Awaitable[None]]] = None
+                       status_callback: Optional[Callable[[Dict], Awaitable[None]]] = None,
+                       selected_model_identifier: Optional[str] = None 
                        ) -> Any: 
-        # ... (call_args 和 日志记录逻辑保持不变) ...
+        
+        model_id_to_use = selected_model_identifier or self.config_loader.get_config("agent_settings.llm.default_model_identifier", "zhipu-ai")
+
+        current_client: Any = None
+        actual_model_name_for_api: Optional[str] = None
+        is_deepseek_call = False
+
+        if model_id_to_use == "zhipu-ai":
+            if self.zhipu_client: # 检查客户端是否已初始化
+                current_client = self.zhipu_client
+                actual_model_name_for_api = self.config_loader.get_config("agent_settings.llm.zhipuai_settings.model_name", "glm-4") 
+                logger.info(f"LLM调用将使用智谱AI模型: {actual_model_name_for_api}")
+            else:
+                logger.error("尝试使用智谱AI模型，但客户端未初始化。请检查API Key或SDK安装。")
+                raise ConnectionError("智谱AI客户端未初始化或不可用。")
+        elif model_id_to_use == "deepseek":
+            if self.deepseek_client: # 检查客户端是否已初始化
+                current_client = self.deepseek_client
+                actual_model_name_for_api = self.config_loader.get_config("agent_settings.llm.deepseek_settings.model_name", "deepseek-chat")
+                is_deepseek_call = True
+                logger.info(f"LLM调用将使用DeepSeek模型: {actual_model_name_for_api}")
+            else:
+                logger.error("尝试使用DeepSeek模型，但客户端未初始化。请检查API Key或SDK安装。")
+                raise ConnectionError("DeepSeek客户端未初始化或不可用。")
+        else:
+            logger.error(f"未知的模型标识符: '{model_id_to_use}'。无法选择LLM客户端。")
+            raise ValueError(f"不支持的模型标识符: {model_id_to_use}")
+
+        if not actual_model_name_for_api: 
+            logger.error(f"未能确定用于API调用的实际模型名称 (标识符: {model_id_to_use})。")
+            raise ValueError("无法确定API调用的模型名称。")
+
         call_args = {
-            "model": self.model_name,
+            "model": actual_model_name_for_api,
             "messages": messages,
             "temperature": self.default_temperature,
             "max_tokens": self.default_max_tokens,
             "stream": False, 
         }
 
-        logger.info(f"[LLMInterface V1.0.0 Configurable] 准备异步调用 LLM ({self.model_name}, 阶段: {execution_phase})...")
-        logger.debug(f"[LLMInterface V1.0.0 Configurable] 发送的消息条数: {len(messages)}。")
-        
+        logger.info(f"[LLMInterface V1.1.1] 准备异步调用 LLM ({actual_model_name_for_api}, 阶段: {execution_phase})...")
         if self.enable_detailed_llm_message_logging and logger.isEnabledFor(logging.DEBUG):
              try:
                  full_messages_json = json.dumps(messages, ensure_ascii=False, indent=2)
-                 logger.debug(f"[LLMInterface V1.0.0 Configurable] [DETAILED_LOG] 发送给 LLM 的完整消息列表:\n{full_messages_json}")
+                 logger.debug(f"[LLMInterface V1.1.1] [DETAILED_LOG] 发送给 LLM 的完整消息列表 ({actual_model_name_for_api}):\n{full_messages_json}")
              except Exception as e_json_full:
-                 logger.warning(f"[LLMInterface V1.0.0 Configurable] 无法序列化完整消息列表进行详细调试日志: {e_json_full}")
+                 logger.warning(f"[LLMInterface V1.1.1] 无法序列化完整消息列表进行详细调试日志: {e_json_full}")
         elif logger.isEnabledFor(logging.DEBUG) and messages: 
              try:
                  messages_content_for_log = []
@@ -113,92 +156,93 @@ class LLMInterface:
                      else: content_preview = content[:500] + ("..." if len(content) > 500 else "") 
                      messages_content_for_log.append({ "index": m_idx, "role": role, "content_preview_length": len(content), "content_preview": content_preview })
                  messages_summary = json.dumps(messages_content_for_log, ensure_ascii=False, indent=2)
-                 logger.debug(f"[LLMInterface V1.0.0 Configurable] 发送给 LLM 的消息列表 (预览):\n{messages_summary}")
+                 logger.debug(f"[LLMInterface V1.1.1] 发送给 LLM 的消息列表 (预览, {actual_model_name_for_api}):\n{messages_summary}")
              except Exception as e_json_preview:
-                 logger.warning(f"[LLMInterface V1.0.0 Configurable] 无法序列化消息列表预览进行调试日志: {e_json_preview}")
+                 logger.warning(f"[LLMInterface V1.1.1] 无法序列化消息列表预览进行调试日志: {e_json_preview}")
+
 
         request_id_to_send = getattr(self.agent_instance, 'current_request_id', None)
         
         if status_callback:
-            await status_callback({ "type": "llm_communication_status", "request_id": request_id_to_send, "llm_phase": execution_phase, "status": "started", "message": f"正在与智能大脑 ({self.model_name}) 沟通 ({execution_phase})..." })
+            await status_callback({ "type": "llm_communication_status", "request_id": request_id_to_send, "llm_phase": execution_phase, "status": "started", "message": f"正在与智能大脑 ({actual_model_name_for_api}) 沟通 ({execution_phase})..." })
 
-        response = None
+        response_from_sdk = None
         try:
             start_time = time.monotonic()
-            response = await asyncio.to_thread(self.client.chat.completions.create, **call_args)
+            response_from_sdk = await asyncio.to_thread(current_client.chat.completions.create, **call_args)
             duration = time.monotonic() - start_time
-            logger.info(f"[LLMInterface V1.0.0 Configurable] LLM 异步调用成功。耗时: {duration:.3f} 秒。")
+            logger.info(f"[LLMInterface V1.1.1] LLM ({actual_model_name_for_api}) 异步调用成功。耗时: {duration:.3f} 秒。")
             
             if status_callback:
-                await status_callback({ "type": "llm_communication_status", "request_id": request_id_to_send, "llm_phase": execution_phase, "status": "completed", "message": f"与智能大脑 ({self.model_name}) 沟通完成 ({execution_phase})。", "details": {"duration_seconds": duration} })
+                await status_callback({ "type": "llm_communication_status", "request_id": request_id_to_send, "llm_phase": execution_phase, "status": "completed", "message": f"与智能大脑 ({actual_model_name_for_api}) 沟通完成 ({execution_phase})。", "details": {"duration_seconds": duration} })
 
-            if response:
-                # ... (response 处理和日志记录逻辑不变) ...
-                if response.usage: logger.info(f"[LLMInterface V1.0.0 Configurable] Token 统计: Prompt={response.usage.prompt_tokens}, Completion={response.usage.completion_tokens}, Total={response.usage.total_tokens}")
+            if response_from_sdk:
+                if hasattr(response_from_sdk, 'usage') and response_from_sdk.usage:
+                    prompt_tokens = getattr(response_from_sdk.usage, 'prompt_tokens', 'N/A')
+                    completion_tokens = getattr(response_from_sdk.usage, 'completion_tokens', 'N/A')
+                    total_tokens = getattr(response_from_sdk.usage, 'total_tokens', 'N/A')
+                    logger.info(f"[LLMInterface V1.1.1] Token 统计 ({actual_model_name_for_api}): Prompt={prompt_tokens}, Completion={completion_tokens}, Total={total_tokens}")
+
                 raw_llm_content = "" 
-                if response.choices:
-                    finish_reason = response.choices[0].finish_reason
-                    logger.info(f"[LLMInterface V1.0.0 Configurable] 完成原因: {finish_reason}")
-                    if finish_reason == 'length': logger.warning("[LLMInterface V1.0.0 Configurable] LLM 响应因达到最大 token 限制而被截断！")
-                    if response.choices[0].message: raw_llm_content = response.choices[0].message.content or "" 
-                    else: logger.warning("[LLMInterface V1.0.0 Configurable] LLM响应的choices[0]中缺少message对象。")
-                else: logger.warning("[LLMInterface V1.0.0 Configurable] LLM 响应中缺少 'choices' 字段。")
-                if self.enable_detailed_llm_message_logging and logger.isEnabledFor(logging.DEBUG): logger.debug(f"[LLMInterface V1.0.0 Configurable] [DETAILED_LOG] LLM 原始响应内容 (完整):\n{raw_llm_content}")
-                elif logger.isEnabledFor(logging.DEBUG): logger.debug(f"[LLMInterface V1.0.0 Configurable] LLM 原始响应内容 (预览):\n{raw_llm_content[:1000]}{'...' if len(raw_llm_content) > 1000 else ''}")
-            else:
-                 logger.error("[LLMInterface V1.0.0 Configurable] LLM API 调用返回了 None！")
-                 raise ConnectionError("LLM API call returned None.")
-            return response 
-        
-        # --- 修改后的异常捕获 ---
-        except Exception as e:
-            # 先判断是否是 ZhipuAIAPIError (如果可用且是其实例)
-            # ZhipuAIAPIError_AVAILABLE 标记在 __init__ 中设置会更好，或者直接在全局
-            # 修正：我们将 ZhipuAIAPIError_AVAILABLE 的检查移到模块加载时
-            # 这里我们假设 ZhipuAIAPIError 是从 zhipuai 导入的，如果导入失败，它会是我们定义的假类
-            # 所以 isinstance(e, ZhipuAIAPIError) 会尝试匹配，如果匹配到我们自己定义的假的，那不是SDK的错。
-            # 一个更可靠的方法是在 try-except ImportError 时设置一个布尔标志。
-            # 我们在模块顶部导入 ZhipuAIAPIError 时，如果导入失败，就将一个标志 ZHIPUAIAPIERROR_IMPORTED 设置为 False。
-            
-            # 从模块顶部的导入逻辑获取 ZhipuAIAPIError 是否真的被导入
-            zhipuai_api_error_type = None
-            try:
-                from zhipuai import ZhipuAIAPIError as ActualZhipuAIAPIError # 再次尝试导入
-                zhipuai_api_error_type = ActualZhipuAIAPIError
-            except ImportError:
-                pass # zhipuai_api_error_type 保持为 None
+                if hasattr(response_from_sdk, 'choices') and response_from_sdk.choices and len(response_from_sdk.choices) > 0:
+                    first_choice = response_from_sdk.choices[0]
+                    finish_reason = getattr(first_choice, 'finish_reason', 'N/A')
+                    logger.info(f"[LLMInterface V1.1.1] 完成原因 ({actual_model_name_for_api}): {finish_reason}")
+                    if finish_reason == 'length': 
+                        logger.warning(f"[LLMInterface V1.1.1] LLM ({actual_model_name_for_api}) 响应因达到最大 token 限制而被截断！")
+                    
+                    if hasattr(first_choice, 'message') and first_choice.message:
+                        raw_llm_content = getattr(first_choice.message, 'content', "") or ""
+                    else:
+                        logger.warning(f"[LLMInterface V1.1.1] LLM ({actual_model_name_for_api}) 响应的choices[0]中缺少message对象。")
+                else: 
+                    logger.warning(f"[LLMInterface V1.1.1] LLM ({actual_model_name_for_api}) 响应中缺少 'choices' 字段或choices为空。")
 
-            if zhipuai_api_error_type and isinstance(e, zhipuai_api_error_type): # type: ignore
-                # 这是 ZhipuAI SDK 抛出的特定 API 错误
-                # ZhipuAIAPIError 有 .code 和 .message 属性
-                error_code_val = getattr(e, 'code', 'UNKNOWN_SDK_ERROR_CODE')
-                error_message_val = getattr(e, 'message', str(e))
-                logger.error(f"[LLMInterface V1.0.0 Configurable] ZhipuAI API 调用失败: Code={error_code_val}, Message='{error_message_val}'", exc_info=False) # exc_info=False 避免重复打印已知错误堆栈
-                if status_callback:
-                     await status_callback({
-                        "type": "llm_communication_status", "request_id": request_id_to_send,
-                        "llm_phase": execution_phase, "status": "error",
-                        "message": f"与智能大脑沟通失败 ({execution_phase}): API错误 {error_code_val}",
-                        "details": {"error": error_message_val, "error_type": type(e).__name__, "error_code_sdk": error_code_val}
-                     })
-                raise ConnectionError(f"ZhipuAI API Error: {error_message_val} (Code: {error_code_val})") from e
-            elif isinstance(e, httpx.TimeoutException): # 捕获 httpx 的超时异常
-                logger.error(f"[LLMInterface V1.0.0 Configurable] LLM API 调用超时 (配置超时: {self.api_timeout_seconds}s): {e}", exc_info=True)
-                if status_callback:
-                     await status_callback({
-                        "type": "llm_communication_status", "request_id": request_id_to_send,
-                        "llm_phase": execution_phase, "status": "error",
-                        "message": f"与智能大脑沟通超时 ({execution_phase})。",
-                        "details": {"error": str(e), "error_type": type(e).__name__}
-                     })
-                raise ConnectionError(f"LLM API call timed out after {self.api_timeout_seconds}s.") from e
-            else: # 其他所有未知异常
-                logger.error(f"[LLMInterface V1.0.0 Configurable] LLM API 异步调用发生未知失败: {e}", exc_info=True)
-                if status_callback:
-                     await status_callback({
-                        "type": "llm_communication_status", "request_id": request_id_to_send,
-                        "llm_phase": execution_phase, "status": "error",
-                        "message": f"与智能大脑沟通时发生未知错误 ({execution_phase})。",
-                        "details": {"error": str(e), "error_type": type(e).__name__}
-                     })
-                raise # 将原始异常或包装后的异常重新抛出
+                if self.enable_detailed_llm_message_logging and logger.isEnabledFor(logging.DEBUG): 
+                    logger.debug(f"[LLMInterface V1.1.1] [DETAILED_LOG] LLM ({actual_model_name_for_api}) 原始响应内容 (完整):\n{raw_llm_content}")
+                elif logger.isEnabledFor(logging.DEBUG): 
+                    logger.debug(f"[LLMInterface V1.1.1] LLM ({actual_model_name_for_api}) 原始响应内容 (预览):\n{raw_llm_content[:1000]}{'...' if len(raw_llm_content) > 1000 else ''}")
+            else:
+                 logger.error(f"[LLMInterface V1.1.1] LLM ({actual_model_name_for_api}) API 调用返回了 None！")
+                 raise ConnectionError(f"LLM API ({actual_model_name_for_api}) 调用返回 None。")
+            
+            return response_from_sdk 
+        
+        except Exception as e:
+            error_type_name = type(e).__name__
+            error_message_str = str(e)
+            error_details_for_cb = {"error": error_message_str, "error_type": error_type_name}
+            
+            if is_deepseek_call and OPENAI_SDK_AVAILABLE and isinstance(e, OpenAIApiError):
+                status_code = getattr(e, 'status_code', 'N/A_SDK_STATUS_CODE')
+                sdk_error_code = getattr(e, 'code', 'N/A_SDK_ERROR_CODE') 
+                sdk_error_type = getattr(e, 'type', 'N/A_SDK_ERROR_TYPE') 
+                logger.error(f"[LLMInterface V1.1.1] DeepSeek API ({actual_model_name_for_api}) 调用失败: "
+                             f"HTTP Status={status_code}, SDK Error Type='{sdk_error_type}', SDK Code='{sdk_error_code}', Message='{error_message_str}'", 
+                             exc_info=False) 
+                error_details_for_cb.update({"sdk_error_code": sdk_error_code, "sdk_error_type": sdk_error_type, "http_status": status_code})
+                if sdk_error_type in ['api_connection_error', 'internal_error', 'rate_limit_error']: 
+                    raise ConnectionError(f"DeepSeek API Error ({sdk_error_type} - {sdk_error_code}): {error_message_str}") from e
+                else: 
+                    raise 
+            elif not is_deepseek_call and ZHIPUAI_SDK_AVAILABLE and isinstance(e, ZhipuAIAPIError):
+                error_code_val = getattr(e, 'code', 'UNKNOWN_ZHIPU_SDK_ERROR_CODE')
+                logger.error(f"[LLMInterface V1.1.1] ZhipuAI API ({actual_model_name_for_api}) 调用失败: "
+                             f"Code={error_code_val}, Message='{error_message_str}'", 
+                             exc_info=False)
+                error_details_for_cb.update({"sdk_error_code_zhipu": error_code_val})
+                raise ConnectionError(f"ZhipuAI API Error (Code: {error_code_val}): {error_message_str}") from e
+            elif isinstance(e, httpx.TimeoutException): 
+                logger.error(f"[LLMInterface V1.1.1] LLM API ({actual_model_name_for_api}) 调用超时 (配置超时: {self.api_timeout_seconds}s): {error_message_str}", exc_info=True)
+                raise ConnectionError(f"LLM API ({actual_model_name_for_api}) 调用在 {self.api_timeout_seconds}s 后超时。") from e
+            elif isinstance(e, ConnectionError): 
+                logger.error(f"[LLMInterface V1.1.1] LLM API ({actual_model_name_for_api}) 发生连接错误: {error_message_str}", exc_info=True)
+                raise
+            else: 
+                logger.error(f"[LLMInterface V1.1.1] LLM API ({actual_model_name_for_api}) 异步调用发生未知失败: {error_message_str}", exc_info=True)
+                raise RuntimeError(f"LLM调用 ({actual_model_name_for_api}) 期间发生未知错误: {error_message_str}") from e
+            
+            # 此处 status_callback 的调用实际上在 raise 之后不会执行，正确的做法是在每个 raise 之前调用
+            # 但为了保持逻辑结构，如果需要，可以在每个raise之前添加status_callback调用
+            # if status_callback:
+            #      await status_callback({ ... })

@@ -72,6 +72,15 @@ const domElements = (() => {
         componentVisibilityToggle: document.getElementById('component-visibility-toggle'),
         resetSettingsButton: document.getElementById('reset-settings'),
         saveSettingsButton: document.getElementById('save-settings'),
+        
+        // ==================================================================
+        // 【老板，关键修复在这里！】
+        // 新增：获取 LLM 模型选择下拉框 和 中文深度思考切换开关
+        // 这两个元素在 settings_handler.js 中被频繁使用，之前遗漏了获取。
+        llmModelSelect: document.getElementById('llm-model-select'), // 添加对模型选择下拉框的获取
+        enableChineseDeepThinkingToggle: document.getElementById('enable-chinese-deep-thinking-toggle'), // 添加对中文思考开关的获取
+        // ==================================================================
+
         // 3D组件显示开关与包装器
         idtComponentToggleBtn: document.getElementById('toggleIdtComponentBtn'),
         idtComponentWrapper: document.getElementById('idtTechComponentWrapper')

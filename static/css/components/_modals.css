@@ -1,13 +1,16 @@
 /* ==========================================================================
    [ START OF FILE components/_modals.css ]
-   设置模态框样式
+   设置模态框及内部控件样式
    ========================================================================== */
 
+/* 模态框背景遮罩层 */
 .modal {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(var(--lumina-bg-dark-rgb, 22, 24, 29), 0.65); /* Fallback if dark var not loaded */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(var(--lumina-bg-dark-rgb, 22, 24, 29), 0.65); /* Fallback for dark var */
   backdrop-filter: blur(10px) brightness(0.8);
   -webkit-backdrop-filter: blur(10px) brightness(0.8);
   display: none; /* Initially hidden, shown by JS */
@@ -16,17 +19,19 @@
   z-index: var(--z-index-modal);
 }
 
+/* 模态框内容容器，应用 Lumina 面板样式 */
 .modal .modal-content.lumina-panel {
   max-width: 680px;
   width: 92%;
-  max-height: 85vh;
+  max-height: 85vh; /* Prevent modal from being too tall on smaller screens */
   display: flex;
   flex-direction: column;
   overflow: hidden; /* Content scrolling is handled by modal-body */
   box-shadow: 0 10px 40px rgba(var(--current-text-primary-rgb), 0.1),
-              0 0 0 1px rgba(var(--current-panel-border-rgb), 0.5);
+              0 0 0 1px rgba(var(--current-panel-border-rgb), 0.5); /* Subtle border */
 }
 
+/* 模态框头部样式 */
 .modal .modal-content.lumina-panel .modal-header {
   display: flex;
   justify-content: space-between;
@@ -48,12 +53,21 @@
   margin-right: calc(var(--spacing-unit) * 1.2);
 }
 
+/* 模态框头部关闭按钮 (继承 .icon-btn 样式) */
+.modal .modal-content.lumina-panel .modal-header #close-settings.icon-btn {
+  /* Specific overrides if needed, but .icon-btn should cover most */
+  color: var(--current-text-secondary);
+}
+
+
+/* 模态框主体内容区域样式 */
 .modal .modal-content.lumina-panel .modal-body {
   padding: calc(var(--spacing-unit) * 2.5);
   overflow-y: auto; /* Allow body to scroll if content overflows */
   flex-grow: 1; /* Take remaining vertical space */
 }
 
+/* 设置分组容器样式 */
 .modal .modal-content.lumina-panel .modal-body .setting-group {
   margin-bottom: calc(var(--spacing-unit) * 3);
 }
@@ -71,54 +85,69 @@
 }
 
 .modal .modal-content.lumina-panel .modal-body .setting-group h3 i {
-  color: var(--current-accent-ink);
+  color: var(--current-accent-ink); /* Default icon color for setting group titles */
   margin-right: var(--spacing-unit);
 }
 
+/* AI核心配置组的特定图标颜色 (如果需要区分) */
+.modal .modal-content.lumina-panel .modal-body .setting-group h3 i.fa-cogs {
+  /* color: var(--current-accent-light); */ /* Example: use light accent for this group */
+  color: var(--current-accent-ink); /* Default icon color for setting group titles */
+}
+
+
+/* 单个设置项容器样式 */
 .modal .modal-content.lumina-panel .modal-body .setting-item {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Label on left, control on right */
   align-items: center;
-  margin-bottom: calc(var(--spacing-unit) * 1.8);
+  padding: calc(var(--spacing-unit) * 1) 0; /* Vertical padding for each item */
   font-size: calc(var(--base-font-size) * 0.92);
   color: var(--current-text-secondary);
+  border-bottom: 1px solid rgba(var(--current-panel-border-rgb), 0.15); /* Subtle separator */
+}
+.modal .modal-content.lumina-panel .modal-body .setting-item:last-child {
+  border-bottom: none; /* No separator for the last item in a group */
+  margin-bottom: 0; /* Ensure no extra margin for last item if using margin instead of padding for spacing */
 }
 
+
+/* 设置项中的标签 (label) 的样式 */
 .modal .modal-content.lumina-panel .modal-body .setting-item label:first-child {
-  flex-basis: 55%; /* Allow label to take more space */
+  flex-basis: auto; /* Allow label width to be content-based */
+  min-width: 180px; /* Ensure a minimum width for alignment */
   margin-right: var(--spacing-unit);
   color: var(--current-text-primary);
+  line-height: 1.4; /* For better vertical alignment with controls */
+  padding-right: var(--spacing-unit); /* Space between label and control */
 }
 
-.modal .modal-content.lumina-panel .modal-footer {
-  display: flex;
-  justify-content: flex-end; /* Align buttons to the right */
-  gap: var(--spacing-unit); /* Space between buttons */
-  padding: calc(var(--spacing-unit) * 1.8) calc(var(--spacing-unit) * 2.5);
-  border-top: var(--lumina-line-weight-thin) solid var(--current-panel-border);
-  flex-shrink: 0; /* Prevent footer from shrinking */
-}
-
-/* Ensure modal control containers have base styles defined here or in _forms.css */
+/* 设置项中的控件容器通用样式 (select, range-container, switch-container) */
 .modal .modal-content.lumina-panel .modal-body .setting-item .lumina-select,
 .modal .modal-content.lumina-panel .modal-body .setting-item .lumina-range-container,
 .modal .modal-content.lumina-panel .modal-body .setting-item .lumina-switch-container {
-  flex-grow: 1;
-  max-width: 240px;
+  flex-grow: 1; /* Allow control to take up remaining space if label is short */
+  max-width: 240px; /* Max width for controls for consistency */
+  flex-basis: 240px; /* Suggest a base width, can shrink if needed */
+  flex-shrink: 0;    /* Prevent shrinking beyond flex-basis if possible */
+  margin-left: auto; /* Push control to the right if label is short and control is not flex-grow:1 */
+  /* Styling for control wrappers (like border, padding) that are not input elements themselves */
   border: var(--lumina-line-weight-thin) solid var(--current-panel-border);
   border-radius: var(--border-radius-slight);
   padding: calc(var(--spacing-unit) * 0.9);
-  background-color: rgba(var(--current-bg-rgb), 0.4);
+  background-color: rgba(var(--current-bg-rgb), 0.4); /* Slight background for control area */
 }
 
+/* Specific overrides for switch container as it's just a wrapper */
 .modal .modal-content.lumina-panel .modal-body .setting-item .lumina-switch-container {
   border: none;
   padding: 0;
   background-color: transparent;
-  display: flex; /* For switch alignment if needed */
-  justify-content: flex-end;
+  display: flex; /* Needed to align switch within it */
+  justify-content: flex-end; /* Align switch to the right of its container */
 }
 
+/* Range slider container specific adjustments */
 .modal .modal-content.lumina-panel .modal-body .setting-item .lumina-range-container {
   display: flex;
   align-items: center;
@@ -130,6 +159,66 @@
   width: 40px; /* Fixed width for value display */
   text-align: right;
   color: var(--current-text-primary);
+  font-size: 0.9em;
+}
+
+/* LLM Model Select specific styling */
+.modal .modal-content.lumina-panel .modal-body .setting-item #llm-model-select.lumina-select {
+  min-width: 200px; /* Ensure dropdown has enough width */
+  /* Inherits .lumina-select styles from _forms.css */
+}
+
+.modal .modal-content.lumina-panel .modal-body .setting-item #llm-model-select option:disabled {
+  color: var(--current-text-secondary);
+  background-color: rgba(var(--current-panel-border-rgb), 0.15);
+  font-style: italic;
+}
+
+/* Chinese Deep Thinking Toggle setting item container */
+.modal .modal-content.lumina-panel .modal-body .setting-item#chinese-deep-thinking-setting-item {
+  transition: opacity var(--transition-duration-light-pulse) ease, 
+              max-height 0.3s ease-out,
+              padding var(--transition-duration-light-pulse) ease,
+              margin var(--transition-duration-light-pulse) ease; /* Added padding/margin for smooth hide */
+  overflow: hidden;
+}
+
+/* Style for when it's globally disabled and hidden by JS setting display:none or a class */
+.modal .modal-content.lumina-panel .modal-body .setting-item#chinese-deep-thinking-setting-item.hidden-by-global-flag {
+    max-height: 0 !important;
+    opacity: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important; /* Collapse margin too */
+    border-bottom: none !important; /* Hide separator if it was the last visible item */
+    pointer-events: none;
+}
+
+/* Disabled switch styling */
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-switch-container input[type="checkbox"]:disabled + .slider {
+    cursor: not-allowed;
+    background-color: rgba(var(--current-panel-border-rgb), 0.4);
+}
+.modal .modal-content.lumina-panel .modal-body .setting-item .lumina-switch-container input[type="checkbox"]:disabled + .slider:before {
+    background-color: rgba(var(--current-bg-rgb), 0.7);
+}
+
+
+/* Modal Footer */
+.modal .modal-content.lumina-panel .modal-footer {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: var(--spacing-unit); /* Space between buttons */
+  padding: calc(var(--spacing-unit) * 1.8) calc(var(--spacing-unit) * 2.5);
+  border-top: var(--lumina-line-weight-thin) solid var(--current-panel-border);
+  flex-shrink: 0;
+}
+
+/* Ensure footer buttons use lumina-button styles */
+.modal .modal-content.lumina-panel .modal-footer #reset-settings.lumina-button,
+.modal .modal-content.lumina-panel .modal-footer #save-settings.lumina-button-primary {
+  /* Styles are inherited from _buttons.css via their classes */
+  padding: calc(var(--spacing-unit) * 1.2) calc(var(--spacing-unit) * 2.5);
 }
 
 /* ==========================================================================

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CircuitManus Pro - 光绘墨迹终端 (V1.0.0 - Lumina Script Refactored)</title>
+    <title>CircuitManus Pro - 光绘墨迹终端 (V1.1.0 - Lumina Script Multi-LLM)</title> <!-- 版本更新 -->
 
     <!-- Google Fonts Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
     <!-- 主 CSS 文件入口 (style.css 会 @import 其他CSS模块) -->
-    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/style.css"> <!-- 确保这是模块化CSS的入口 -->
 
     <!-- Three.js 库 (如果需要，可以考虑本地化或通过npm管理) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -32,8 +32,6 @@
     <!-- Dynamic Crystal Background (CSS driven) -->
     <div class="dynamic-crystal-background">
         <div class="background-grid-pattern"></div>
-        <!-- Particles can be added via JS or CSS if needed -->
-        <!-- <div class="background-particle-field"></div> -->
     </div>
 
     <!-- IDT Tech Component / Black Hole Effect Wrapper (CSS & JS driven) -->
@@ -55,7 +53,7 @@
         <div class="loader-logo-text">
             <span>CIRCUIT</span>MANUS<span class="loader-version-pro">PRO</span>
         </div>
-        <p class="loading-text">同步光绘墨迹流 (V1.0.0 Lumina)...</p>
+        <p class="loading-text">同步光绘墨迹流 (V1.1.0 Lumina)...</p> <!-- 版本更新 -->
     </div>
 
     <!-- Main Application Container -->
@@ -64,7 +62,8 @@
         <header class="header lumina-panel" id="app-header">
             <div class="logo">
                 <div class="logo-icon"><i class="fas fa-network-wired"></i></div>
-                <h1>CircuitManus <span class="version-pro">Lumina <span class="version-number">v1.0.0</span></span></h1>
+                <!-- 版本更新 -->
+                <h1>CircuitManus <span class="version-pro">Lumina <span class="version-number">v1.1.0</span></span></h1>
             </div>
             <div class="header-buttons">
                 <button id="toggleIdtComponentBtn" class="header-btn icon-btn" title="切换核心投影 (黑洞)"><i
@@ -214,6 +213,28 @@
                         </select>
                     </div>
                 </div>
+
+                <!-- 新增：LLM模型和语言偏好设置组 -->
+                <div class="setting-group">
+                    <h3><i class="fas fa-cogs"></i> AI核心配置</h3>
+                    <div class="setting-item">
+                        <label for="llm-model-select">选择语言模型</label>
+                        <select id="llm-model-select" class="lumina-select">
+                            <!-- 选项将由JS动态填充，这里是占位符 -->
+                            <option value="zhipu-ai">智谱清言 (GLM)</option>
+                            <option value="deepseek" disabled>DeepSeek 大模型 (暂不可用)</option> 
+                        </select>
+                    </div>
+                    <div class="setting-item" id="chinese-deep-thinking-setting-item"> <!-- 包裹元素，方便JS控制显隐 -->
+                        <label for="enable-chinese-deep-thinking-toggle">启用深度中文思考</label>
+                        <div class="lumina-switch-container">
+                            <label class="lumina-switch"><input type="checkbox" id="enable-chinese-deep-thinking-toggle"><span
+                                    class="slider round"></span></label>
+                        </div>
+                    </div>
+                </div>
+                <!-- 结束新增 -->
+
                 <div class="setting-group">
                     <h3><i class="fas fa-mouse-pointer"></i> 交互行为</h3>
                     <div class="setting-item">
@@ -246,7 +267,7 @@
                     </div>
                 </div>
                 <div class="setting-group">
-                    <h3><i class="fas fa-brain"></i> Agent 核心</h3>
+                    <h3><i class="fas fa-brain"></i> Agent 辅助</h3> <!-- 原 "Agent 核心" 改为 "Agent 辅助" 或其他 -->
                     <div class="setting-item">
                         <label for="auto-submit-quick-actions">快捷指令自动提交</label>
                         <div class="lumina-switch-container">
@@ -271,33 +292,21 @@
         </div>
     </div>
 
-    <!-- JavaScript Modules - CRITICAL: type="module" is required for ES6 imports/exports -->
-    <!-- Order is important: utils -> core -> modules -> app -->
-
-    <!-- Utils (no internal dependencies among themselves, but core/modules depend on them) -->
+    <!-- JavaScript Modules -->
     <script type="module" src="static/js/utils/dom_elements.js"></script>
     <script type="module" src="static/js/utils/helpers.js"></script>
-
-    <!-- Core (state might be needed by ui_updater, websocket_manager by others) -->
     <script type="module" src="static/js/core/state.js"></script>
     <script type="module" src="static/js/core/ui_updater.js"></script>
     <script type="module" src="static/js/core/websocket_manager.js"></script>
-    <!-- event_listener_setup often depends on many handlers from modules, so it might come after modules or be part of app.js init -->
-
-    <!-- Modules (can have inter-dependencies or dependencies on core/utils) -->
     <script type="module" src="static/js/modules/theme_handler.js"></script>
     <script type="module" src="static/js/modules/layout_handler.js"></script>
-    <script type="module" src="static/js/modules/session_handler.js"></script> <!-- Depends on state, ui_updater, helpers, websocket_manager -->
-    <script type="module" src="static/js/modules/settings_handler.js"></script> <!-- Depends on state, theme_handler, ui_updater, three_visuals -->
+    <script type="module" src="static/js/modules/session_handler.js"></script>
+    <script type="module" src="static/js/modules/settings_handler.js"></script>
     <script type="module" src="static/js/modules/file_handler.js"></script>
     <script type="module" src="static/js/modules/three_visuals.js"></script>
     <script type="module" src="static/js/modules/copy_handler.js"></script>
     <script type="module" src="static/js/modules/quick_actions_handler.js"></script>
-
-    <!-- Event Listener Setup (depends on many of the above) -->
     <script type="module" src="static/js/core/event_listener_setup.js"></script>
-
-    <!-- Main Application Entry Point (must be last or use defer if in head) -->
     <script type="module" src="static/js/app.js"></script>
 
 </body>

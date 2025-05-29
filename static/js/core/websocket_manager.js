@@ -5,17 +5,20 @@
 
 import dom from '../utils/dom_elements.js';
 import state from './state.js';
-import { saveSessions, initializeCurrentSessionUI, addMessageToCurrentSession, renderSessionList } from '../modules/session_handler.js';
+// 从 session_handler.js 导入会话管理函数 (确保 saveSessions 导入为 saveSessionData 以避免与 state.js 中的冲突，如果那里也有的话)
+import { initializeCurrentSessionUI, addMessageToCurrentSession, renderSessionList, saveSessions as saveSessionData } from '../modules/session_handler.js'; 
 import { appendMessage, appendWelcomeMessage, showToast, hideTypingIndicator, setLoadingState, appendLogItem, appendLogItemWithThink } from './ui_updater.js';
 import { showProcessLogSidebar } from '../modules/layout_handler.js';
-// 修正：从 helpers.js 导入 APP_PREFIX，以及其他需要的辅助函数
-import { generateClientRequestId, summarizeArguments, parseItemClasses, APP_PREFIX } from '../utils/helpers.js';
+// 从 helpers.js 导入 APP_PREFIX 和其他辅助函数，包括 formatLogDetails
+import { generateClientRequestId, summarizeArguments, parseItemClasses, APP_PREFIX, formatLogDetails } from '../utils/helpers.js'; 
+// 从 settings_handler.js 导入 populateLLMModelSelect 和 updateChineseDeepThinkingToggleState
+import { populateLLMModelSelect, updateChineseDeepThinkingToggleState } from '../modules/settings_handler.js';
 
 
 let websocket = null;
 const websocketUrl = `ws://${window.location.host}/ws/chat`;
 let wsReconnectAttempts = 0;
-const MAX_WS_RECONNECT_ATTEMPTS = 3;
+const MAX_WS_RECONNECT_ATTEMPTS = 3; 
 const WS_RECONNECT_INTERVAL = 3000; // ms
 
 export function connectWebSocket() {
@@ -26,7 +29,7 @@ export function connectWebSocket() {
     console.log(`WebSocket: 尝试连接 (第 ${wsReconnectAttempts + 1} 次) 到 ${websocketUrl}`);
     if (dom.loader && wsReconnectAttempts === 0 && !dom.loader.classList.contains('loader-fatal-error')) {
         const loadingText = dom.loader.querySelector('.loading-text');
-        if (loadingText) loadingText.textContent = "同步光绘墨迹流 (V1.0.0 Lumina)...";
+        if (loadingText) loadingText.textContent = "同步光绘墨迹流 (V1.1.1 Lumina)..."; // 版本更新
     }
 
     websocket = new WebSocket(websocketUrl);
@@ -34,10 +37,10 @@ export function connectWebSocket() {
     websocket.onopen = (event) => {
         console.log("WebSocket: 连接已建立。", event);
         wsReconnectAttempts = 0;
-        showToast("光绘墨迹数据流 ACTIVE (V1.0.0 Lumina).", "success", 4000);
+        showToast("光绘墨迹数据流 ACTIVE (V1.1.1 Lumina).", "success", 4000); // 版本更新
         sendWebSocketMessage({
             type: 'init',
-            session_id: state.currentSessionId
+            session_id: state.currentSessionId 
         });
         if (dom.loader && !dom.loader.classList.contains('loader-fatal-error')) dom.loader.classList.add('hidden');
         if (dom.mainContainer) dom.mainContainer.classList.add('loaded');
@@ -62,7 +65,7 @@ export function connectWebSocket() {
         console.log("WebSocket: 连接已关闭。", event);
         hideTypingIndicator();
         setLoadingState(false);
-
+        
         const reason = event.reason ? `原因: ${event.reason}` : (event.wasClean ? '连接正常关闭.' : '连接异常断开.');
         const codeMsg = `(代码: ${event.code})`;
 
@@ -71,13 +74,13 @@ export function connectWebSocket() {
             showToast(`墨迹数据链接不稳定. 尝试重新校准 (${wsReconnectAttempts}/${MAX_WS_RECONNECT_ATTEMPTS})... ${codeMsg}`, "warning", WS_RECONNECT_INTERVAL + 500);
             setTimeout(connectWebSocket, WS_RECONNECT_INTERVAL);
         } else if (!event.wasClean) {
-            websocket = null;
+            websocket = null; 
             if (dom.mainContainer) dom.mainContainer.style.display = 'none';
             if (dom.toastContainer) dom.toastContainer.innerHTML = '';
             if (dom.loader) {
                 dom.loader.classList.add('loader-fatal-error');
                 dom.loader.classList.remove('hidden');
-                dom.loader.innerHTML = '';
+                dom.loader.innerHTML = ''; 
 
                 const fatalErrorCore = document.createElement('div');
                 fatalErrorCore.className = 'lumina-loader-core error-state';
@@ -107,24 +110,30 @@ export function connectWebSocket() {
                 dom.loader.appendChild(fatalErrorDetails);
                 dom.loader.appendChild(refreshButton);
             }
-        } else {
-            websocket = null;
+        } else { 
+            websocket = null; 
             showToast(`通信链接已终止. ${codeMsg} ${reason}`, "info", 6000);
         }
     };
 }
 
 export function sendWebSocketMessage(message) {
+    // 当发送用户聊天消息 (type: 'message') 时，自动附加当前选择的LLM和语言偏好
+    if (message.type === 'message') {
+        message.selected_llm = state.selectedLLM; // 从全局 state 获取
+        message.enable_chinese_thinking = state.enableChineseDeepThinking; // 从全局 state 获取
+    }
+
     if (websocket && websocket.readyState === WebSocket.OPEN) {
         const messageStr = JSON.stringify(message);
-        console.log("WS TX:", message);
+        console.log("WS TX:", message); 
         websocket.send(messageStr);
     } else {
         console.error("WebSocket: 连接未打开。无法发送消息:", message);
         showToast("通信链接不活跃. 尝试重新建立链接...", "warning");
         if (!websocket || websocket.readyState === WebSocket.CLOSED || websocket.readyState === WebSocket.CLOSING) {
             if (wsReconnectAttempts < MAX_WS_RECONNECT_ATTEMPTS) {
-                connectWebSocket();
+                connectWebSocket(); 
             } else {
                 showToast("无法发送: 达到最大重连尝试次数. 请刷新页面.", "error");
             }
@@ -138,11 +147,32 @@ function handleWebSocketMessage(message) {
             case 'init_success':
                 try {
                     state.currentSessionId = message.session_id;
-                    // 使用导入的 APP_PREFIX
                     localStorage.setItem(APP_PREFIX + 'lastSessionId', state.currentSessionId);
+
+                    if (message.agent_default_settings) {
+                        // 合并后端传来的默认设置到 state.agentDefaultSettings
+                        // 后端传来的 detailed_available_llms 会被正确设置
+                        state.agentDefaultSettings = { ...state.agentDefaultSettings, ...message.agent_default_settings };
+                        
+                        // 使用后端传来的默认值或localStorage中的值来初始化当前选择
+                        state.selectedLLM = localStorage.getItem(APP_PREFIX + 'selectedLLM') || state.agentDefaultSettings.default_llm_identifier;
+                        
+                        if (state.agentDefaultSettings.globally_enable_chinese_thinking === false) {
+                            state.enableChineseDeepThinking = false;
+                        } else {
+                            state.enableChineseDeepThinking = (localStorage.getItem(APP_PREFIX + 'enableChineseDeepThinking') || state.agentDefaultSettings.default_enable_chinese_thinking.toString()) === 'true';
+                        }
+                        console.log("从后端同步了Agent默认设置: ", JSON.parse(JSON.stringify(state.agentDefaultSettings))); // 深拷贝打印
+                        console.log("初始化后当前选择的模型:", state.selectedLLM, "中文思考:", state.enableChineseDeepThinking);
+
+                        // 【关键】调用这两个函数来更新设置模态框中的UI
+                        populateLLMModelSelect(); // 这个函数现在会使用 state.agentDefaultSettings.detailed_available_llms
+                        updateChineseDeepThinkingToggleState(); // 这个函数会使用 state.agentDefaultSettings.globally_enable_chinese_thinking 和 state.enableChineseDeepThinking
+                    }
+                    
                     const agentStatusMessage = message.agent_available === false
-                        ? 'Lumina AI核心 OFFLINE. 功能受限. (V1.0.0 Lumina)'
-                        : 'Lumina核心 (V1.0.0 Lumina) 已同步到光绘网络!';
+                        ? 'Lumina AI核心 OFFLINE. 功能受限. (V1.1.1 Lumina)' // 版本更新
+                        : 'Lumina核心 (V1.1.1 Lumina) 已同步到光绘网络!'; // 版本更新
                     const agentStatusType = message.agent_available === false ? 'warning' : 'success';
                     showToast(agentStatusMessage, agentStatusType, message.agent_available ? 4500 : 8000);
 
@@ -155,11 +185,11 @@ function handleWebSocketMessage(message) {
                             createdAt: now,
                             lastActivity: now,
                         };
-                        saveSessions(); // saveSessions from session_handler uses APP_PREFIX internally
+                        saveSessionData(); 
                     }
-                    initializeCurrentSessionUI(true); // from session_handler
+                    initializeCurrentSessionUI(true); 
                 } catch (e) {
-                    console.error(`处理 init_success 消息时出错:`, e, message); // 这会捕获 APP_PREFIX not defined
+                    console.error(`处理 init_success 消息时出错:`, e, message); 
                     showToast(`处理初始化成功消息时出错: ${e.message}`, 'error');
                 }
                 break;
@@ -169,7 +199,7 @@ function handleWebSocketMessage(message) {
                     if (dom.loader && !dom.loader.classList.contains('loader-fatal-error')) dom.loader.classList.add('hidden');
                     if (dom.mainContainer) dom.mainContainer.classList.add('loaded');
                     if (message.agent_available === false) {
-                        appendMessage("CRITICAL SYSTEM ALERT: Lumina AI核心未能初始化. 子系统无响应. (V1.0.0 Lumina)", 'error-system', false, null, false, [], "System Error");
+                        appendMessage("CRITICAL SYSTEM ALERT: Lumina AI核心未能初始化. 子系统无响应. (V1.1.1 Lumina)", 'error-system', false, null, false, [], "System Error");
                     }
                     setLoadingState(false);
                 } catch (e) {
@@ -177,7 +207,7 @@ function handleWebSocketMessage(message) {
                     showToast(`处理初始化错误消息时出错: ${e.message}`, 'error');
                 }
                 break;
-            case 'error':
+            case 'error': 
                 try {
                     console.error("服务器报告错误:", message);
                     showToast(`服务器异常: ${message.message}`, 'error', 7000);
@@ -218,7 +248,6 @@ function handleWebSocketMessage(message) {
     }
 }
 
-// --- Specific Message Handler Stubs (definitions remain the same as previously provided) ---
 function handleGeneralStatus(msg) {
     const { stage, status, message: msgText, details } = msg;
     let logIconClass = 'fas fa-info-circle log-info';
@@ -226,8 +255,9 @@ function handleGeneralStatus(msg) {
 
     if (status === 'started' || status === 'llm_retry_needed' || status === 'llm_error_retrying') logIconClass = 'fas fa-sync-alt fa-spin log-processing';
     else if (status === 'completed' || status === 'received' || status === 'completed_and_validated') logIconClass = 'fas fa-check-circle log-success';
-    else if (status === 'error' || status === 'failed' || status === 'failed_after_llm_retries' || status === 'tool_failure_detected' || status === 'fatal_error_handler' || status === 'fatal_error_capture') {
+    else if (status === 'error' || status === 'failed' || status === 'failed_after_llm_retries' || status === 'tool_failure_detected' || status === 'fatal_error_handler' || status === 'fatal_error_capture' || status === 'llm_selection_override') { // Added llm_selection_override
         logIconClass = 'fas fa-exclamation-triangle log-error';
+        if (status === 'llm_selection_override') logIconClass = 'fas fa-random log-warning'; // Or a warning icon for override
     }
     else if (status === 'ignored') logIconClass = 'fas fa-eye-slash log-muted';
 
@@ -257,42 +287,48 @@ function handleThinkingLog(msg) {
         const thinkLabel = `AI思维墨迹 (${stage.replace(/_/g, ' ').toUpperCase()})`;
         appendLogItemWithThink(thinkLabel, 'fas fa-lightbulb log-think', `type-thinking_log stage-${stage} llm-id-${llm_interaction_id}`, content, "详细思考投影:");
     } else {
-        appendLogItem(`思维墨迹收到 (${stage}, LLM_ID: ${llm_interaction_id}) - ${content.substring(0, 80)}...`, 'fas fa-comment-dots log-muted', `type-thinking_log stage-${stage} muted`);
+        appendLogItem(`思维墨迹收到 (${stage}, LLM_ID: ${llm_interaction_id}) - ${String(content).substring(0, 80)}...`, 'fas fa-comment-dots log-muted', `type-thinking_log stage-${stage} muted`);
     }
     if (!state.isProcessLogSidebarVisible) showProcessLogSidebar(false);
 }
 
 function handlePlanDetails(msg) {
     const { plan } = msg;
-    state.pendingToolCalls = {};
-    if (Array.isArray(plan)) {
+    state.pendingToolCalls = {}; 
+    if (Array.isArray(plan)) { 
         plan.forEach(toolCall => {
-            const { toolCallId, toolName, toolArguments, uiHints = {}, order } = toolCall;
-             if (!toolCallId || !toolName) {
-                  console.warn("Plan details missing essential fields (toolCallId or toolName), skipping:", toolCall);
+            const toolCallId = toolCall.toolCallId || toolCall.tool_call_id; 
+            const toolName = toolCall.toolName || toolCall.tool_name;     
+            const toolArguments = toolCall.toolArguments || toolCall.tool_arguments || {}; 
+            const uiHints = toolCall.uiHints || toolCall.ui_hints || {};
+            const order = toolCall.order;
+
+            if (!toolCallId || !toolName) {
+                  console.warn("Plan details missing essential fields (toolCallId/tool_call_id or toolName/tool_name), skipping:", toolCall);
                   appendLogItem(
-                      `收到无效计划项 (缺少ID或名称).`,
+                      `收到无效计划项 (缺少ID或名称). Original: ${JSON.stringify(toolCall).substring(0,100)}...`, 
                       'fas fa-exclamation-circle log-warning',
                       'type-plan_details status-invalid',
-                      toolCall
+                      toolCall 
                   );
-                  return;
+                  return; 
              }
             state.pendingToolCalls[toolCallId] = {
-                name: toolName,
-                args_summary: summarizeArguments(toolArguments),
-                ui_hints: uiHints,
-                order: order
+                name: toolName, 
+                args_summary: summarizeArguments(toolArguments), 
+                ui_hints: uiHints, 
+                order: order 
             };
-            const displayName = uiHints.displayNameForTool || toolName.replace(/_tool$/, "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+            const displayName = uiHints.displayNameForTool || String(toolName).replace(/_tool$/, "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
             const logMessageText = `执行节点 #${order}: ${displayName} (ID: ${toolCallId}) - 状态: QUEUED`;
             const logItem = appendLogItem(
-                logMessageText,
-                'fas fa-tasks log-info',
-                `type-plan_details tool-${toolName} status-pending tool-call-id-${toolCallId}`,
-                { arguments: toolArguments, tool_call_id: toolCallId, ui_hints: uiHints }
+                logMessageText, 
+                'fas fa-tasks log-info', 
+                // 确保tool-call-id-xxx类也被添加，用于后续查找
+                `type-plan_details tool-${toolName} status-pending tool-call-id-${toolCallId}`, 
+                { arguments: toolArguments, tool_call_id: toolCallId, ui_hints: uiHints } 
             );
-            if (logItem) logItem.dataset.toolCallId = toolCallId;
+            if (logItem) logItem.dataset.toolCallId = toolCallId; 
         });
     } else {
         console.warn("Received plan_details message with non-array plan property:", plan);
@@ -303,7 +339,7 @@ function handlePlanDetails(msg) {
            { raw_plan_data: plan }
        );
     }
-    showProcessLogSidebar(true);
+    showProcessLogSidebar(true); 
 }
 
 
@@ -333,14 +369,15 @@ function handleToolStatusUpdate(msg) {
     }
 
     const pendingToolInfo = state.pendingToolCalls[tool_call_id];
-    const displayName = pendingToolInfo?.ui_hints?.displayNameForTool || tool_name.replace(/_tool$/, "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    const displayName = pendingToolInfo?.ui_hints?.displayNameForTool || String(tool_name).replace(/_tool$/, "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     let fullLogMessage = `工具模块: ${displayName} (ID: ${tool_call_id}) - ${status.replace(/_/g, ' ').toUpperCase()}: ${msgText}`;
 
     let existingLogItem = dom.processLogSidebarContent.querySelector(`.log-item[data-tool-call-id="${tool_call_id}"]`);
 
     if (existingLogItem) {
-        existingLogItem.className = `log-item animate__animated type-tool_status_update tool-${tool_name} ${itemStatusClass}`;
-        existingLogItem.dataset.toolCallId = tool_call_id;
+        // 更新类时，确保包含 tool-call-id-xxx 用于后续查找
+        existingLogItem.className = `log-item animate__animated type-tool_status_update tool-${tool_name} ${itemStatusClass} tool-call-id-${tool_call_id}`; 
+        existingLogItem.dataset.toolCallId = tool_call_id; 
         existingLogItem.style.setProperty('--animate-duration', '0.5s');
 
         const iconEl = existingLogItem.querySelector('i:first-child');
@@ -348,7 +385,7 @@ function handleToolStatusUpdate(msg) {
 
         const messageEl = existingLogItem.querySelector('.log-item-message');
         if (messageEl) messageEl.textContent = fullLogMessage;
-
+        
         const contentAreaWrapper = existingLogItem.querySelector('.log-item-content-area');
         if (contentAreaWrapper) {
              let detailsEl = contentAreaWrapper.querySelector('.log-item-details') || contentAreaWrapper.querySelector('.log-think-content');
@@ -357,12 +394,12 @@ function handleToolStatusUpdate(msg) {
                       detailsEl = document.createElement('div');
                       contentAreaWrapper.appendChild(detailsEl);
                  }
-                 detailsEl.classList.remove('log-think-content');
+                 detailsEl.classList.remove('log-think-content'); 
                  detailsEl.classList.add('log-item-details');
 
                  const { type, stage, status: parsedStatus } = parseItemClasses(existingLogItem.className);
-                 detailsEl.innerHTML = formatLogDetails(details, type, stage, parsedStatus) || '';
-                 if (!detailsEl.innerHTML) {
+                 detailsEl.innerHTML = formatLogDetails(details, type, stage, parsedStatus) || ''; 
+                 if (!detailsEl.innerHTML) { 
                       detailsEl.innerHTML = `<span class="log-detail-item"><strong class="log-detail-key">详细信息:</strong> <span class="log-detail-value">(无或格式化失败)</span></span>`;
                       try {
                           let rawDetailsStr = typeof details === 'object' ? JSON.stringify(details, null, 2) : String(details);
@@ -382,12 +419,13 @@ function handleToolStatusUpdate(msg) {
         else existingLogItem.classList.add('animate__flash');
 
     } else {
-        const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass}`, details);
-        if (logItemDiv) logItemDiv.dataset.toolCallId = tool_call_id;
+        // 新建时也添加 tool-call-id-xxx 类
+        const logItemDiv = appendLogItem(fullLogMessage, logIconClass, `type-tool_status_update tool-${tool_name} ${itemStatusClass} tool-call-id-${tool_call_id}`, details);
+        if (logItemDiv) logItemDiv.dataset.toolCallId = tool_call_id; 
 
-        if (logItemDiv) {
-             logItemDiv.classList.remove('animate__fadeInUp');
-             logItemDiv.classList.add('animate__animated');
+        if (logItemDiv) { 
+             logItemDiv.classList.remove('animate__fadeInUp'); 
+             logItemDiv.classList.add('animate__animated'); 
              if (status === 'failed') logItemDiv.classList.add('animate__headShake');
              else if (status === 'succeeded') logItemDiv.classList.add('animate__pulse');
              else logItemDiv.classList.add('animate__flash');
@@ -404,11 +442,10 @@ function handleToolStatusUpdate(msg) {
     }
 }
 
-
 function handleInterimResponse(msg) {
     const { content, llm_interaction_id } = msg;
     appendLogItem(
-        `AI意图墨迹: "${content.substring(0, 180)}${content.length > 180 ? '...' : ''}"`,
+        `AI意图墨迹: "${String(content).substring(0, 180)}${String(content).length > 180 ? '...' : ''}"`,
         'fas fa-feather-alt log-info',
         'type-agent_intention',
         { llm_interaction_id: llm_interaction_id, full_content: content }
@@ -423,7 +460,9 @@ function handleFinalResponse(msg) {
     state.pendingToolCalls = {};
 
     const { content, llm_interaction_id } = msg;
+    // 【修改】兼容后端可能发送的 v1.3.2 或通用 final_camelcase_json_if_success
     const finalCamelCaseJson = msg.final_camelcase_json_if_success || msg.final_v1_3_2_camelcase_json_if_success;
+
 
     let thinkingForBubble = null;
     let actualContentForBubble = content;
@@ -443,7 +482,7 @@ function handleFinalResponse(msg) {
                 let suggestionsText = "\n\n<div class=\"final-response-suggestions\"><strong>下一步行动投影:</strong><ul>";
                 suggestions.forEach(sugg => {
                     if (sugg.textForUser) {
-                        const escapedMessage = String(sugg.textForUser).replace(/"/g, '"');
+                        const escapedMessage = String(sugg.textForUser).replace(/"/g, '"'); 
                         const escapedTextForUser = String(sugg.textForUser).replace(/</g, "<").replace(/>/g, ">");
                         suggestionsText += `<li><a href="#" class="quick-action-btn lumina-button" data-message="${escapedMessage}"><i class="fas fa-arrow-right"></i> ${escapedTextForUser}</a></li>`;
                     }
@@ -473,12 +512,14 @@ function handleFinalResponse(msg) {
         actualContentForBubble = content || "(Agent返回的原始内容为空)";
     }
 
-    addMessageToCurrentSession({
+    addMessageToCurrentSession({ 
         content: actualContentForBubble,
         sender: 'agent',
         timestamp: Date.now(),
         isHTML: (actualContentForBubble.includes('<div class="final-response-suggestions">')),
-        rawResponseV1_PCP_CamelCase: finalCamelCaseJson, // Keep consistent or versioned key
+        // 【修改】使用与后端一致的键名 (如果后端发送的是 final_v1_3_2_camelcase_json_if_success，则这里应该对应)
+        // 为了通用性，可以检查 message 对象中哪个键存在
+        rawResponseV1_PCP_CamelCase: finalCamelCaseJson, 
         thinking: thinkingForBubble,
     });
     state.lastResponseThinking = null;
@@ -486,8 +527,8 @@ function handleFinalResponse(msg) {
     if (state.sessions[state.currentSessionId]) {
         state.sessions[state.currentSessionId].lastActivity = Date.now();
     }
-    saveSessions();
-    renderSessionList();
+    saveSessionData(); 
+    renderSessionList(); 
 
     const llmIdForLog = (finalCamelCaseJson && finalCamelCaseJson.llmInteractionId) ? finalCamelCaseJson.llmInteractionId : (llm_interaction_id || 'N/A_Final');
     appendLogItem(`AI最终回复已渲染 (LLM_ID: ${llmIdForLog})`, 'fas fa-flag-checkered log-success', 'type-final_response',

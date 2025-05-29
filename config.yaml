@@ -1,63 +1,107 @@
-# IDT_AGENT_NATIVE/config.yaml
-# CircuitManus Agent Configuration File
+# ==========================================================================
+# CircuitManus Agent - 应用配置文件 (config.yaml)
+# 版本: 1.1.0 (新增模型选择和中文深度思考配置)
+# ==========================================================================
 
-# -----------------------------------------------------------------------------
-# Agent Core Settings
-# -----------------------------------------------------------------------------
 agent_settings:
   general:
-    agent_version: "V1.0.0_Refactored_Config" # 当前Agent版本
-    default_user_facing_error_message: "抱歉，处理您的请求时发生了一个内部错误，请稍后再试。"
+    # 应用的全局名称或标识
+    app_name: "CircuitManus Pro Lumina"
+    # 默认的用户友好错误消息，当发生未知或无法具体描述的错误时显示给用户
+    default_user_facing_error_message: "抱歉，光绘核心在处理您的指令时遇到了未知的内部波动，请稍后再试或联系管理员。"
 
-  llm: # 大语言模型相关配置
-    provider: "zhipuai" # 当前支持 "zhipuai", 未来可扩展
-    model_name: "glm-z1-flash" # 使用的具体模型名称
-    default_temperature: 0.01  # LLM生成文本的随机性 (0.0-1.0)
-    default_max_tokens: 8190   # LLM单次响应最大输出token数
-    planning_llm_retries: 3    # 规划阶段LLM调用失败时的重试次数
-    response_generation_llm_retries: 1 # 响应生成阶段LLM调用失败时的重试次数
-    api_timeout_seconds: 120     # 调用LLM API的超时时间 (秒)
+  logging:
+    # 控制台日志级别 (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    # DEBUG 会输出最详细的日志，用于开发和问题排查
+    log_level_console: "INFO"
+    # 文件日志级别
+    log_level_file: "DEBUG"
+    # 日志文件存储目录 (如果为 null 或留空, 将使用 agent 内部定义的默认目录 "WebUIAgentLogs")
+    log_dir: null # 例如: "CustomLogsDir" 或保持 null 使用默认
 
-  tools: # 工具执行相关配置
-    max_tool_retries: 1             # 单个工具执行失败时的最大重试次数
-    tool_retry_delay_seconds: 1.5   # 工具重试之间的延迟时间 (秒)
+  feature_flags:
+    # 是否启用LLM消息的详细日志记录 (包括完整的prompt和响应内容，可能包含敏感信息，请谨慎开启)
+    enable_detailed_llm_message_logging: false
+    # 【新增】是否启用“深度中文思考”功能的总开关（此为应用级开关，最终是否启用还需看用户在前端的选择）
+    # 如果这里设为 false，则无论前端用户如何选择，该功能都不可用。
+    # 如果这里设为 true，则用户可以在前端选择是否开启。
+    enable_chinese_deep_thinking_globally: true # 全局开关，允许用户在前端进一步选择
+
+  memory:
+    # 短期记忆（对话历史）中允许存储的最大消息条数
+    max_short_term_items: 30
+    # 长期记忆（经验总结）中允许存储的最大知识片段条数
+    max_long_term_items: 75
+    # 在构建发送给LLM的提示时，从长期记忆中提取最近N条记录
+    recent_long_term_count_for_prompt: 7
+
+  llm:
+    # 【新增】可用的LLM模型标识符列表。前端将基于此列表提供选项。
+    # "zhipu-ai" 代表智谱清言系列模型。
+    # "deepseek" 代表 DeepSeek 系列模型。
+    available_models:
+      - "zhipu-ai"
+      - "deepseek"
+    # 【新增】应用启动时或用户未选择时的默认LLM模型。必须是 available_models 中的一个。
+    default_model_identifier: "zhipu-ai"
+
+    # 智谱AI (ZhipuAI) 相关配置
+    zhipuai_settings:
+      # 实际调用的智谱AI模型名称 (例如 "glm-4", "glm-3-turbo", "glm-4v")
+      # 此处保持为 "glm-z1-flash" 是因为原始代码中使用的是这个，请根据您的实际需求和API权限修改
+      model_name: "glm-z1-flash" # 之前是顶层的 model_name
+
+    # 【新增】DeepSeek API 相关配置
+    deepseek_settings:
+      # 实际调用的 DeepSeek 模型名称 (例如 "deepseek-chat", "deepseek-coder")
+      model_name: "deepseek-chat"
+      # DeepSeek API 的 base_url，通常是固定的
+      base_url: "https://api.deepseek.com/v1" # 注意：官方文档可能会写 "https://api.deepseek.com"，但SDK通常需要 /v1
+
+    # 通用LLM调用参数（这些参数会根据所选模型传递给对应的SDK）
+    default_temperature: 0.01 # 控制生成文本的随机性，较低值更确定
+    default_max_tokens: 8190  # LLM生成的最大token数限制
+    api_timeout_seconds: 120  # LLM API调用的超时时间（秒）
     
-    specific_tools: # 特定工具的配置 (未来可扩展)
+    # Agent层面的LLM调用重试次数（不包括工具执行的重试）
+    # 用于规划阶段的LLM调用重试次数
+    planning_llm_retries: 3
+    # 用于响应生成阶段的LLM调用重试次数
+    response_generation_llm_retries: 1
+
+  prompts: # 提示工程相关配置
+    # 【新增】“深度中文思考”功能的默认用户偏好设置。
+    # 如果 enable_chinese_deep_thinking_globally 为 true，此设置将作为用户在前端未指定时的默认行为。
+    # 用户可以在前端UI中覆盖此默认设置。
+    enable_deep_thinking_chinese_default: false
+
+  tools:
+    # 单个工具执行失败时的最大重试次数 (ToolExecutor 使用)
+    max_tool_retries: 1
+    # 工具重试之间的延迟时间 (秒)
+    tool_retry_delay_seconds: 5.0 # 原为1.0，增加到5.0以更好地处理潜在的瞬时API问题
+
+    # 特定工具的配置 (示例)
+    specific_tools:
       duckduckgo_search:
-        default_num_results: 3    # DuckDuckGo搜索默认返回结果数
-        timeout_seconds: 20       # DuckDuckGo搜索超时时间 (秒)
-        # region: "wt-wt" # 可选：DuckDuckGo区域设置，例如 "us-en", "wt-wt" (无区域)
-        # safe_search: "moderate" # 可选：安全搜索级别 "off", "moderate", "strict"
+        default_num_results: 3
+        timeout_seconds: 20
+        # region: "wt-wt" # 例如：搜索区域 (可选)
+        # safe_search: "moderate" # 例如：安全搜索级别 (可选)
+      serpapi_google_search: # 如果使用 SerpApi
+        default_num_results: 5
+        timeout_seconds: 30
+        # result_language_code: "lang_zh-CN" # 例如： SerpApi 的语言参数 (hl)
+        # result_country_code: "cn" # 例如： SerpApi 的国家参数 (gl)
 
-  memory: # 记忆管理相关配置
-    max_short_term_items: 40  # 短期记忆最大条目数
-    max_long_term_items: 100  # 长期记忆最大条目数
-    recent_long_term_count_for_prompt: 7 # 用于提示的近期长期记忆条目数
+  orchestration:
+    # 当LLM规划或工具执行失败时，Agent尝试进行重规划的最大次数
+    max_replanning_attempts: 2
 
-  orchestration: # Agent编排逻辑相关配置
-    max_replanning_attempts: 2 # 最大重规划尝试次数
+  security:
+    # 用户输入请求的最大长度限制（字符数），防止过长输入消耗过多资源或导致问题
+    max_input_length_user_request: 10000
 
-  logging: # 日志系统配置
-    # 控制台日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
-    log_level_console: "INFO" 
-    # 文件日志级别 (通常可以更详细)
-    log_level_file: "DEBUG"   
-    log_dir: "WebUIAgentLogs" # 日志文件存放目录
-    # Agent初始化时的默认verbose状态, 会覆盖console_level，若为true则console为DEBUG
-    verbose_mode_default: true 
-
-  security: # 安全相关配置 (可选，根据需求启用)
-    max_input_length_user_request: 10000 # 用户输入最大长度
-    # max_output_length_llm_response_content: 20000 # LLM最终回复内容最大长度 (这个通常由max_tokens间接控制)
-
-  feature_flags: # 实验性功能开关 (未来可扩展)
-    # example_feature_flag: false
-    enable_detailed_llm_message_logging: true # 是否在DEBUG级别详细记录发往LLM的消息
-
-# -----------------------------------------------------------------------------
-# Server Settings (可选，如果FastAPI服务器也从这里读取)
-# -----------------------------------------------------------------------------
-# server_settings:
-#   host: "127.0.0.1"
-#   port: 8000
-#   # reload_on_change: true # 通常由Uvicorn命令行控制
+# ==========================================================================
+# End of CircuitManus Agent - 应用配置文件 (config.yaml)
+# ==========================================================================
